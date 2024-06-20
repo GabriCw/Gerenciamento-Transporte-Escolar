@@ -5,8 +5,8 @@ import { createStackNavigator } from '@react-navigation/stack';
 import TelaLoginScreen from './View/TelaLogin';
 import RegisterScreen from './View/Register';
 import ForgotPasswordScreen from './View/ForgotPasswordScreen';
-import RegisterMotorista from './View/RegisterMotorista';
-import RegisterResponsavel from './View/RegisterResponsavel';
+import RegisterMotoristaScreen from './View/RegisterMotorista';
+import RegisterResponsavelScreen from './View/RegisterResponsavel';
 
 const Stack = createStackNavigator();
 
@@ -17,8 +17,8 @@ const App = () => {
         <Stack.Screen name="Login" component={TelaLoginScreen} options={{ headerShown: false }}/>
         <Stack.Screen name="Register" component={RegisterScreen} options={{ headerShown: false }}/>
         <Stack.Screen name="ForgotPassword" component={ForgotPasswordScreen} options={{ headerShown: false }}/>
-        <Stack.Screen name="RegisterMotorista" component={RegisterMotorista} options={{ headerShown: false }}/>
-        <Stack.Screen name="RegisterResponsavel" component={RegisterResponsavel} options={{ headerShown: false }}/>
+        <Stack.Screen name="RegisterMotorista" component={RegisterMotoristaScreen} options={{ headerShown: false }}/>
+        <Stack.Screen name="RegisterResponsavel" component={RegisterResponsavelScreen} options={{ headerShown: false }}/>
       </Stack.Navigator>
     </NavigationContainer>
   );

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { View, StyleSheet, Text} from 'react-native';
 import { TextInput, Button } from 'react-native-paper';
 
-const CadastroResponsavelScreen = ({ navigation }) => {
+const RegisterResponsavelScreen = ({ navigation }) => {
     const [nome, setNome] = useState('');
     const [cpf, setCpf] = useState('');
     const [telefone, setTelefone] = useState('');
@@ -129,4 +129,4 @@ const styles = StyleSheet.create({
     },
 });
 
-export default CadastroResponsavelScreen;
+export default RegisterResponsavelScreen;
