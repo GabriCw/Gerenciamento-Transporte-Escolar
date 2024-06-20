@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, StyleSheet, Text} from 'react-native';
+import { View, StyleSheet, Text, ScrollView, KeyboardAvoidingView, Platform } from 'react-native';
 import { TextInput, Button } from 'react-native-paper';
 
 const RegisterResponsavelScreen = ({ navigation }) => {
@@ -13,7 +13,7 @@ const RegisterResponsavelScreen = ({ navigation }) => {
     const handleCadastro = () => {
         console.log('Dados do Responsável:', { nome, cpf, telefone, email, senha, confSenha});
 
-        navigation.goBack();
+        navigation.navigate("Login");
     };
 
     return (
