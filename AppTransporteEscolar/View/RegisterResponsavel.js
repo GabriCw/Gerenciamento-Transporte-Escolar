@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { View, StyleSheet, Text, ScrollView, KeyboardAvoidingView, Platform } from 'react-native';
 import { TextInput, Button } from 'react-native-paper';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 
 const RegisterResponsavelScreen = ({ navigation }) => {
     const [nome, setNome] = useState('');
@@ -17,11 +18,13 @@ const RegisterResponsavelScreen = ({ navigation }) => {
     };
 
     return (
-        <KeyboardAvoidingView
-            style={{ flex: 2 }}
-            behavior={Platform.OS === "ios" ? "padding" : "height"}
+        <KeyboardAwareScrollView
+            contentContainerStyle={styles.container}
+            enableOnAndroid={true}
+            extraScrollHeight={20}
+            keyboardShouldPersistTaps="handled"
         >
-            <ScrollView contentContainerStyle={styles.container}>
+            <View style={styles.container}>
                 <View style={styles.header}>
                     <Button 
                         mode="contained" 
@@ -90,8 +93,8 @@ const RegisterResponsavelScreen = ({ navigation }) => {
                         Cadastrar
                     </Button>
                 </View>
-            </ScrollView>
-        </KeyboardAvoidingView>
+            </View>
+        </KeyboardAwareScrollView>
     );
 };
 

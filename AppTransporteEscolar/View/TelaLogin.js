@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { View, StyleSheet, Text, TouchableOpacity } from 'react-native';
 import { TextInput, Button } from 'react-native-paper';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 
 const TelaLoginScreen = ({ navigation }) => {
     const [email, setEmail] = useState('');
@@ -27,35 +28,42 @@ const TelaLoginScreen = ({ navigation }) => {
     };
 
     return (
-        <View style={styles.container}>
-            <Text style={styles.title}>Faça Seu Login</Text>
-            <TextInput
-                label="Digite seu e-mail"
-                mode="outlined"
-                value={email}
-                onChangeText={text => setEmail(text)}
-                style={styles.input}
-            />
-            <TextInput
-                label="Digite sua senha"
-                mode="outlined"
-                secureTextEntry={true}
-                value={senha}
-                onChangeText={text => setSenha(text)}
-                style={styles.input}
-            />
-            <Button mode="contained" onPress={handlePress} style={styles.button}>
-                Enviar
-            </Button>
-            <View style={styles.footer}>
-                <TouchableOpacity onPress={handleRegisterPress}>
-                    <Text style={styles.link}>Cadastrar</Text>
-                </TouchableOpacity>
-                <TouchableOpacity onPress={handleForgotPasswordPress}>
-                    <Text style={styles.link}>Esqueci a senha</Text>
-                </TouchableOpacity>
+        <KeyboardAwareScrollView
+            contentContainerStyle={styles.container}
+            enableOnAndroid={true}
+            extraScrollHeight={20}
+            keyboardShouldPersistTaps="handled"
+        >
+            <View style={styles.container}>
+                <Text style={styles.title}>Faça Seu Login</Text>
+                <TextInput
+                    label="Digite seu e-mail"
+                    mode="outlined"
+                    value={email}
+                    onChangeText={text => setEmail(text)}
+                    style={styles.input}
+                />
+                <TextInput
+                    label="Digite sua senha"
+                    mode="outlined"
+                    secureTextEntry={true}
+                    value={senha}
+                    onChangeText={text => setSenha(text)}
+                    style={styles.input}
+                />
+                <Button mode="contained" onPress={handlePress} style={styles.button}>
+                    Enviar
+                </Button>
+                <View style={styles.footer}>
+                    <TouchableOpacity onPress={handleRegisterPress}>
+                        <Text style={styles.link}>Cadastrar</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity onPress={handleForgotPasswordPress}>
+                        <Text style={styles.link}>Esqueci a senha</Text>
+                    </TouchableOpacity>
+                </View>
             </View>
-        </View>
+        </KeyboardAwareScrollView>
     );
 };
 
