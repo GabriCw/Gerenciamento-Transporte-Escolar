@@ -26,7 +26,7 @@ const RegisterScreen = ({ navigation }) => {
             </View>
             <View style={styles.content}>
                 <Text style={styles.title}>Registrar-se</Text>
-                <Text style={styles.subtitle}>Escolha qual a pessoa é:</Text>
+                <Text style={styles.subtitle}>Escolha qual a cadastro deseja fazer:</Text>
                 <View style={styles.buttonsContainer}>
                     <Button 
                         mode="contained" 
@@ -69,24 +69,25 @@ const styles = StyleSheet.create({
     },
     content: {
         flex: 1,
-        justifyContent: 'center',
+        justifyContent: 'flex-start',
         alignItems: 'center',
+        paddingTop: '50%',
     },
     title: {
         fontSize: 25,
         fontWeight: 'bold',
-        marginBottom: 20,
+        marginBottom: 30,
         textAlign: 'center',
     },
     subtitle: {
         fontSize: 18,
-        marginBottom: 20,
+        marginBottom: 50,
         textAlign: 'center',
     },
     buttonsContainer: {
         flexDirection: 'row',
-        justifyContent: 'space-around',
-        width: '100%',
+        justifyContent: 'space-between',
+        width: '90%',
     },
     button: {
         width: 150,
