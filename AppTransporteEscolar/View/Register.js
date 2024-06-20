@@ -21,7 +21,7 @@ const RegisterScreen = ({ navigation }) => {
                     style={styles.button}
                     labelStyle={styles.buttonLabel}
                 >
-                    Voltar ao Login
+                    Voltar
                 </Button>
             </View>
             <View style={styles.content}>

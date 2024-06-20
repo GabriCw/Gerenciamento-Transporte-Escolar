@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { View, StyleSheet, Text, TouchableOpacity } from 'react-native';
 import { TextInput, Button } from 'react-native-paper';
 
-const TelaLogin = ({ navigation }) => {
+const TelaLoginScreen = ({ navigation }) => {
     const [email, setEmail] = useState('');
     const [senha, setSenha] = useState('');
     const [formData, setFormData] = useState({});
@@ -89,4 +89,4 @@ const styles = StyleSheet.create({
     },
 });
 
-export default TelaLogin;
+export default TelaLoginScreen;

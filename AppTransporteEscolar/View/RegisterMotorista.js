@@ -5,10 +5,13 @@ import { TextInput, Button } from 'react-native-paper';
 const RegisterMotoristaScreen = ({ navigation }) => {
     const [nome, setNome] = useState('');
     const [cpf, setCpf] = useState('');
+    const [email, setEmail] = useState('');
+    const [senha, setSenha] = useState('');
+    const [senhaConfirm, setSenhaConfirm] = useState('');
     const [placaVeiculo, setPlacaVeiculo] = useState('');
 
     const handleCadastro = () => {
-        console.log('Dados do Motorista:', { nome, cpf, placaVeiculo });
+        console.log('Dados do Motorista:', { nome, cpf, placaVeiculo, email, senha, senhaConfirm});
 
         navigation.goBack();
     };
@@ -31,10 +34,29 @@ const RegisterMotoristaScreen = ({ navigation }) => {
             />
             <TextInput
                 style={styles.input}
-                placeholder="Placa do Veículo"
+                placeholder="Placa do VeÃculo"
                 value={placaVeiculo}
                 onChangeText={text => setPlacaVeiculo(text)}
             />
+            <TextInput
+                style={styles.input}
+                placeholder="Email"
+                value={email}
+                onChangeText={text => setEmail(text)}
+            />
+            <TextInput
+                style={styles.input}
+                placeholder="Senha"
+                value={senha}
+                onChangeText={text => setSenha(text)}
+            />
+            <TextInput
+                style={styles.input}
+                placeholder="Confirme sua Senha"
+                value={senhaConfirm}
+                onChangeText={text => setSenhaConfirm(text)}
+            />
+
             <Button title="Cadastrar" onPress={handleCadastro} />
         </View>
     );

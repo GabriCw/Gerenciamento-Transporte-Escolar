@@ -6,42 +6,97 @@ const CadastroResponsavelScreen = ({ navigation }) => {
     const [nome, setNome] = useState('');
     const [cpf, setCpf] = useState('');
     const [telefone, setTelefone] = useState('');
+    const [email, setEmail] = useState('');
+    const [senha, setSenha] = useState('');
+    const [confSenha, setConfSenha] = useState('');
 
     const handleCadastro = () => {
-        console.log('Dados do Responsável:', { nome, cpf, telefone });
+        console.log('Dados do Responsável:', { nome, cpf, telefone, email, senha, confSenha});
 
         navigation.goBack();
     };
 
     return (
         <View style={styles.container}>
-            <Text style={styles.title}>Cadastro de Responsável</Text>
-            <TextInput
-                style={styles.input}
-                placeholder="Nome"
-                value={nome}
-                onChangeText={text => setNome(text)}
-            />
-            <TextInput
-                style={styles.input}
-                placeholder="CPF"
-                value={cpf}
-                onChangeText={text => setCpf(text)}
-                keyboardType="numeric"
-            />
-            <TextInput
-                style={styles.input}
-                placeholder="Telefone"
-                value={telefone}
-                onChangeText={text => setTelefone(text)}
-                keyboardType="phone-pad"
-            />
-            <Button title="Cadastrar" onPress={handleCadastro} />
+            <View style={styles.header}>
+                <Button 
+                    mode="contained" 
+                    onPress={() => navigation.navigate('Register')} 
+                    style={styles.button}
+                    labelStyle={styles.buttonLabel}
+                >
+                    Voltar
+                </Button>
+            </View>
+            <View style={styles.content}>
+                <Text style={styles.title}>Cadastro do Responsável</Text>
+                <TextInput
+                    style={styles.input}
+                    label="Nome"
+                    mode="outlined"
+                    value={nome}
+                    onChangeText={text => setNome(text)}
+                />
+                <TextInput
+                    style={styles.input}
+                    label="CPF"
+                    mode="outlined"
+                    value={cpf}
+                    onChangeText={text => setCpf(text)}
+                    keyboardType="numeric"
+                />
+                <TextInput
+                    style={styles.input}
+                    label="Telefone"
+                    mode="outlined"
+                    value={telefone}
+                    onChangeText={text => setTelefone(text)}
+                    keyboardType="phone-pad"
+                />
+                <TextInput
+                    style={styles.input}
+                    label="E-mail"
+                    mode="outlined"
+                    value={email}
+                    onChangeText={text => setEmail(text)}
+                    keyboardType="email-address"
+                />
+                <TextInput
+                    style={styles.input}
+                    label="Senha"
+                    mode="outlined"
+                    value={senha}
+                    onChangeText={text => setSenha(text)}
+                    secureTextEntry={true}
+                />
+                <TextInput
+                    style={styles.input}
+                    label="Confirme sua Senha"
+                    mode="outlined"
+                    value={confSenha}
+                    onChangeText={text => setConfSenha(text)}
+                    secureTextEntry={true}
+                />
+                <Button 
+                    title="Cadastrar" 
+                    onPress={handleCadastro} 
+                    style={styles.button}
+                    labelStyle={styles.buttonLabel}
+                >
+                    Cadastrar
+                </Button>
+            </View>
         </View>
     );
 };
 
 const styles = StyleSheet.create({
+    header: {
+        alignSelf: 'stretch',
+        alignItems: 'flex-start',
+        marginBottom: 20,
+        marginTop: 20,
+    },
     container: {
         flex: 1,
         justifyContent: 'center',
@@ -56,11 +111,21 @@ const styles = StyleSheet.create({
     input: {
         width: '100%',
         height: 40,
-        borderWidth: 1,
-        borderColor: '#ccc',
-        borderRadius: 5,
         paddingHorizontal: 10,
         marginBottom: 20,
+    },
+    content: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    button: {
+        width: 150,
+        backgroundColor: '#4B0082',
+        marginVertical: 10,
+    },
+    buttonLabel: {
+        color: 'white',
     },
 });
 
