@@ -4,7 +4,8 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import TelaLoginScreen from './View/TelaLogin';
 import RegisterScreen from './View/Register';
-import ForgotPasswordScreen from './View/ForgotPasswordScreen';
+import ForgotPasswordScreen from './View/ForgotPasswordScreen_2';
+import ConfirmEmailScreen from './View/ConfirmEmailScreen';
 import RegisterMotoristaScreen from './View/RegisterMotorista';
 import RegisterResponsavelScreen from './View/RegisterResponsavel';
 
@@ -17,6 +18,7 @@ const App = () => {
         <Stack.Screen name="Login" component={TelaLoginScreen} options={{ headerShown: false }}/>
         <Stack.Screen name="Register" component={RegisterScreen} options={{ headerShown: false }}/>
         <Stack.Screen name="ForgotPassword" component={ForgotPasswordScreen} options={{ headerShown: false }}/>
+        <Stack.Screen name="ConfirmEmail" component={ConfirmEmailScreen} options={{ headerShown: false }}/>
         <Stack.Screen name="RegisterMotorista" component={RegisterMotoristaScreen} options={{ headerShown: false }}/>
         <Stack.Screen name="RegisterResponsavel" component={RegisterResponsavelScreen} options={{ headerShown: false }}/>
       </Stack.Navigator>
