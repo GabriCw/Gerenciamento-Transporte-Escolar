@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { View, StyleSheet, Text } from 'react-native';
 import { TextInput, Button } from 'react-native-paper';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 
 const ForgotPasswordScreen = ({ navigation }) => {
     const [email, setEmail] = useState('');
@@ -12,24 +13,31 @@ const ForgotPasswordScreen = ({ navigation }) => {
     };
 
     return (
-        <View style={styles.container}>
-            <Text style={styles.title}>Esqueci Minha Senha</Text>
-            <TextInput
-                style={styles.input}
-                label="Email Para Recuperação"
-                mode="outlined"
-                value={email}
-                onChangeText={text => setEmail(text)}
-                keyboardType="email-address"
-            />
-            <Button 
-                mode="contained" 
-                onPress={handleSendCode} 
-                style={styles.button}
-            >
-                Enviar E-mail de Redefinição
-            </Button>
-        </View>
+        <KeyboardAwareScrollView
+            contentContainerStyle={styles.container}
+            enableOnAndroid={true}
+            extraScrollHeight={20}
+            keyboardShouldPersistTaps="handled"
+        >
+            <View style={styles.container}>
+                <Text style={styles.title}>Esqueci Minha Senha</Text>
+                <TextInput
+                    style={styles.input}
+                    label="Email Para Recuperação"
+                    mode="outlined"
+                    value={email}
+                    onChangeText={text => setEmail(text)}
+                    keyboardType="email-address"
+                />
+                <Button 
+                    mode="contained" 
+                    onPress={handleSendCode} 
+                    style={styles.button}
+                >
+                    Enviar E-mail
+                </Button>
+            </View>
+        </KeyboardAwareScrollView>
     );
 };
 
@@ -49,7 +57,7 @@ const styles = StyleSheet.create({
         marginBottom: 20,
     },
     button: {
-        marginTop: 25,
+        marginTop: 20,
         width: '50%',
         alignSelf: 'center',
     }

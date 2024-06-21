@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, StyleSheet, Text } from 'react-native';
 import { Button } from 'react-native-paper';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 
 const RegisterScreen = ({ navigation }) => {
 
@@ -13,40 +14,47 @@ const RegisterScreen = ({ navigation }) => {
     };
 
     return (
-        <View style={styles.container}>
-            <View style={styles.header}>
-                <Button 
-                    mode="contained" 
-                    onPress={() => navigation.navigate('Login')} 
-                    style={styles.button}
-                    labelStyle={styles.buttonLabel}
-                >
-                    Voltar
-                </Button>
-            </View>
-            <View style={styles.content}>
-                <Text style={styles.title}>Registrar-se</Text>
-                <Text style={styles.subtitle}>Escolha qual a cadastro deseja fazer:</Text>
-                <View style={styles.buttonsContainer}>
+        <KeyboardAwareScrollView
+            contentContainerStyle={styles.container}
+            enableOnAndroid={true}
+            extraScrollHeight={20}
+            keyboardShouldPersistTaps="handled"
+        >
+            <View style={styles.container}>
+                <View style={styles.header}>
                     <Button 
                         mode="contained" 
-                        onPress={handleMotoristaPress} 
+                        onPress={() => navigation.navigate('Login')} 
                         style={styles.button}
                         labelStyle={styles.buttonLabel}
                     >
-                        Motorista
-                    </Button>
-                    <Button 
-                        mode="contained" 
-                        onPress={handleResponsavelPress} 
-                        style={styles.button}
-                        labelStyle={styles.buttonLabel}
-                    >
-                        Responsável
+                        Voltar
                     </Button>
                 </View>
+                <View style={styles.content}>
+                    <Text style={styles.title}>Registrar-se</Text>
+                    <Text style={styles.subtitle}>Escolha qual a cadastro deseja fazer:</Text>
+                    <View style={styles.buttonsContainer}>
+                        <Button 
+                            mode="contained" 
+                            onPress={handleMotoristaPress} 
+                            style={styles.button}
+                            labelStyle={styles.buttonLabel}
+                        >
+                            Motorista
+                        </Button>
+                        <Button 
+                            mode="contained" 
+                            onPress={handleResponsavelPress} 
+                            style={styles.button}
+                            labelStyle={styles.buttonLabel}
+                        >
+                            Responsável
+                        </Button>
+                    </View>
+                </View>
             </View>
-        </View>
+        </KeyboardAwareScrollView>
     );
 };
 
