@@ -14,14 +14,8 @@ const RegisterScreen = ({ navigation }) => {
     };
 
     return (
-        <KeyboardAwareScrollView
-            contentContainerStyle={styles.container}
-            enableOnAndroid={true}
-            extraScrollHeight={20}
-            keyboardShouldPersistTaps="handled"
-        >
-            <View style={styles.container}>
-                <View style={styles.header}>
+        <>
+            <View style={styles.header}>
                     <Button 
                         mode="contained" 
                         onPress={() => navigation.navigate('Login')} 
@@ -31,30 +25,39 @@ const RegisterScreen = ({ navigation }) => {
                         Voltar
                     </Button>
                 </View>
-                <View style={styles.content}>
-                    <Text style={styles.title}>Registrar-se</Text>
-                    <Text style={styles.subtitle}>Escolha qual a cadastro deseja fazer:</Text>
-                    <View style={styles.buttonsContainer}>
-                        <Button 
-                            mode="contained" 
-                            onPress={handleMotoristaPress} 
-                            style={styles.button}
-                            labelStyle={styles.buttonLabel}
-                        >
-                            Motorista
-                        </Button>
-                        <Button 
-                            mode="contained" 
-                            onPress={handleResponsavelPress} 
-                            style={styles.button}
-                            labelStyle={styles.buttonLabel}
-                        >
-                            Responsável
-                        </Button>
+            <KeyboardAwareScrollView
+                contentContainerStyle={styles.container}
+                enableOnAndroid={true}
+                extraScrollHeight={20}
+                keyboardShouldPersistTaps="handled"
+            >
+                <View style={styles.container}>
+                    
+                    <View style={styles.content}>
+                        <Text style={styles.title}>Registrar-se</Text>
+                        <Text style={styles.subtitle}>Escolha qual a cadastro deseja fazer:</Text>
+                        <View style={styles.buttonsContainer}>
+                            <Button 
+                                mode="contained" 
+                                onPress={handleMotoristaPress} 
+                                style={styles.button}
+                                labelStyle={styles.buttonLabel}
+                            >
+                                Motorista
+                            </Button>
+                            <Button 
+                                mode="contained" 
+                                onPress={handleResponsavelPress} 
+                                style={styles.button}
+                                labelStyle={styles.buttonLabel}
+                            >
+                                Responsável
+                            </Button>
+                        </View>
                     </View>
                 </View>
-            </View>
-        </KeyboardAwareScrollView>
+            </KeyboardAwareScrollView>
+        </>
     );
 };
 
@@ -72,8 +75,8 @@ const styles = StyleSheet.create({
     header: {
         alignSelf: 'stretch',
         alignItems: 'flex-start',
-        marginBottom: 20,
-        marginTop: 20,
+        marginTop: 40,
+        marginLeft: 20,
     },
     content: {
         flex: 1,
