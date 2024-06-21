@@ -98,6 +98,7 @@ const styles = StyleSheet.create({
         marginTop: 20,
         width: '50%',
         alignSelf: 'center',
+        backgroundColor: '#4B0082',
     },
     buttonBack: {
         width: 150,
