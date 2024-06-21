@@ -4,7 +4,7 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import TelaLoginScreen from './View/TelaLogin';
 import RegisterScreen from './View/Register';
-import ForgotPasswordScreen from './View/ForgotPasswordScreen_2';
+import ForgotPasswordScreen from './View/ForgotPasswordScreen';
 import ConfirmEmailScreen from './View/ConfirmEmailScreen';
 import RegisterMotoristaScreen from './View/RegisterMotorista';
 import RegisterResponsavelScreen from './View/RegisterResponsavel';
