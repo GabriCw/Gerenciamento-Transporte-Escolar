@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { View, StyleSheet, Text, TouchableOpacity } from 'react-native';
 import { TextInput, Button } from 'react-native-paper';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
+import Toast from 'react-native-toast-message';
 
 const TelaLoginScreen = ({ navigation }) => {
     const [email, setEmail] = useState('');
@@ -9,12 +10,28 @@ const TelaLoginScreen = ({ navigation }) => {
     const [formData, setFormData] = useState({});
 
     const handlePress = () => {
+        if (!email || !senha) {
+            Toast.show({
+                type: 'error',
+                text1: 'Erro',
+                text2: 'Todos os campos são obrigatórios'
+            });
+            return;
+        }
+
         const data = {
             email: email,
             senha: senha
         };
         setFormData(data);
         console.log('Form Data:', data);
+
+        Toast.show({
+            type: 'success',
+            text1: 'Sucesso',
+            text2: 'Login efetuado com sucesso!'
+        });
+
         setEmail('');
         setSenha('');
     };

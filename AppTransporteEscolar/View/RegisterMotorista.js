@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { View, StyleSheet, Text, Platform } from 'react-native';
+import { View, StyleSheet, Text } from 'react-native';
 import { TextInput, Button } from 'react-native-paper';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
+import Toast from 'react-native-toast-message';
 
 const RegisterMotoristaScreen = ({ navigation }) => {
     const [nome, setNome] = useState('');
@@ -13,7 +14,24 @@ const RegisterMotoristaScreen = ({ navigation }) => {
     const [placa, setPlaca] = useState('');
 
     const handleCadastro = () => {
+        if (!nome || !cpf || !telefone || !email || !senha || !confSenha || !placa) {
+            Toast.show({
+                type: 'error',
+                text1: 'Erro',
+                text2: 'Todos os campos são obrigatórios',
+                visibilityTime: 3000,
+            });
+            return;
+        }
+
         console.log('Dados do Motorista:', { nome, cpf, telefone, placa, email, senha, confSenha});
+
+        Toast.show({
+            type: 'success',
+            text1: 'Sucesso',
+            text2: 'Cadastro efetuado com sucesso!',
+            visibilityTime: 3000,
+        });
 
         navigation.navigate("Login");
     };
