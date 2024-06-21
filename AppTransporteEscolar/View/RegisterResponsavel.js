@@ -150,7 +150,7 @@ const styles = StyleSheet.create({
         flex: 1,
         justifyContent: 'flex-start',
         alignItems: 'center',
-        paddingTop: '20%',
+        paddingTop: '15%',
     },
     button: {
         width: 150,

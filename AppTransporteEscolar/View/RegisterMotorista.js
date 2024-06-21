@@ -54,75 +54,76 @@ const RegisterMotoristaScreen = ({ navigation }) => {
                 extraScrollHeight={20}
                 keyboardShouldPersistTaps="handled"
             >
-
-                <View style={styles.content}>
-                    <Text style={styles.title}>Cadastro do Motorista</Text>
-                    <TextInput
-                        style={styles.input}
-                        label="Nome"
-                        mode="outlined"
-                        value={nome}
-                        onChangeText={text => setNome(text)}
-                    />
-                    <TextInput
-                        style={styles.input}
-                        label="CPF"
-                        mode="outlined"
-                        value={cpf}
-                        onChangeText={text => setCpf(text)}
-                        keyboardType="numeric"
-                    />
-                    <TextInput
-                        style={styles.input}
-                        label="Telefone"
-                        mode="outlined"
-                        value={telefone}
-                        onChangeText={text => setTelefone(text)}
-                        keyboardType="phone-pad"
-                    />
-                    <TextInput
-                        style={styles.input}
-                        label="Placa do Veículo"
-                        mode="outlined"
-                        value={placa}
-                        onChangeText={text => setPlaca(text)}
-                    />
-                    <TextInput
-                        style={styles.input}
-                        label="E-mail"
-                        mode="outlined"
-                        value={email}
-                        onChangeText={text => setEmail(text)}
-                        keyboardType="email-address"
-                    />
-                    <TextInput
-                        style={styles.input}
-                        label="Senha"
-                        mode="outlined"
-                        value={senha}
-                        onChangeText={text => setSenha(text)}
-                        secureTextEntry={true}
-                        textContentType="none"
-                        autoCompleteType="off"
-                    />
-                    <TextInput
-                        style={styles.input}
-                        label="Confirme sua Senha"
-                        mode="outlined"
-                        value={confSenha}
-                        onChangeText={text => setConfSenha(text)}
-                        secureTextEntry={true}
-                        textContentType="none"
-                        autoCompleteType="off"
-                    />
-                    <Button 
-                        mode="contained" 
-                        onPress={handleCadastro} 
-                        style={styles.button}
-                        labelStyle={styles.buttonLabel}
-                    >
-                        Cadastrar
-                    </Button>
+                <View style={styles.container}>
+                    <View style={styles.content}>
+                        <Text style={styles.title}>Cadastro do Motorista</Text>
+                        <TextInput
+                            style={styles.input}
+                            label="Nome"
+                            mode="outlined"
+                            value={nome}
+                            onChangeText={text => setNome(text)}
+                        />
+                        <TextInput
+                            style={styles.input}
+                            label="CPF"
+                            mode="outlined"
+                            value={cpf}
+                            onChangeText={text => setCpf(text)}
+                            keyboardType="numeric"
+                        />
+                        <TextInput
+                            style={styles.input}
+                            label="Telefone"
+                            mode="outlined"
+                            value={telefone}
+                            onChangeText={text => setTelefone(text)}
+                            keyboardType="phone-pad"
+                        />
+                        <TextInput
+                            style={styles.input}
+                            label="Placa do Veículo"
+                            mode="outlined"
+                            value={placa}
+                            onChangeText={text => setPlaca(text)}
+                        />
+                        <TextInput
+                            style={styles.input}
+                            label="E-mail"
+                            mode="outlined"
+                            value={email}
+                            onChangeText={text => setEmail(text)}
+                            keyboardType="email-address"
+                        />
+                        <TextInput
+                            style={styles.input}
+                            label="Senha"
+                            mode="outlined"
+                            value={senha}
+                            onChangeText={text => setSenha(text)}
+                            secureTextEntry={true}
+                            textContentType="none"
+                            autoCompleteType="off"
+                        />
+                        <TextInput
+                            style={styles.input}
+                            label="Confirme sua Senha"
+                            mode="outlined"
+                            value={confSenha}
+                            onChangeText={text => setConfSenha(text)}
+                            secureTextEntry={true}
+                            textContentType="none"
+                            autoCompleteType="off"
+                        />
+                        <Button 
+                            mode="contained" 
+                            onPress={handleCadastro} 
+                            style={styles.button}
+                            labelStyle={styles.buttonLabel}
+                        >
+                            Cadastrar
+                        </Button>
+                    </View>
                 </View>
             </KeyboardAwareScrollView>
         </>
@@ -149,13 +150,15 @@ const styles = StyleSheet.create({
     },
     input: {
         width: '100%',
+        height: 40,
+        paddingHorizontal: 10,
         marginBottom: 20,
     },
     content: {
         flex: 1,
         justifyContent: 'flex-start',
         alignItems: 'center',
-        paddingTop: '20%',
+        paddingTop: '10%',
     },
     button: {
         width: 150,
