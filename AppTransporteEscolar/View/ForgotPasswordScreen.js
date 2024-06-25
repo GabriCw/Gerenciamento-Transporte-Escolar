@@ -35,7 +35,7 @@ const ForgotPasswordScreen = ({ navigation }) => {
             <View style={styles.header}>
                 <Button 
                     mode="contained" 
-                    onPress={() => navigation.navigate('Register')} 
+                    onPress={() => navigation.navigate('Login')} 
                     style={styles.buttonBack}
                     labelStyle={styles.buttonLabel}
                 >
@@ -101,7 +101,7 @@ const styles = StyleSheet.create({
         backgroundColor: '#4B0082',
     },
     buttonBack: {
-        width: 150,
+        width: 90,
         backgroundColor: '#4B0082',
         marginVertical: 10,
     },

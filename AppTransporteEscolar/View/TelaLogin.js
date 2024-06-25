@@ -1,39 +1,72 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, StyleSheet, Text, TouchableOpacity } from 'react-native';
 import { TextInput, Button } from 'react-native-paper';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import Toast from 'react-native-toast-message';
+import { initializeApp } from '@firebase/app';
+import { getAuth, signInWithEmailAndPassword, onAuthStateChanged } from '@firebase/auth';
 
-const TelaLoginScreen = ({ navigation }) => {
+const firebaseConfig = {
+    apiKey: "AIzaSyDhILsHN9bHVEA-gBc6iPHuqnctPGiQLRQ",
+    authDomain: "auth-van-tcc.firebaseapp.com",
+    projectId: "auth-van-tcc",
+    storageBucket: "auth-van-tcc.appspot.com",
+    messagingSenderId: "91731709434",
+    appId: "1:91731709434:web:5a73b9c1a4c43e2a852843",
+    measurementId: "G-HKEVN6CQX4"
+  };
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+
+const TelaLogin = ({ navigation }) => {
     const [email, setEmail] = useState('');
     const [senha, setSenha] = useState('');
-    const [formData, setFormData] = useState({});
+    const [user, setUser] = useState('');
+
+    useEffect(() => {
+        const unsubscribe = onAuthStateChanged(auth, (user) => {
+            if (user) {
+                setUser(user);
+                navigation.navigate('TelaHome');
+            } else {
+                setUser(null);
+            }
+        });
+        return () => unsubscribe();
+    }, [navigation]);
+
+    const handleLogInAuthentication = async () => {
+        try {
+            await signInWithEmailAndPassword(auth, email, senha);
+            console.log('User signed in successfully!');
+            Toast.show({
+                type: 'success',
+                text1: 'Sucesso',
+                text2: 'Autenticação efetuada com sucesso!',
+            });
+            }
+        catch (error) {
+            console.error('Authentication error:', error.message);
+            Toast.show({
+                type: 'error',
+                text1: 'Erro de Autenticação',
+                text2: error.message,
+            });
+        }
+    };
 
     const handlePress = () => {
         if (!email || !senha) {
             Toast.show({
                 type: 'error',
                 text1: 'Erro',
-                text2: 'Todos os campos são obrigatórios'
+                text2: 'Todos os campos são obrigatórios',
             });
             return;
         }
 
-        const data = {
-            email: email,
-            senha: senha
-        };
-        setFormData(data);
-        console.log('Form Data:', data);
-
-        Toast.show({
-            type: 'success',
-            text1: 'Sucesso',
-            text2: 'Login efetuado com sucesso!'
-        });
-
-        setEmail('');
-        setSenha('');
+        handleLogInAuthentication();
     };
 
     const handleRegisterPress = () => {
@@ -69,7 +102,7 @@ const TelaLoginScreen = ({ navigation }) => {
                     style={styles.input}
                 />
                 <Button mode="contained" onPress={handlePress} style={styles.button}>
-                    Enviar
+                    Entrar
                 </Button>
                 <View style={styles.footer}>
                     <TouchableOpacity onPress={handleRegisterPress}>
@@ -114,4 +147,4 @@ const styles = StyleSheet.create({
     },
 });
 
-export default TelaLoginScreen;
+export default TelaLogin;

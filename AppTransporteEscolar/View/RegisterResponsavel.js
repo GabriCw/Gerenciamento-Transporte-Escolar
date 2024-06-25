@@ -3,6 +3,21 @@ import { View, StyleSheet, Text } from 'react-native';
 import { TextInput, Button } from 'react-native-paper';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import Toast from 'react-native-toast-message';
+import { initializeApp } from '@firebase/app';
+import { getAuth, createUserWithEmailAndPassword } from '@firebase/auth';
+
+const firebaseConfig = {
+  apiKey: "AIzaSyDhILsHN9bHVEA-gBc6iPHuqnctPGiQLRQ",
+  authDomain: "auth-van-tcc.firebaseapp.com",
+  projectId: "auth-van-tcc",
+  storageBucket: "auth-van-tcc.appspot.com",
+  messagingSenderId: "91731709434",
+  appId: "1:91731709434:web:5a73b9c1a4c43e2a852843",
+  measurementId: "G-HKEVN6CQX4"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
 
 const RegisterResponsavelScreen = ({ navigation }) => {
     const [nome, setNome] = useState('');
@@ -12,7 +27,7 @@ const RegisterResponsavelScreen = ({ navigation }) => {
     const [senha, setSenha] = useState('');
     const [confSenha, setConfSenha] = useState('');
 
-    const handleCadastro = () => {
+    const handleCadastro = async () => {
         if (!nome || !cpf || !telefone || !email || !senha || !confSenha) {
             Toast.show({
                 type: 'error',
@@ -23,16 +38,34 @@ const RegisterResponsavelScreen = ({ navigation }) => {
             return;
         }
 
-        console.log('Dados do Responsável:', { nome, cpf, telefone, email, senha, confSenha});
+        if (senha !== confSenha) {
+            Toast.show({
+                type: 'error',
+                text1: 'Erro',
+                text2: 'As senhas não coincidem',
+                visibilityTime: 3000,
+            });
+            return;
+        }
 
-        Toast.show({
-            type: 'success',
-            text1: 'Sucesso',
-            text2: 'Cadastro efetuado com sucesso!',
-            visibilityTime: 3000,
-        });
-
-        navigation.navigate("Login");
+        try {
+            await createUserWithEmailAndPassword(auth, email, senha);
+            console.log('Usuário criado com sucesso!');
+            Toast.show({
+                type: 'success',
+                text1: 'Sucesso',
+                text2: 'Cadastro realizado com sucesso!',
+                visibilityTime: 3000,
+            });
+            navigation.navigate("Login");
+        } catch (error) {
+            console.error('Erro de autenticação:', error.message);
+            Toast.show({
+                type: 'error',
+                text1: 'Erro de Autenticação',
+                text2: error.message,
+            });
+        }
     };
 
     return (
@@ -41,7 +74,7 @@ const RegisterResponsavelScreen = ({ navigation }) => {
                         <Button 
                             mode="contained" 
                             onPress={() => navigation.navigate('Register')} 
-                            style={styles.button}
+                            style={styles.buttonBack}
                             labelStyle={styles.buttonLabel}
                         >
                             Voltar
@@ -154,6 +187,11 @@ const styles = StyleSheet.create({
     },
     button: {
         width: 150,
+        backgroundColor: '#4B0082',
+        marginVertical: 10,
+    },
+    buttonBack: {
+        width: 90,
         backgroundColor: '#4B0082',
         marginVertical: 10,
     },

@@ -19,7 +19,7 @@ const RegisterScreen = ({ navigation }) => {
                     <Button 
                         mode="contained" 
                         onPress={() => navigation.navigate('Login')} 
-                        style={styles.button}
+                        style={styles.buttonBack}
                         labelStyle={styles.buttonLabel}
                     >
                         Voltar
@@ -102,6 +102,11 @@ const styles = StyleSheet.create({
     },
     button: {
         width: 150,
+        backgroundColor: '#4B0082',
+        marginVertical: 10,
+    },
+    buttonBack: {
+        width: 90,
         backgroundColor: '#4B0082',
         marginVertical: 10,
     },
