@@ -58,6 +58,13 @@ const RegisterMotoristaScreen = ({ navigation }) => {
                 text2: 'Cadastro realizado com sucesso!',
                 visibilityTime: 3000,
             });
+            setNome('');
+            setCpf('');
+            setTelefone('');
+            setEmail('');
+            setSenha('');
+            setConfSenha('');
+            setPlaca('');
             navigation.navigate("Login");
         } catch (error) {
             console.error('Erro de autenticação:', error.message);
