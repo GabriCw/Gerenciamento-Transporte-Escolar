@@ -54,7 +54,7 @@ const TelaLogin = ({ navigation }) => {
             Toast.show({
                 type: 'error',
                 text1: 'Erro de Autenticação',
-                text2: error.message,
+                text2: 'Credencias Incorretas',
             });
         }
     };

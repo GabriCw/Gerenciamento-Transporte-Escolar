@@ -71,7 +71,7 @@ const RegisterMotoristaScreen = ({ navigation }) => {
             Toast.show({
                 type: 'error',
                 text1: 'Erro de Autenticação',
-                text2: error.message,
+                text2: 'Erro ao cadastrar usuário (checar credenciais)',
             });
         }
     };
