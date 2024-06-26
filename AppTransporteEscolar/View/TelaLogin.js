@@ -28,7 +28,7 @@ const TelaLogin = ({ navigation }) => {
         const unsubscribe = onAuthStateChanged(auth, (user) => {
             if (user) {
                 setUser(user);
-                navigation.navigate('TelaHome');
+                // navigation.navigate('TelaHome');
             } else {
                 setUser(null);
             }
@@ -45,6 +45,9 @@ const TelaLogin = ({ navigation }) => {
                 text1: 'Sucesso',
                 text2: 'Autenticação efetuada com sucesso!',
             });
+            setEmail('');
+            setSenha('');
+            navigation.navigate('TelaHome');
             }
         catch (error) {
             console.error('Authentication error:', error.message);
