@@ -115,6 +115,12 @@ const TelaLogin = ({ navigation }) => {
                         <Text style={styles.link}>Esqueci a senha</Text>
                     </TouchableOpacity>
                 </View>
+                <View>
+                    <Text style={styles.title_2}>Caso seja um motorista parceiro faça seu login por aqui</Text>
+                    <Button mode="contained" style={styles.button_motorista}>
+                        <Text style={styles.link}>Motorista</Text>
+                    </Button>
+                </View>
             </View>
         </KeyboardAwareScrollView>
     );
@@ -125,11 +131,17 @@ const styles = StyleSheet.create({
         flex: 1,
         justifyContent: 'center',
         padding: 20,
+        marginTop: '25%',
     },
     title: {
         fontSize: 25,
         fontWeight: 'bold',
         marginBottom: 40,
+        textAlign: 'center',
+    },
+    title_2: {
+        fontSize: 16,
+        marginTop: '40%',
         textAlign: 'center',
     },
     input: {
@@ -138,6 +150,9 @@ const styles = StyleSheet.create({
     button: {
         marginTop: 20,
         backgroundColor: '#4B0082',
+        marginLeft: '30%',
+        marginRight: '30%',
+        padding: 5,
     },
     footer: {
         marginTop: 30,
@@ -147,6 +162,12 @@ const styles = StyleSheet.create({
     link: {
         fontSize: 16,
         color: '#1E90FF',
+    },
+    button_motorista: {
+        marginTop: '1%',
+        backgroundColor: 'transparent',
+        marginLeft: '30%',
+        marginRight: '30%',
     },
 });
 
