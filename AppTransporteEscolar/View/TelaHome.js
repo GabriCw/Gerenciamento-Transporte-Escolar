@@ -1,11 +1,18 @@
 import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, Text } from 'react-native';
-import MapView, { Marker } from 'react-native-maps';
+import { View, StyleSheet, Text, Image } from 'react-native';
+import MapView, { Marker, Polyline } from 'react-native-maps';
+import MapViewDirections from 'react-native-maps-directions';
 import * as Location from 'expo-location';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
+import axios from 'axios';
 
 const TelaHome = () => {
     const [region, setRegion] = useState(null);
+    const [routeSegments, setRouteSegments] = useState([]);
+    const [waypoints, setWaypoints] = useState([]);
+    const [optimizedWaypoints, setOptimizedWaypoints] = useState([]);
+
+    const apiKey = 'AIzaSyB65ouahlrzxKKS3X_VeMHKWZPYrJTJx6E'; // Defina sua API Key aqui
 
     useEffect(() => {
         (async () => {
@@ -23,13 +30,65 @@ const TelaHome = () => {
                 latitudeDelta: 0.0922,
                 longitudeDelta: 0.0421,
             });
+
+            // Coordenadas dos waypoints (1o e último se mantém, o resto é otimizado)
+            const waypoints = [
+                { latitude: -23.650644, longitude: -46.578266 },
+                { latitude: -23.626814, longitude: -46.579835 },
+                { latitude: -23.647414, longitude: -46.575591 },
+                { latitude: -23.651001, longitude: -46.579639 },
+                { latitude: -23.631476, longitude: -46.572259 },
+            ];
+
+            setWaypoints(waypoints);
+
+            const origin = `${waypoints[0].latitude},${waypoints[0].longitude}`;
+            const destination = `${waypoints[waypoints.length - 1].latitude},${waypoints[waypoints.length - 1].longitude}`;
+            const waypointsString = waypoints
+                .slice(1, -1)
+                .map(point => `${point.latitude},${point.longitude}`)
+                .join('|');
+
+            const url = `https://maps.googleapis.com/maps/api/directions/json?origin=${origin}&destination=${destination}&waypoints=optimize:true|${waypointsString}&key=${apiKey}`;
+
+            try {
+                const response = await axios.get(url);
+                if (response.data.routes && response.data.routes.length) {
+                    const optimizedOrder = response.data.routes[0].waypoint_order;
+                    const optimizedWaypoints = [waypoints[0], ...optimizedOrder.map(index => waypoints[index + 1]), waypoints[waypoints.length - 1]];
+                    setOptimizedWaypoints(optimizedWaypoints);
+                } else {
+                    console.log('No routes found');
+                }
+            } catch (error) {
+                console.log('Error fetching directions:', error);
+            }
         })();
     }, []);
 
+    const getPinImage = (index) => {
+        switch (index) {
+            case 0:
+                return require('../assets/icons/pin1.png');
+            case 1:
+                return require('../assets/icons/pin2.png');
+            case 2:
+                return require('../assets/icons/pin3.png');
+            case 3:
+                return require('../assets/icons/pin4.png');
+            case 4:
+                return require('../assets/icons/pin5.png');
+            default:
+                return require('../assets/icons/pin6.png');
+        }
+    };
+
+    const colors = ["#FF0000", "#00FF00", "#0000FF", "#FFFF00", "#FF00FF"];
+
     if (!region) {
         return (
-            <View style={styles.container}>
-                <Text>Loading...</Text>
+            <View style={styles.loading}>
+                <Text>Carregando Mapa...</Text>
             </View>
         );
     }
@@ -44,7 +103,7 @@ const TelaHome = () => {
             >
                 <View style={styles.container}>
                     <View style={styles.content}>
-                        <Text style={styles.title}>Você Logou com Sucesso!</Text>
+                        <Text style={styles.title}>Rota Otimizada</Text>
                         <MapView
                             style={styles.map}
                             region={region}
@@ -52,7 +111,29 @@ const TelaHome = () => {
                             showsUserLocation={true}
                             showsMyLocationButton={true}
                         >
-                            <Marker coordinate={region} />
+                            {optimizedWaypoints.length > 1 && (
+                                <MapViewDirections
+                                    origin={optimizedWaypoints[0]}
+                                    waypoints={optimizedWaypoints.slice(1, -1)}
+                                    destination={optimizedWaypoints[optimizedWaypoints.length - 1]}
+                                    apikey={apiKey}
+                                    strokeWidth={8}
+                                    strokeColor="orange"
+                                />
+                            )}
+                            {optimizedWaypoints.map((coordinate, index) => (
+                                <Marker
+                                    key={index}
+                                    coordinate={coordinate}
+                                    title={`Waypoint ${index + 1}`}
+                                    description={`Parada ${index + 1}`}
+                                >
+                                    <Image
+                                        source={getPinImage(index)}
+                                        style={{ width: 30, height: 30 }} // Ajuste o tamanho aqui
+                                    />
+                                </Marker>
+                            ))}
                         </MapView>
                     </View>
                 </View>
@@ -73,6 +154,12 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         padding: 20,
     },
+    loading: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        padding: 20,
+    },
     title: {
         fontSize: 25,
         fontWeight: 'bold',
@@ -80,14 +167,13 @@ const styles = StyleSheet.create({
     },
     content: {
         flex: 1,
-        justifyContent: 'flex-start',
+        justifyContent: 'center',
         alignItems: 'center',
-        paddingTop: '15%',
     },
     map: {
-        width: '100%',
-        height: 400,
-    },
+        width: '115%',
+        height: 600,
+    }
 });
 
 export default TelaHome;
