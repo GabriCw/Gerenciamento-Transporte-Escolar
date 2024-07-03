@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { View, StyleSheet, Text, Image } from 'react-native';
-import MapView, { Marker, Polyline } from 'react-native-maps';
+import MapView, { Marker } from 'react-native-maps';
 import MapViewDirections from 'react-native-maps-directions';
 import * as Location from 'expo-location';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
@@ -8,10 +8,7 @@ import axios from 'axios';
 
 const TelaHome = () => {
     const [region, setRegion] = useState(null);
-    const [routeSegments, setRouteSegments] = useState([]);
-    const [waypoints, setWaypoints] = useState([]);
     const [optimizedWaypoints, setOptimizedWaypoints] = useState([]);
-
     const apiKey = 'AIzaSyB65ouahlrzxKKS3X_VeMHKWZPYrJTJx6E'; // Defina sua API Key aqui
 
     useEffect(() => {
@@ -31,16 +28,15 @@ const TelaHome = () => {
                 longitudeDelta: 0.0421,
             });
 
-            // Coordenadas dos waypoints (1o e último se mantém, o resto é otimizado)
+            // Coordenadas dos waypoints (1o é a localização atual, o resto é otimizado)
             const waypoints = [
+                { latitude, longitude }, // Localização atual como primeiro ponto
                 { latitude: -23.650644, longitude: -46.578266 },
                 { latitude: -23.626814, longitude: -46.579835 },
                 { latitude: -23.647414, longitude: -46.575591 },
                 { latitude: -23.651001, longitude: -46.579639 },
                 { latitude: -23.631476, longitude: -46.572259 },
             ];
-
-            setWaypoints(waypoints);
 
             const origin = `${waypoints[0].latitude},${waypoints[0].longitude}`;
             const destination = `${waypoints[waypoints.length - 1].latitude},${waypoints[waypoints.length - 1].longitude}`;
@@ -49,7 +45,7 @@ const TelaHome = () => {
                 .map(point => `${point.latitude},${point.longitude}`)
                 .join('|');
 
-            const url = `https://maps.googleapis.com/maps/api/directions/json?origin=${origin}&destination=${destination}&waypoints=optimize:true|${waypointsString}&key=${apiKey}`;
+            const url = `https://maps.googleapis.com/maps/api/directions/json?origin=${origin}&destination=${destination}&waypoints=optimize:true|${waypointsString}&key=${apiKey}&overview=full`;
 
             try {
                 const response = await axios.get(url);
@@ -82,8 +78,6 @@ const TelaHome = () => {
                 return require('../assets/icons/pin6.png');
         }
     };
-
-    const colors = ["#FF0000", "#00FF00", "#0000FF", "#FFFF00", "#FF00FF"];
 
     if (!region) {
         return (
@@ -118,7 +112,8 @@ const TelaHome = () => {
                                     destination={optimizedWaypoints[optimizedWaypoints.length - 1]}
                                     apikey={apiKey}
                                     strokeWidth={8}
-                                    strokeColor="orange"
+                                    strokeColor="red"
+                                    optimizeWaypoints={true}
                                 />
                             )}
                             {optimizedWaypoints.map((coordinate, index) => (
