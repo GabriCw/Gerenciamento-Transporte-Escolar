@@ -5,6 +5,8 @@ import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view
 import Toast from 'react-native-toast-message';
 import { initializeApp } from '@firebase/app';
 import { getAuth, createUserWithEmailAndPassword } from '@firebase/auth';
+import { userTypeEnum } from '../utils/userTypeEnum';
+import { createUser } from '../data/userServices';
 
 const firebaseConfig = {
   apiKey: "AIzaSyDhILsHN9bHVEA-gBc6iPHuqnctPGiQLRQ",
@@ -49,26 +51,56 @@ const RegisterResponsavelScreen = ({ navigation }) => {
         }
 
         try {
-            await createUserWithEmailAndPassword(auth, email, senha);
-            console.log('Usuário criado com sucesso!');
-            Toast.show({
-                type: 'success',
-                text1: 'Sucesso',
-                text2: 'Cadastro realizado com sucesso!',
-                visibilityTime: 3000,
-            });
-            setNome('');
-            setCpf('');
-            setTelefone('');
-            setEmail('');
-            setSenha('');
-            setConfSenha('');
-            navigation.navigate("Login");
+            const firebaseCreateAuth = await createUserWithEmailAndPassword(auth, email, senha);
+
+            const registerBody = {
+                uuid: firebaseCreateAuth.user.uid,
+                name: nome,
+                email: email,
+                cpf: cpf,
+                cnh: "",
+                rg: "",
+                user_type_id: userTypeEnum.RESPONSAVEL,
+            };
+
+            try{
+                const create = await createUser(registerBody);
+    
+                console.log(create)
+
+                if(create){
+                    console.log('Usuário criado com sucesso!');
+                    Toast.show({
+                        type: 'success',
+                        text1: 'Sucesso',
+                        text2: 'Cadastro realizado com sucesso!',
+                        visibilityTime: 3000,
+                    });
+                    setNome('');
+                    setCpf('');
+                    setTelefone('');
+                    setEmail('');
+                    setSenha('');
+                    setConfSenha('');
+                    navigation.navigate("Login");
+                }
+                else{
+                    console.error("Erro de autenticação database");
+                    Toast.show({
+                        type: 'error',
+                        text1: 'Erro de Autenticação',
+                        text2: 'Erro ao cadastrar usuário (checar credenciais)'
+                    });
+                }
+            }
+            catch(error){
+                console.error(error)
+            }
         } catch (error) {
-            console.error('Erro de autenticação:', error.message);
+            console.error('Erro de autenticação firebase: ', error.message);
             Toast.show({
                 type: 'error',
-                text1: 'Erro de Autenticação',
+                text1: 'Erro de Autenticação firebase',
                 text2: 'Erro ao cadastrar usuário (checar credenciais)'
             });
         }
