@@ -1,5 +1,7 @@
 {
   "dependencies": {
-    "axios": "^1.7.2"
+    "@react-native-async-storage/async-storage": "^1.23.1",
+    "axios": "^1.7.2",
+    "react-native-dotenv": "^3.4.11"
   }
 }

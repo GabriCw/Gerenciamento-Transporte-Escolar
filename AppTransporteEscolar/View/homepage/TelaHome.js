@@ -5,11 +5,14 @@ import MapViewDirections from 'react-native-maps-directions';
 import * as Location from 'expo-location';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import axios from 'axios';
+import {auth} from "../../firebase/firebase";
 
 const TelaHome = () => {
     const [region, setRegion] = useState(null);
     const [optimizedWaypoints, setOptimizedWaypoints] = useState([]);
     const apiKey = 'AIzaSyB65ouahlrzxKKS3X_VeMHKWZPYrJTJx6E'; // Defina sua API Key aqui
+
+    console.log(auth);
 
     useEffect(() => {
         (async () => {

@@ -3,21 +3,8 @@ import { View, StyleSheet, Text } from 'react-native';
 import { TextInput, Button } from 'react-native-paper';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import Toast from 'react-native-toast-message';
-import { initializeApp } from '@firebase/app';
-import { getAuth, createUserWithEmailAndPassword } from '@firebase/auth';
-
-const firebaseConfig = {
-  apiKey: "AIzaSyDhILsHN9bHVEA-gBc6iPHuqnctPGiQLRQ",
-  authDomain: "auth-van-tcc.firebaseapp.com",
-  projectId: "auth-van-tcc",
-  storageBucket: "auth-van-tcc.appspot.com",
-  messagingSenderId: "91731709434",
-  appId: "1:91731709434:web:5a73b9c1a4c43e2a852843",
-  measurementId: "G-HKEVN6CQX4"
-};
-
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
+import { createUserWithEmailAndPassword } from '@firebase/auth';
+import {auth} from "../../firebase/firebase";
 
 const RegisterMotoristaScreen = ({ navigation }) => {
     const [nome, setNome] = useState('');
