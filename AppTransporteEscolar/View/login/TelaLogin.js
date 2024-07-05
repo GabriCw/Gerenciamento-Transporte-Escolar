@@ -9,27 +9,10 @@ import {auth} from "../../firebase/firebase";
 const TelaLogin = ({ navigation }) => {
     const [email, setEmail] = useState('');
     const [senha, setSenha] = useState('');
-    const [user, setUser] = useState('');
-
-    useEffect(() => {
-        const unsubscribe = onAuthStateChanged(auth, (user) => {
-            if (user) {
-                setUser(user);
-                // handleUserLogged(user);
-                navigation.navigate('TelaHome');
-            } else {
-                setUser(null);
-            }
-
-            console.log("teste")
-        });
-        return () => unsubscribe();
-    }, [navigation]);
 
     const handleLogInAuthentication = async () => {
         try {
             await signInWithEmailAndPassword(auth, email, senha);
-            console.log('User signed in successfully!');
             Toast.show({
                 type: 'success',
                 text1: 'Sucesso',
@@ -40,7 +23,6 @@ const TelaLogin = ({ navigation }) => {
             navigation.navigate('TelaHome');
             }
         catch (error) {
-            console.error('Authentication error:', error.message);
             Toast.show({
                 type: 'error',
                 text1: 'Erro de Autenticação',

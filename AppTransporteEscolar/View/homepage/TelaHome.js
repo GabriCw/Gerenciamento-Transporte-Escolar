@@ -5,14 +5,15 @@ import MapViewDirections from 'react-native-maps-directions';
 import * as Location from 'expo-location';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import axios from 'axios';
+import Toast from 'react-native-toast-message';
 import {auth} from "../../firebase/firebase";
+import { onAuthStateChanged, signOut } from 'firebase/auth';
+import { Button } from 'react-native-paper';
 
-const TelaHome = () => {
+const TelaHome = ({navigation}) => {
     const [region, setRegion] = useState(null);
     const [optimizedWaypoints, setOptimizedWaypoints] = useState([]);
     const apiKey = 'AIzaSyB65ouahlrzxKKS3X_VeMHKWZPYrJTJx6E'; // Defina sua API Key aqui
-
-    console.log(auth);
 
     useEffect(() => {
         (async () => {
@@ -82,6 +83,26 @@ const TelaHome = () => {
         }
     };
 
+    const monitorAuthState = async() => {
+        onAuthStateChanged(auth, user => {
+            if(!user){
+                navigation.navigate("Login");
+                Toast.show({
+                    type: 'success',
+                    text1: 'Sucesso',
+                    text2: 'Logout realizado com sucesso!',
+                    visibilityTime: 3000,
+                });
+            }
+        });
+    };
+
+    monitorAuthState();
+
+    const handleLogout = async() => {
+        await signOut(auth);
+    };
+
     if (!region) {
         return (
             <View style={styles.loading}>
@@ -100,7 +121,10 @@ const TelaHome = () => {
             >
                 <View style={styles.container}>
                     <View style={styles.content}>
-                        <Text style={styles.title}>Rota Otimizada</Text>
+                        <View>
+                            <Text style={styles.title}>Rota Otimizada</Text>
+                            <Button mode="contained" onPress={handleLogout}>Sair</Button>
+                        </View>
                         <MapView
                             style={styles.map}
                             region={region}
