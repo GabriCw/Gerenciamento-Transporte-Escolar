@@ -3,11 +3,13 @@ import { View, StyleSheet, Text } from 'react-native';
 import { TextInput, Button } from 'react-native-paper';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import Toast from 'react-native-toast-message';
+import { sendPasswordResetEmail } from 'firebase/auth';
+import {auth} from "../../firebase/firebase";
 
 const ForgotPasswordScreen = ({ navigation }) => {
     const [email, setEmail] = useState('');
 
-    const handleSendCode = () => {
+    const handleSendCode = async() => {
         if (!email) {
             Toast.show({
                 type: 'error',
@@ -18,16 +20,18 @@ const ForgotPasswordScreen = ({ navigation }) => {
             return;
         }
 
-        console.log('Email para recuperação:', email);
-
-        Toast.show({
-            type: 'success',
-            text1: 'Sucesso',
-            text2: 'Email enviado com sucesso!',
-            visibilityTime: 3000,
-        });
-
-        navigation.navigate('ConfirmEmail'); // Navegar para a tela de confirmação do envio do e-mail
+        try{
+            await sendPasswordResetEmail(auth, email);
+    
+            navigation.navigate('ConfirmEmail');
+        }
+        catch(error){
+            Toast.show({
+                type: 'error',
+                text1: 'Erro no envio do e-mail',
+                text2: 'Insira um e-mail válido',
+            });
+        }
     };
 
     return (
