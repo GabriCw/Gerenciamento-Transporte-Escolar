@@ -66,10 +66,7 @@ const RegisterResponsavelScreen = ({ navigation }) => {
             try{
                 const create = await createUser(registerBody);
     
-                console.log(create)
-
-                if(create){
-                    console.log('Usuário criado com sucesso!');
+                if(create.status === 201){
                     Toast.show({
                         type: 'success',
                         text1: 'Sucesso',
@@ -85,23 +82,25 @@ const RegisterResponsavelScreen = ({ navigation }) => {
                     navigation.navigate("Login");
                 }
                 else{
-                    console.error("Erro de autenticação database");
                     Toast.show({
                         type: 'error',
                         text1: 'Erro de Autenticação',
-                        text2: 'Erro ao cadastrar usuário (checar credenciais)'
+                        text2: create.data.details
                     });
                 }
             }
             catch(error){
-                console.error(error)
+                Toast.show({
+                    type: 'error',
+                    text1: 'Erro de Autenticação',
+                    text2: 'Erro ao cadastrar usuário (checar credenciais)'
+                });
             }
         } catch (error) {
-            console.error('Erro de autenticação firebase: ', error.message);
             Toast.show({
                 type: 'error',
                 text1: 'Erro de Autenticação firebase',
-                text2: 'Erro ao cadastrar usuário (checar credenciais)'
+                text2: error.message
             });
         }
     };
