@@ -3,13 +3,13 @@ import * as React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import Toast from 'react-native-toast-message';
-import TelaLogin from './View/TelaLogin';
-import RegisterScreen from './View/Register';
-import ForgotPasswordScreen from './View/ForgotPasswordScreen';
-import ConfirmEmailScreen from './View/ConfirmEmailScreen';
-import RegisterMotoristaScreen from './View/RegisterMotorista';
-import RegisterResponsavelScreen from './View/RegisterResponsavel';
-import TelaHomeScreen from './View/TelaHome';
+import TelaLogin from "./View/login/TelaLogin"
+import RegisterScreen from './View/login/Register';
+import ForgotPasswordScreen from './View/login/ForgotPasswordScreen';
+import ConfirmEmailScreen from './View/login/ConfirmEmailScreen';
+import RegisterMotoristaScreen from './View/login/RegisterMotorista';
+import RegisterResponsavelScreen from './View/login/RegisterResponsavel';
+import TelaHomeScreen from './View/homepage/TelaHome';
 
 const Stack = createStackNavigator();
 

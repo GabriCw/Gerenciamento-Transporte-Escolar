@@ -5,8 +5,8 @@ import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view
 import Toast from 'react-native-toast-message';
 import { initializeApp } from '@firebase/app';
 import { getAuth, createUserWithEmailAndPassword } from '@firebase/auth';
-import { userTypeEnum } from '../utils/userTypeEnum';
-import { createUser } from '../data/userServices';
+import { userTypeEnum } from '../../utils/userTypeEnum';
+import { createUser } from '../../data/userServices';
 
 const firebaseConfig = {
   apiKey: "AIzaSyDhILsHN9bHVEA-gBc6iPHuqnctPGiQLRQ",
