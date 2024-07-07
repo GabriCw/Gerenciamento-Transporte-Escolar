@@ -5,7 +5,7 @@ import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view
 import Toast from 'react-native-toast-message';
 import { createUserWithEmailAndPassword } from '@firebase/auth';
 import { userTypeEnum } from '../../utils/userTypeEnum';
-import { createUser } from '../../data/userServices';
+import { createUser, updateUserUuid } from '../../data/userServices';
 import {auth} from "../../firebase/firebase";
 
 const RegisterResponsavelScreen = ({ navigation }) => {
@@ -37,23 +37,29 @@ const RegisterResponsavelScreen = ({ navigation }) => {
             return;
         }
 
-        try {
-            const firebaseCreateAuth = await createUserWithEmailAndPassword(auth, email, senha);
+        const registerBody = {
+            name: nome,
+            email: email,
+            cpf: cpf,
+            cnh: "",
+            rg: "",
+            user_type_id: userTypeEnum.RESPONSAVEL,
+        };
 
-            const registerBody = {
-                uuid: firebaseCreateAuth.user.uid,
-                name: nome,
-                email: email,
-                cpf: cpf,
-                cnh: "",
-                rg: "",
-                user_type_id: userTypeEnum.RESPONSAVEL,
-            };
+        const create = await createUser(registerBody);
 
+        if(create.status === 201){
             try{
-                const create = await createUser(registerBody);
+                const firebaseCreateAuth = await createUserWithEmailAndPassword(auth, email, senha);
+                
+                const updateBody = {
+                    user_id: create.data,
+                    uuid: firebaseCreateAuth.user.uid
+                };
+                    
+                const update = await updateUserUuid(updateBody);
     
-                if(create.status === 201){
+                if(update.status === 200){
                     Toast.show({
                         type: 'success',
                         text1: 'Sucesso',
@@ -79,15 +85,16 @@ const RegisterResponsavelScreen = ({ navigation }) => {
             catch(error){
                 Toast.show({
                     type: 'error',
-                    text1: 'Erro de Autenticação',
-                    text2: 'Erro ao cadastrar usuário (checar credenciais)'
+                    text1: 'Erro de Autenticação firebase',
+                    text2: error.message
                 });
             }
-        } catch (error) {
+        }
+        else{
             Toast.show({
                 type: 'error',
-                text1: 'Erro de Autenticação firebase',
-                text2: error.message
+                text1: 'Erro de Autenticação',
+                text2: 'Erro ao cadastrar usuário (checar credenciais)'
             });
         }
     };

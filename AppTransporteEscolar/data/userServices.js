@@ -15,3 +15,16 @@ export const createUser = async(body) => {
         return error.response;
     }
 };
+
+export const updateUserUuid = async(body) => {
+    const _endpoint = '/update-uuid';
+
+    try{
+        const response  = await axios.put(_controller + _endpoint, body);
+
+        return response;
+    }
+    catch(error){
+        return error.response;
+    }
+};
