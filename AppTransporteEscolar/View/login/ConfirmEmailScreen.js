@@ -34,21 +34,25 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
         padding: 20,
+        backgroundColor: '#090833',
     },
     title: {
         fontSize: 25,
         fontWeight: 'bold',
-        marginBottom: 20,
+        marginBottom: 50,
         textAlign: 'center',
+        color: '#C36005',
     },
     message: {
         fontSize: 16,
-        marginBottom: 20,
+        marginBottom: 40,
         textAlign: 'center',
+        color: '#FFF',
     },
     button: {
         marginTop: 20,
-        backgroundColor: '#4B0082'
+        backgroundColor: '#C36005',
+        padding: 5,
     },
 });
 
