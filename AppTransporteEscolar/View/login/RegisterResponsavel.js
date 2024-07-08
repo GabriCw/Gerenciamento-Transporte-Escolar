@@ -110,7 +110,7 @@ const RegisterResponsavelScreen = ({ navigation }) => {
                         >
                             Voltar
                         </Button>
-                    </View>
+            </View>
             <KeyboardAwareScrollView
                 contentContainerStyle={styles.container}
                 enableOnAndroid={true}

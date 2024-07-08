@@ -106,13 +106,23 @@ const TelaHome = ({navigation}) => {
     if (!region) {
         return (
             <View style={styles.loading}>
-                <Text>Carregando Mapa...</Text>
+                <Text style={styles.text}>Carregando Mapa...</Text>
             </View>
         );
     }
 
     return (
-        <>
+        <View style={styles.view}>
+            <View style={styles.header}>
+                <Button 
+                    mode="contained" 
+                    onPress={handleLogout}
+                    style={styles.buttonBack}
+                    labelStyle={styles.buttonLabel}
+                >
+                    Sair
+                </Button>
+            </View>
             <KeyboardAwareScrollView
                 contentContainerStyle={styles.container}
                 enableOnAndroid={true}
@@ -120,11 +130,8 @@ const TelaHome = ({navigation}) => {
                 keyboardShouldPersistTaps="handled"
             >
                 <View style={styles.container}>
+                        <Text style={styles.title}>Rota Otimizada</Text>
                     <View style={styles.content}>
-                        <View>
-                            <Text style={styles.title}>Rota Otimizada</Text>
-                            <Button mode="contained" onPress={handleLogout}>Sair</Button>
-                        </View>
                         <MapView
                             style={styles.map}
                             region={region}
@@ -160,32 +167,41 @@ const TelaHome = ({navigation}) => {
                     </View>
                 </View>
             </KeyboardAwareScrollView>
-        </>
+        </View>
     );
 };
 
 const styles = StyleSheet.create({
+    view: {
+        flex: 1,
+        backgroundColor: '#090833',
+    },
     header: {
         alignSelf: 'stretch',
         alignItems: 'flex-start',
         marginLeft: 20,
-        marginTop: 40,
+        marginTop: 50,
+        backgroundColor: '#090833',
     },
     container: {
         flex: 1,
         justifyContent: 'center',
         padding: 20,
+        backgroundColor: '#090833',
     },
     loading: {
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
         padding: 20,
+        backgroundColor: '#090833',
     },
     title: {
         fontSize: 25,
         fontWeight: 'bold',
-        marginBottom: 20,
+        color: '#C36005',
+        textAlign: 'center',
+
     },
     content: {
         flex: 1,
@@ -193,8 +209,12 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     map: {
-        width: '115%',
-        height: 600,
+        width: '110%',
+        height: 500,
+    },
+    text: {
+        fontSize: 20,
+        color: '#FFF',
     }
 });
 
