@@ -58,12 +58,17 @@ const TelaLogin = ({ navigation }) => {
             enableOnAndroid={true}
             extraScrollHeight={20}
             keyboardShouldPersistTaps="handled"
-        >
+        >   
+        <View style= {styles.principalContainer}>
             <View style={styles.container}>
-                <Text style={styles.title}>Faça Seu Login</Text>
+                <Text style={styles.title}>Seja bem vindo!</Text>
+                <Text style={styles.subtitle}>Faça seu login para continuar</Text>
                 <TextInput
                     label="Digite seu e-mail"
-                    mode="outlined"
+                    mode="outlined" 
+                    activeOutlineColor='#C36005'
+                    inputMode="email"
+                    keyboardAppearance='dark'
                     value={email}
                     onChangeText={text => setEmail(text)}
                     style={styles.input}
@@ -71,75 +76,96 @@ const TelaLogin = ({ navigation }) => {
                 <TextInput
                     label="Digite sua senha"
                     mode="outlined"
+                    inputMode='text'
+                    keyboardAppearance='dark'
+                    activeOutlineColor='#C36005'
                     secureTextEntry={true}
                     value={senha}
                     onChangeText={text => setSenha(text)}
-                    style={styles.input}
                 />
-                <Button mode="contained" onPress={handlePress} style={styles.button}>
+                <TouchableOpacity onPress={handleForgotPasswordPress}>
+                        <Text style={styles.forgotPass}>Esqueci minha senha</Text>
+                    </TouchableOpacity>
+                <Button mode="contained" onPress={handlePress} style={styles.button} labelStyle={styles.buttonLabel}>
                     Entrar
                 </Button>
-                <View style={styles.footer}>
-                    <TouchableOpacity onPress={handleRegisterPress}>
-                        <Text style={styles.link}>Cadastrar</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity onPress={handleForgotPasswordPress}>
-                        <Text style={styles.link}>Esqueci a senha</Text>
-                    </TouchableOpacity>
-                </View>
-                <View>
-                    <Text style={styles.title_2}>Caso seja um motorista parceiro faça seu login por aqui</Text>
-                    <Button mode="contained" style={styles.button_motorista}>
-                        <Text style={styles.link}>Motorista</Text>
-                    </Button>
-                </View>
+            </View>
+            <View style={styles.footer}>
+                <TouchableOpacity onPress={handleRegisterPress}>
+                    <Text style={styles.cadastre}>Não é cadastrado? <Text style={styles.span}>Cadastre-se aqui</Text></Text>
+                </TouchableOpacity>
+            </View>
             </View>
         </KeyboardAwareScrollView>
     );
 };
 
 const styles = StyleSheet.create({
+    principalContainer: {
+        flex: 1,
+        backgroundColor: '#090833',
+    },
     container: {
         flex: 1,
         justifyContent: 'center',
         padding: 20,
-        marginTop: '25%',
+        backgroundColor: '#090833',
     },
     title: {
         fontSize: 25,
         fontWeight: 'bold',
-        marginBottom: 40,
         textAlign: 'center',
+        color: '#C36005',
+    },
+    subtitle: {
+        fontSize: 23,
+        fontWeight: 'bold',
+        textAlign: 'center',
+        color: '#FFF',
+        marginBottom: 50,
     },
     title_2: {
         fontSize: 16,
         marginTop: '40%',
         textAlign: 'center',
+        color: '#C36005',
     },
     input: {
         marginBottom: 20,
     },
     button: {
         marginTop: 20,
-        backgroundColor: '#4B0082',
+        backgroundColor: '#C36005',
         marginLeft: '30%',
         marginRight: '30%',
         padding: 5,
     },
     footer: {
-        marginTop: 30,
+        paddingBottom: 20,
         flexDirection: 'row',
-        justifyContent: 'space-between',
+        justifyContent: 'center',
     },
-    link: {
+    cadastre: {
+        textAlign: 'center',
         fontSize: 16,
-        color: '#1E90FF',
+        color: '#ffff',
+        fontFamily: '',
     },
-    button_motorista: {
-        marginTop: '1%',
-        backgroundColor: 'transparent',
-        marginLeft: '30%',
-        marginRight: '30%',
+    span: {
+        color: '#C36005',
+    },
+    forgotPass: {
+        fontSize: 13,
+        color: '#ffff',
+        fontFamily: '',
+        textAlign: 'right',
+        marginTop: 8,
+        marginRight: 2,
+        marginBottom: 20,
+    },
+    buttonLabel: {
+        color: 'white',
+        fontWeight: 'bold',
     },
 });
 

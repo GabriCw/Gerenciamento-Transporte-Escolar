@@ -35,7 +35,7 @@ const ForgotPasswordScreen = ({ navigation }) => {
     };
 
     return (
-        <>
+        <View style={styles.view}>
             <View style={styles.header}>
                 <Button 
                     mode="contained" 
@@ -58,6 +58,8 @@ const ForgotPasswordScreen = ({ navigation }) => {
                         style={styles.input}
                         label="Email Para Recuperação"
                         mode="outlined"
+                        activeOutlineColor='#EF7D14'
+                        keyboardAppearance='dark'
                         value={email}
                         onChangeText={text => setEmail(text)}
                         keyboardType="email-address"
@@ -66,17 +68,22 @@ const ForgotPasswordScreen = ({ navigation }) => {
                         mode="contained" 
                         onPress={handleSendCode} 
                         style={styles.button}
+                        labelStyle={styles.buttonLabel}
                     >
                         Enviar E-mail
                     </Button>
                 </View>
             </KeyboardAwareScrollView>
-        </>
+        </View>
         
     );
 };
 
 const styles = StyleSheet.create({
+    view: {
+        flex: 1,
+        backgroundColor: '#090833',
+    },
     header: {
         alignSelf: 'stretch',
         alignItems: 'flex-start',
@@ -87,30 +94,33 @@ const styles = StyleSheet.create({
         flex: 1,
         justifyContent: 'flex-start',
         padding: 20,
-        marginTop: 100
+        marginTop: '50%'
     },
     title: {
         fontSize: 25,
         fontWeight: 'bold',
-        marginBottom: 20,
+        marginBottom: 40,
         textAlign: 'center',
+        color: '#C36005',
     },
     input: {
-        marginBottom: 20,
+        marginBottom: 30,
     },
     button: {
         marginTop: 20,
         width: '50%',
         alignSelf: 'center',
-        backgroundColor: '#4B0082',
+        backgroundColor: '#C36005',
+        padding: 5,
     },
     buttonBack: {
         width: 90,
-        backgroundColor: '#4B0082',
+        backgroundColor: '#C36005',
         marginVertical: 10,
     },
     buttonLabel: {
         color: 'white',
+        fontWeight: 'bold',
     },
 });
 

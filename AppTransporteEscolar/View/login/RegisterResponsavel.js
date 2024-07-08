@@ -100,11 +100,11 @@ const RegisterResponsavelScreen = ({ navigation }) => {
     };
 
     return (
-        <>
+        <View style={styles.view}>
             <View style={styles.header}>
                         <Button 
                             mode="contained" 
-                            onPress={() => navigation.navigate('Register')} 
+                            onPress={() => navigation.navigate('Login')} 
                             style={styles.buttonBack}
                             labelStyle={styles.buttonLabel}
                         >
@@ -120,11 +120,13 @@ const RegisterResponsavelScreen = ({ navigation }) => {
                 <View style={styles.container}>
                     
                     <View style={styles.content}>
-                        <Text style={styles.title}>Cadastro do Responsável</Text>
+                        <Text style={styles.title}>Preencha seu cadastro</Text>
                         <TextInput
                             style={styles.input}
                             label="Nome"
-                            mode="outlined"
+                            mode='outlined'
+                            activeOutlineColor='#C36005'
+                            keyboardAppearance='dark'
                             value={nome}
                             onChangeText={text => setNome(text)}
                         />
@@ -132,6 +134,8 @@ const RegisterResponsavelScreen = ({ navigation }) => {
                             style={styles.input}
                             label="CPF"
                             mode="outlined"
+                            activeOutlineColor='#C36005'
+                            keyboardAppearance='dark'
                             value={cpf}
                             onChangeText={text => setCpf(text)}
                             keyboardType="numeric"
@@ -140,6 +144,8 @@ const RegisterResponsavelScreen = ({ navigation }) => {
                             style={styles.input}
                             label="Telefone"
                             mode="outlined"
+                            activeOutlineColor='#C36005'
+                            keyboardAppearance='dark'
                             value={telefone}
                             onChangeText={text => setTelefone(text)}
                             keyboardType="phone-pad"
@@ -148,6 +154,8 @@ const RegisterResponsavelScreen = ({ navigation }) => {
                             style={styles.input}
                             label="E-mail"
                             mode="outlined"
+                            activeOutlineColor='#C36005'
+                            keyboardAppearance='dark'
                             value={email}
                             onChangeText={text => setEmail(text)}
                             keyboardType="email-address"
@@ -156,6 +164,8 @@ const RegisterResponsavelScreen = ({ navigation }) => {
                             style={styles.input}
                             label="Senha"
                             mode="outlined"
+                            activeOutlineColor='#C36005'
+                            keyboardAppearance='dark'
                             value={senha}
                             onChangeText={text => setSenha(text)}
                             secureTextEntry={true}
@@ -166,6 +176,8 @@ const RegisterResponsavelScreen = ({ navigation }) => {
                             style={styles.input}
                             label="Confirme sua Senha"
                             mode="outlined"
+                            activeOutlineColor='#C36005'
+                            keyboardAppearance='dark'
                             value={confSenha}
                             onChangeText={text => setConfSenha(text)}
                             secureTextEntry={true}
@@ -183,11 +195,15 @@ const RegisterResponsavelScreen = ({ navigation }) => {
                     </View>
                 </View>
             </KeyboardAwareScrollView>
-        </>
+        </View>
     );
 };
 
 const styles = StyleSheet.create({
+    view: {
+        flex: 1,
+        backgroundColor: '#090833',
+    },
     header: {
         alignSelf: 'stretch',
         alignItems: 'flex-start',
@@ -202,7 +218,9 @@ const styles = StyleSheet.create({
     title: {
         fontSize: 25,
         fontWeight: 'bold',
-        marginBottom: 20,
+        textAlign: 'center',
+        marginBottom: 50,
+        color: '#C36005',
     },
     input: {
         width: '100%',
@@ -218,16 +236,19 @@ const styles = StyleSheet.create({
     },
     button: {
         width: 150,
-        backgroundColor: '#4B0082',
+        backgroundColor: '#C36005',
         marginVertical: 10,
+        borderRadius: 20,
+        padding: 5,
     },
     buttonBack: {
         width: 90,
-        backgroundColor: '#4B0082',
+        backgroundColor: '#C36005',
         marginVertical: 10,
     },
     buttonLabel: {
         color: 'white',
+        fontWeight: 'bold',
     },
 });
 
