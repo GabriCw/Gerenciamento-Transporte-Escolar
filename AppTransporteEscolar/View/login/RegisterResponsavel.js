@@ -43,6 +43,7 @@ const RegisterResponsavelScreen = ({ navigation }) => {
             cpf: cpf,
             cnh: "",
             rg: "",
+            phone: telefone,
             user_type_id: userTypeEnum.RESPONSAVEL,
         };
 
