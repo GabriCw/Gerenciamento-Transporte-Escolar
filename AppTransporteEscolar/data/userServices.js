@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const apiUrl = 'http://192.168.15.15:8000';
+const apiUrl = 'http://192.168.0.149:8000';
 const _controller = apiUrl + '/user';
 
 export const createUser = async(body) => {

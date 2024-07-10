@@ -6,7 +6,7 @@ import Toast from 'react-native-toast-message';
 import { createUserWithEmailAndPassword } from '@firebase/auth';
 import { userTypeEnum } from '../../utils/userTypeEnum';
 import { createUser, updateUserUuid } from '../../data/userServices';
-import {auth} from "../../firebase/firebase";
+import { auth } from '../../firebase/firebase';
 
 const RegisterResponsavelScreen = ({ navigation }) => {
     const [nome, setNome] = useState('');
@@ -15,6 +15,22 @@ const RegisterResponsavelScreen = ({ navigation }) => {
     const [email, setEmail] = useState('');
     const [senha, setSenha] = useState('');
     const [confSenha, setConfSenha] = useState('');
+
+    const formatCPF = (value) => {
+        return value
+            .replace(/\D/g, '')
+            .replace(/(\d{3})(\d)/, '$1.$2')
+            .replace(/(\d{3})(\d)/, '$1.$2')
+            .replace(/(\d{3})(\d{1,2})/, '$1-$2')
+            .replace(/(-\d{2})\d+?$/, '$1');
+    };
+
+    const formatTelefone = (value) => {
+        return value
+            .replace(/\D/g, '')
+            .replace(/^(\d{2})(\d)/g, '($1) $2')
+            .replace(/(\d)(\d{4})$/, '$1-$2');
+    };
 
     const handleCadastro = async () => {
         if (!nome || !cpf || !telefone || !email || !senha || !confSenha) {
@@ -40,27 +56,31 @@ const RegisterResponsavelScreen = ({ navigation }) => {
         const registerBody = {
             name: nome,
             email: email,
-            cpf: cpf,
-            cnh: "",
-            rg: "",
-            phone: telefone,
+            cpf: cpf.replace(/\D/g, ''),
+            cnh: '',
+            rg: '',
+            phone: telefone.replace(/\D/g, ''),
             user_type_id: userTypeEnum.RESPONSAVEL,
         };
 
         const create = await createUser(registerBody);
 
-        if(create.status === 201){
-            try{
-                const firebaseCreateAuth = await createUserWithEmailAndPassword(auth, email, senha);
-                
+        if (create.status === 201) {
+            try {
+                const firebaseCreateAuth = await createUserWithEmailAndPassword(
+                    auth,
+                    email,
+                    senha
+                );
+
                 const updateBody = {
                     user_id: create.data,
-                    uuid: firebaseCreateAuth.user.uid
+                    uuid: firebaseCreateAuth.user.uid,
                 };
-                    
+
                 const update = await updateUserUuid(updateBody);
-    
-                if(update.status === 200){
+
+                if (update.status === 200) {
                     Toast.show({
                         type: 'success',
                         text1: 'Sucesso',
@@ -73,29 +93,26 @@ const RegisterResponsavelScreen = ({ navigation }) => {
                     setEmail('');
                     setSenha('');
                     setConfSenha('');
-                    navigation.navigate("Login");
-                }
-                else{
+                    navigation.navigate('Login');
+                } else {
                     Toast.show({
                         type: 'error',
                         text1: 'Erro de Autenticação',
-                        text2: create.data.details
+                        text2: create.data.details,
                     });
                 }
-            }
-            catch(error){
+            } catch (error) {
                 Toast.show({
                     type: 'error',
                     text1: 'Erro de Autenticação firebase',
-                    text2: error.message
+                    text2: error.message,
                 });
             }
-        }
-        else{
+        } else {
             Toast.show({
                 type: 'error',
                 text1: 'Erro de Autenticação',
-                text2: 'Erro ao cadastrar usuário (checar credenciais)'
+                text2: 'Erro ao cadastrar usuário (checar credenciais)',
             });
         }
     };
@@ -103,14 +120,14 @@ const RegisterResponsavelScreen = ({ navigation }) => {
     return (
         <View style={styles.view}>
             <View style={styles.header}>
-                        <Button 
-                            mode="contained" 
-                            onPress={() => navigation.navigate('Login')} 
-                            style={styles.buttonBack}
-                            labelStyle={styles.buttonLabel}
-                        >
-                            Voltar
-                        </Button>
+                <Button
+                    mode="contained"
+                    onPress={() => navigation.navigate('Login')}
+                    style={styles.buttonBack}
+                    labelStyle={styles.buttonLabel}
+                >
+                    Voltar
+                </Button>
             </View>
             <KeyboardAwareScrollView
                 contentContainerStyle={styles.container}
@@ -119,56 +136,55 @@ const RegisterResponsavelScreen = ({ navigation }) => {
                 keyboardShouldPersistTaps="handled"
             >
                 <View style={styles.container}>
-                    
                     <View style={styles.content}>
                         <Text style={styles.title}>Preencha seu cadastro</Text>
                         <TextInput
                             style={styles.input}
                             label="Nome"
-                            mode='outlined'
-                            activeOutlineColor='#C36005'
-                            keyboardAppearance='dark'
+                            mode="outlined"
+                            activeOutlineColor="#C36005"
+                            keyboardAppearance="dark"
                             value={nome}
-                            onChangeText={text => setNome(text)}
+                            onChangeText={(text) => setNome(text)}
                         />
                         <TextInput
                             style={styles.input}
                             label="CPF"
                             mode="outlined"
-                            activeOutlineColor='#C36005'
-                            keyboardAppearance='dark'
-                            value={cpf}
-                            onChangeText={text => setCpf(text)}
+                            activeOutlineColor="#C36005"
+                            keyboardAppearance="dark"
+                            value={formatCPF(cpf)}
+                            onChangeText={(text) => setCpf(text)}
                             keyboardType="numeric"
                         />
                         <TextInput
                             style={styles.input}
                             label="Telefone"
                             mode="outlined"
-                            activeOutlineColor='#C36005'
-                            keyboardAppearance='dark'
-                            value={telefone}
-                            onChangeText={text => setTelefone(text)}
+                            activeOutlineColor="#C36005"
+                            keyboardAppearance="dark"
+                            value={formatTelefone(telefone)}
+                            onChangeText={(text) => setTelefone(text)}
                             keyboardType="phone-pad"
                         />
                         <TextInput
                             style={styles.input}
                             label="E-mail"
                             mode="outlined"
-                            activeOutlineColor='#C36005'
-                            keyboardAppearance='dark'
+                            activeOutlineColor="#C36005"
+                            keyboardAppearance="dark"
                             value={email}
-                            onChangeText={text => setEmail(text)}
+                            onChangeText={(text) => setEmail(text)}
                             keyboardType="email-address"
                         />
                         <TextInput
                             style={styles.input}
                             label="Senha"
                             mode="outlined"
-                            activeOutlineColor='#C36005'
-                            keyboardAppearance='dark'
+                            activeOutlineColor="#C36005"
+                            keyboardAppearance="dark"
                             value={senha}
-                            onChangeText={text => setSenha(text)}
+                            onChangeText={(text) => setSenha(text)}
                             secureTextEntry={true}
                             textContentType="none"
                             autoCompleteType="off"
@@ -177,17 +193,17 @@ const RegisterResponsavelScreen = ({ navigation }) => {
                             style={styles.input}
                             label="Confirme sua Senha"
                             mode="outlined"
-                            activeOutlineColor='#C36005'
-                            keyboardAppearance='dark'
+                            activeOutlineColor="#C36005"
+                            keyboardAppearance="dark"
                             value={confSenha}
-                            onChangeText={text => setConfSenha(text)}
+                            onChangeText={(text) => setConfSenha(text)}
                             secureTextEntry={true}
                             textContentType="none"
                             autoCompleteType="off"
                         />
-                        <Button 
-                            mode="contained" 
-                            onPress={handleCadastro} 
+                        <Button
+                            mode="contained"
+                            onPress={handleCadastro}
                             style={styles.button}
                             labelStyle={styles.buttonLabel}
                         >
