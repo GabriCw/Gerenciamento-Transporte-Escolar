@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, StyleSheet, Text } from 'react-native';
+import { View, StyleSheet, Text, ActivityIndicator } from 'react-native';
 import { TextInput, Button } from 'react-native-paper';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import Toast from 'react-native-toast-message';
@@ -15,6 +15,7 @@ const RegisterResponsavelScreen = ({ navigation }) => {
     const [email, setEmail] = useState('');
     const [senha, setSenha] = useState('');
     const [confSenha, setConfSenha] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
 
     const formatCPF = (value) => {
         return value
@@ -52,6 +53,8 @@ const RegisterResponsavelScreen = ({ navigation }) => {
             });
             return;
         }
+
+        setIsLoading(true);
 
         const registerBody = {
             name: nome,
@@ -115,6 +118,8 @@ const RegisterResponsavelScreen = ({ navigation }) => {
                 text2: 'Erro ao cadastrar usuário (checar credenciais)',
             });
         }
+
+        setIsLoading(false);
     };
 
     return (
@@ -206,12 +211,18 @@ const RegisterResponsavelScreen = ({ navigation }) => {
                             onPress={handleCadastro}
                             style={styles.button}
                             labelStyle={styles.buttonLabel}
+                            disabled={isLoading}
                         >
                             Cadastrar
                         </Button>
                     </View>
                 </View>
             </KeyboardAwareScrollView>
+            {isLoading && (
+                <View style={styles.loadingOverlay}>
+                    <ActivityIndicator size="large" color="#C36005" />
+                </View>
+            )}
         </View>
     );
 };
@@ -266,6 +277,12 @@ const styles = StyleSheet.create({
     buttonLabel: {
         color: 'white',
         fontWeight: 'bold',
+    },
+    loadingOverlay: {
+        ...StyleSheet.absoluteFillObject,
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+        justifyContent: 'center',
+        alignItems: 'center',
     },
 });
 
