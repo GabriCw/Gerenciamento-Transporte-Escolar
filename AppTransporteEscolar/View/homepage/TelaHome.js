@@ -111,6 +111,14 @@ const TelaHome = ({navigation}) => {
         );
     }
 
+    const handleMapaMotorista = () => {
+        navigation.navigate("MapaMotorista");
+    };
+
+    const handleMapaResponsavel = () => {
+        navigation.navigate("MapaResponsavel");
+    }
+
     return (
         <View style={styles.view}>
             <View style={styles.header}>
@@ -164,6 +172,12 @@ const TelaHome = ({navigation}) => {
                                 </Marker>
                             ))}
                         </MapView>
+                        <Button onPress={handleMapaResponsavel}>
+                            Mapa Responsavel
+                        </Button>
+                        <Button onPress={handleMapaMotorista}>
+                            Mapa Motorista
+                        </Button>
                     </View>
                 </View>
             </KeyboardAwareScrollView>
