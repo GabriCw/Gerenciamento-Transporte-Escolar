@@ -11,6 +11,8 @@ import RegisterResponsavelScreen from './View/login/RegisterResponsavel';
 import TelaHomeScreen from './View/homepage/TelaHome';
 import MapaMotorista from './View/homepage/MapaMotorista';
 import MapaResponsavel from './View/homepage/MapaResponsavel';
+import RegisterAlunoEscolha from './View/login/RegisterAlunoEscolha';
+import RegisterAluno from './View/login/RegisterAluno';
 
 const Stack = createStackNavigator();
 
@@ -25,6 +27,8 @@ const App = () => {
         <Stack.Screen name="TelaHome" component={TelaHomeScreen} options={{ headerShown: false }}/>
         <Stack.Screen name="MapaMotorista" component={MapaMotorista} options={{ headerShown: false }}/>
         <Stack.Screen name="MapaResponsavel" component={MapaResponsavel} options={{ headerShown: false }}/>
+        <Stack.Screen name="RegisterAlunoEscolha" component={RegisterAlunoEscolha} options={{ headerShown: false }}/>
+        <Stack.Screen name="RegisterAluno" component={RegisterAluno} options={{ headerShown: false }}/>
       </Stack.Navigator>
       <Toast ref={(ref) => Toast.setRef(ref)} />
     </NavigationContainer>

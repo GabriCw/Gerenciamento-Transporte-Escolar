@@ -172,10 +172,18 @@ const TelaHome = ({navigation}) => {
                                 </Marker>
                             ))}
                         </MapView>
-                        <Button onPress={handleMapaResponsavel}>
+                        <Button 
+                            onPress={handleMapaResponsavel}
+                            style={styles.buttonBack}
+                            labelStyle={styles.buttonLabel}
+                        >
                             Mapa Responsavel
                         </Button>
-                        <Button onPress={handleMapaMotorista}>
+                        <Button 
+                            onPress={handleMapaMotorista}
+                            style={styles.buttonBack}
+                            labelStyle={styles.buttonLabel}
+                        >
                             Mapa Motorista
                         </Button>
                     </View>

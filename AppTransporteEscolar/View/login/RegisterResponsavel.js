@@ -14,6 +14,8 @@ const RegisterResponsavelScreen = ({ navigation }) => {
     const [telefone, setTelefone] = useState('');
     const [email, setEmail] = useState('');
     const [senha, setSenha] = useState('');
+    const [rua, setRua] = useState('');
+    const [numero, setNumero] = useState('');
     const [confSenha, setConfSenha] = useState('');
     const [isLoading, setIsLoading] = useState(false);
 
@@ -34,7 +36,7 @@ const RegisterResponsavelScreen = ({ navigation }) => {
     };
 
     const handleCadastro = async () => {
-        if (!nome || !cpf || !telefone || !email || !senha || !confSenha) {
+        if (!nome || !cpf || !telefone || !email || !senha || !confSenha || !rua || !numero) {
             Toast.show({
                 type: 'error',
                 text1: 'Erro',
@@ -64,6 +66,7 @@ const RegisterResponsavelScreen = ({ navigation }) => {
             rg: '',
             phone: telefone.replace(/\D/g, ''),
             user_type_id: userTypeEnum.RESPONSAVEL,
+            address: `${rua}, ${numero}`,
         };
 
         const create = await createUser(registerBody);
@@ -94,6 +97,8 @@ const RegisterResponsavelScreen = ({ navigation }) => {
                     setCpf('');
                     setTelefone('');
                     setEmail('');
+                    setRua('');
+                    setNumero('');
                     setSenha('');
                     setConfSenha('');
                     navigation.navigate('Login');
@@ -127,7 +132,7 @@ const RegisterResponsavelScreen = ({ navigation }) => {
             <View style={styles.header}>
                 <Button
                     mode="contained"
-                    onPress={() => navigation.navigate('Login')}
+                    onPress={() => navigation.navigate('RegisterAlunoEscolha')}
                     style={styles.buttonBack}
                     labelStyle={styles.buttonLabel}
                 >
@@ -182,6 +187,27 @@ const RegisterResponsavelScreen = ({ navigation }) => {
                             onChangeText={(text) => setEmail(text)}
                             keyboardType="email-address"
                         />
+                        <View style={{width:'100%', display: 'flex', flexDirection: 'row'}}>
+                            <TextInput
+                                style={[styles.input, { width: '65%', marginRight: '5%' }]}
+                                label="Rua"
+                                mode="outlined"
+                                activeOutlineColor="#C36005"
+                                keyboardAppearance="dark"
+                                value={rua}
+                                onChangeText={(text) => setRua(text)}
+                            />
+                            <TextInput
+                                style={[styles.input, { width: '30%' }]}
+                                label="N°"
+                                mode="outlined"
+                                activeOutlineColor="#C36005"
+                                keyboardAppearance="dark"
+                                value={numero}
+                                onChangeText={(text) => setNumero(text)}
+                                keyboardType="numeric"
+                            />
+                        </View>
                         <TextInput
                             style={styles.input}
                             label="Senha"
