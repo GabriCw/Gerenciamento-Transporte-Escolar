@@ -15,6 +15,9 @@
       "supportsTablet": true,
       "infoPlist": {
         "NSLocationWhenInUseUsageDescription": "We need your location to show you the map."
+      },
+      "config": {
+        "googleMapsApiKey": "AIzaSyB65ouahlrzxKKS3X_VeMHKWZPYrJTJx6E"
       }
     },
     "android": {
@@ -22,7 +25,10 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "permissions": ["ACCESS_FINE_LOCATION"]
+      "permissions": ["ACCESS_FINE_LOCATION"],
+      "googleMaps": {
+          "apiKey": "AIzaSyB65ouahlrzxKKS3X_VeMHKWZPYrJTJx6E"
+        }
     },
     "web": {
       "favicon": "./assets/favicon.png"

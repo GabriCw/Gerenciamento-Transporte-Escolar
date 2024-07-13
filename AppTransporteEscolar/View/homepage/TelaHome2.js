@@ -3,19 +3,17 @@ import { View, StyleSheet, Text, Image } from 'react-native';
 import MapView, { Marker } from 'react-native-maps';
 import MapViewDirections from 'react-native-maps-directions';
 import * as Location from 'expo-location';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import axios from 'axios';
 import Toast from 'react-native-toast-message';
 import {auth} from "../../firebase/firebase";
 import { onAuthStateChanged, signOut } from 'firebase/auth';
 import { Button } from 'react-native-paper';
 
-
-
-const MapaMotorista = ({navigation}) => {
+const TelaHome2 = ({navigation}) => {
     const [region, setRegion] = useState(null);
     const [optimizedWaypoints, setOptimizedWaypoints] = useState([]);
-    const apiKey = 'AIzaSyB65ouahlrzxKKS3X_VeMHKWZPYrJTJx6E';
-    const mapStyle = require('../../utils/mapstyle.json');
+    const apiKey = 'AIzaSyB65ouahlrzxKKS3X_VeMHKWZPYrJTJx6E'; // Defina sua API Key aqui
 
     useEffect(() => {
         (async () => {
@@ -28,8 +26,8 @@ const MapaMotorista = ({navigation}) => {
             let location = await Location.getCurrentPositionAsync({});
             const { latitude, longitude } = location.coords;
             setRegion({
-                latitude: latitude,
-                longitude: longitude,
+                latitude,
+                longitude,
                 latitudeDelta: 0.0922,
                 longitudeDelta: 0.0421,
             });
@@ -71,7 +69,7 @@ const MapaMotorista = ({navigation}) => {
     const getPinImage = (index) => {
         switch (index) {
             case 0:
-                return 0
+                return require('../../assets/icons/pin1.png');
             case 1:
                 return require('../../assets/icons/pin2.png');
             case 2:
@@ -82,7 +80,6 @@ const MapaMotorista = ({navigation}) => {
                 return require('../../assets/icons/pin5.png');
             default:
                 return require('../../assets/icons/pin6.png');
-                
         }
     };
 
@@ -114,10 +111,34 @@ const MapaMotorista = ({navigation}) => {
         );
     }
 
+    const handleMapaMotorista = () => {
+        navigation.navigate("MapaMotorista");
+    };
+
+    const handleMapaResponsavel = () => {
+        navigation.navigate("MapaResponsavel");
+    }
+
     return (
         <View style={styles.view}>
+            <View style={styles.header}>
+                <Button 
+                    mode="contained" 
+                    onPress={handleLogout}
+                    style={styles.buttonBack}
+                    labelStyle={styles.buttonLabel}
+                >
+                    Sair
+                </Button>
+            </View>
+            <KeyboardAwareScrollView
+                contentContainerStyle={styles.container}
+                enableOnAndroid={true}
+                extraScrollHeight={20}
+                keyboardShouldPersistTaps="handled"
+            >
                 <View style={styles.container}>
-                    
+                        <Text style={styles.title}>Rota Otimizada</Text>
                     <View style={styles.content}>
                         <MapView
                             style={styles.map}
@@ -125,7 +146,6 @@ const MapaMotorista = ({navigation}) => {
                             onRegionChangeComplete={(region) => setRegion(region)}
                             showsUserLocation={true}
                             showsMyLocationButton={true}
-                            customMapStyle={mapStyle}
                         >
                             {optimizedWaypoints.length > 1 && (
                                 <MapViewDirections
@@ -134,7 +154,7 @@ const MapaMotorista = ({navigation}) => {
                                     destination={optimizedWaypoints[optimizedWaypoints.length - 1]}
                                     apikey={apiKey}
                                     strokeWidth={8}
-                                    strokeColor="orange"
+                                    strokeColor="red"
                                     optimizeWaypoints={true}
                                 />
                             )}
@@ -151,17 +171,16 @@ const MapaMotorista = ({navigation}) => {
                                     />
                                 </Marker>
                             ))}
-                        </MapView>   
+                        </MapView>
+                        <Button onPress={handleMapaResponsavel}>
+                            Mapa Responsavel
+                        </Button>
+                        <Button onPress={handleMapaMotorista}>
+                            Mapa Motorista
+                        </Button>
                     </View>
                 </View>
-
-                <View style={styles.footer}>
-                    <View style={styles.infoCard}>
-                        <Text>
-                            Teste
-                        </Text>
-                    </View>
-                </View>
+            </KeyboardAwareScrollView>
         </View>
     );
 };
@@ -169,16 +188,19 @@ const MapaMotorista = ({navigation}) => {
 const styles = StyleSheet.create({
     view: {
         flex: 1,
+        backgroundColor: '#090833',
     },
     header: {
-        position: 'absolute',
         alignSelf: 'stretch',
+        alignItems: 'flex-start',
         marginLeft: 20,
         marginTop: 50,
+        backgroundColor: '#090833',
     },
     container: {
         flex: 1,
         justifyContent: 'center',
+        padding: 20,
         backgroundColor: '#090833',
     },
     loading: {
@@ -193,6 +215,7 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
         color: '#C36005',
         textAlign: 'center',
+
     },
     content: {
         flex: 1,
@@ -200,33 +223,13 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     map: {
-        width: '100%',
-        height: '100%',
+        width: '110%',
+        height: 500,
     },
     text: {
         fontSize: 20,
         color: '#FFF',
-    },
-    footer: {
-        position: 'absolute',
-        bottom: 70,
-        height: '15%',
-        width: '100%',
-        alignItems: 'center',
-    },
-    infoCard: {
-        backgroundColor: '#FFFFFFDD',
-        width: '95%',
-        height: '100%',
-        borderRadius: 25,
-        justifyContent: 'center',
-        alignItems: 'center',
-        shadowColor: '#000',
-        shadowOffset: { width: 2, height: 2 },
-        shadowOpacity: 0.4,
-        shadowRadius: 5,
-        marginBottom: 20,
-    },
+    }
 });
 
-export default MapaMotorista;
+export default TelaHome2;
