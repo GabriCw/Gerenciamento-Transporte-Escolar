@@ -8,6 +8,7 @@ import { userTypeEnum } from '../../utils/userTypeEnum';
 import { createUser, updateUserUuid } from '../../data/userServices';
 import { auth } from '../../firebase/firebase';
 
+
 const RegisterResponsavelScreen = ({ navigation }) => {
     const [nome, setNome] = useState('');
     const [cpf, setCpf] = useState('');
@@ -27,6 +28,10 @@ const RegisterResponsavelScreen = ({ navigation }) => {
             .replace(/(\d{3})(\d{1,2})/, '$1-$2')
             .replace(/(-\d{2})\d+?$/, '$1');
     };
+    
+    const goToAluno = () => {
+        navigation.navigate('RegisterAlunoEscolha');
+    }
 
     const formatTelefone = (value) => {
         return value
@@ -234,7 +239,8 @@ const RegisterResponsavelScreen = ({ navigation }) => {
                         />
                         <Button
                             mode="contained"
-                            onPress={handleCadastro}
+                            // onPress={handleCadastro}
+                            onPress={goToAluno}
                             style={styles.button}
                             labelStyle={styles.buttonLabel}
                             disabled={isLoading}
