@@ -13,25 +13,28 @@ import MapaMotorista from './View/homepage/MapaMotorista';
 import MapaResponsavel from './View/homepage/MapaResponsavel';
 import RegisterAlunoEscolha from './View/login/RegisterAlunoEscolha';
 import RegisterAluno from './View/login/RegisterAluno';
+import { AuthProvider } from './providers/AuthProvider';
 
 const Stack = createStackNavigator();
 
 const App = () => {
   return (
-    <NavigationContainer>
-      <Stack.Navigator initialRouteName="Login">
-        <Stack.Screen name="Login" component={TelaLogin} options={{ headerShown: false }}/>
-        <Stack.Screen name="ForgotPassword" component={ForgotPasswordScreen} options={{ headerShown: false }}/>
-        <Stack.Screen name="ConfirmEmail" component={ConfirmEmailScreen} options={{ headerShown: false }}/>
-        <Stack.Screen name="Register" component={RegisterResponsavelScreen} options={{ headerShown: false }}/>
-        <Stack.Screen name="TelaHome" component={TelaHomeScreen} options={{ headerShown: false }}/>
-        <Stack.Screen name="MapaMotorista" component={MapaMotorista} options={{ headerShown: false }}/>
-        <Stack.Screen name="MapaResponsavel" component={MapaResponsavel} options={{ headerShown: false }}/>
-        <Stack.Screen name="RegisterAlunoEscolha" component={RegisterAlunoEscolha} options={{ headerShown: false }}/>
-        <Stack.Screen name="RegisterAluno" component={RegisterAluno} options={{ headerShown: false }}/>
-      </Stack.Navigator>
-      <Toast ref={(ref) => Toast.setRef(ref)} />
-    </NavigationContainer>
+    <AuthProvider>
+      <NavigationContainer>
+        <Stack.Navigator initialRouteName="Login">
+          <Stack.Screen name="Login" component={TelaLogin} options={{ headerShown: false }}/>
+          <Stack.Screen name="ForgotPassword" component={ForgotPasswordScreen} options={{ headerShown: false }}/>
+          <Stack.Screen name="ConfirmEmail" component={ConfirmEmailScreen} options={{ headerShown: false }}/>
+          <Stack.Screen name="Register" component={RegisterResponsavelScreen} options={{ headerShown: false }}/>
+          <Stack.Screen name="TelaHome" component={TelaHomeScreen} options={{ headerShown: false }}/>
+          <Stack.Screen name="MapaMotorista" component={MapaMotorista} options={{ headerShown: false }}/>
+          <Stack.Screen name="MapaResponsavel" component={MapaResponsavel} options={{ headerShown: false }}/>
+          <Stack.Screen name="RegisterAlunoEscolha" component={RegisterAlunoEscolha} options={{ headerShown: false }}/>
+          <Stack.Screen name="RegisterAluno" component={RegisterAluno} options={{ headerShown: false }}/>
+        </Stack.Navigator>
+        <Toast ref={(ref) => Toast.setRef(ref)} />
+      </NavigationContainer>
+    </AuthProvider>
   );
 };
 

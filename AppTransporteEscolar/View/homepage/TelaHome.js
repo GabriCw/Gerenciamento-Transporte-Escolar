@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { View, StyleSheet, Text, Image } from 'react-native';
 import MapView, { Marker } from 'react-native-maps';
 import MapViewDirections from 'react-native-maps-directions';
@@ -9,6 +9,7 @@ import Toast from 'react-native-toast-message';
 import {auth} from "../../firebase/firebase";
 import { onAuthStateChanged, signOut } from 'firebase/auth';
 import { Button } from 'react-native-paper';
+import { AuthContext } from '../../providers/AuthProvider';
 
 const TelaHome = ({navigation}) => {
     const [region, setRegion] = useState(null);
@@ -65,6 +66,8 @@ const TelaHome = ({navigation}) => {
             }
         })();
     }, []);
+
+    const { token } = useContext(AuthContext);
 
     const getPinImage = (index) => {
         switch (index) {

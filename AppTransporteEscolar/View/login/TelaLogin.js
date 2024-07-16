@@ -1,14 +1,17 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext, useState } from 'react';
 import { View, StyleSheet, Text, TouchableOpacity } from 'react-native';
 import { TextInput, Button } from 'react-native-paper';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import Toast from 'react-native-toast-message';
-import { signInWithEmailAndPassword, onAuthStateChanged } from '@firebase/auth';
+import { signInWithEmailAndPassword} from '@firebase/auth';
 import {auth} from "../../firebase/firebase";
+import { AuthContext } from '../../providers/AuthProvider';
 
 const TelaLogin = ({ navigation }) => {
     const [email, setEmail] = useState('');
     const [senha, setSenha] = useState('');
+    
+    const { handleGenerateToken } = useContext(AuthContext);
 
     const handleLogInAuthentication = async () => {
         try {
@@ -21,6 +24,7 @@ const TelaLogin = ({ navigation }) => {
             setEmail('');
             setSenha('');
             navigation.navigate('TelaHome');
+            handleGenerateToken();
             }
         catch (error) {
             Toast.show({
