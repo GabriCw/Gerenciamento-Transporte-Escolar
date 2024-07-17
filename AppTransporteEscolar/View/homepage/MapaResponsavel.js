@@ -1,50 +1,68 @@
 import React, { useState, useEffect } from 'react';
 import { View, StyleSheet, Text, Image } from 'react-native';
-import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
+import MapView, { Marker } from 'react-native-maps';
 import MapViewDirections from 'react-native-maps-directions';
 import * as Location from 'expo-location';
-import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import axios from 'axios';
 import Toast from 'react-native-toast-message';
-import {auth} from "../../firebase/firebase";
+import { auth } from "../../firebase/firebase";
 import { onAuthStateChanged, signOut } from 'firebase/auth';
 import { Button } from 'react-native-paper';
+import { getPinImage } from '../../utils/getPinImage';
+import { styles } from './Style/mapaResponsavelStyle'
 
-
-
-const MapaResponsavel = ({navigation}) => {
-    const [region, setRegion] = useState(null);
+const MapaResponsavel = ({ navigation }) => {
+    const [camera, setCamera] = useState({
+        center: {
+            latitude: 0,
+            longitude: 0,
+        },
+        pitch: 50,
+        heading: 0,
+        altitude: 0,
+        zoom: 19,
+    });
     const [optimizedWaypoints, setOptimizedWaypoints] = useState([]);
     const apiKey = 'AIzaSyB65ouahlrzxKKS3X_VeMHKWZPYrJTJx6E';
     const mapStyle = require('../../utils/mapstyle.json');
     const [totalDuration, setTotalDuration] = useState(null);
     const [totalDistance, setTotalDistance] = useState(null);
+    const [nextWaypointDistance, setNextWaypointDistance] = useState(null);
+    const [nextWaypointDuration, setNextWaypointDuration] = useState(null);
+    const [userLocation, setUserLocation] = useState(null);
+    const [currentLeg, setCurrentLeg] = useState(4) // Esse estado representa a 'perna' atual da rota, ou seja, qual o trecho atual
 
     useEffect(() => {
-        (async () => {
+        const simulateLocation = async () => {
             let { status } = await Location.requestForegroundPermissionsAsync();
             if (status !== 'granted') {
                 console.log('Permission to access location was denied');
                 return;
             }
 
-            let location = await Location.getCurrentPositionAsync({});
-            const { latitude, longitude } = location.coords;
-            setRegion({
-                latitude: latitude,
-                longitude: longitude,
-                latitudeDelta: 0.0922,
-                longitudeDelta: 0.0421,
+            let location = await Location.getCurrentPositionAsync({
+                accuracy: Location.Accuracy.BestForNavigation
+            });
+            const { latitude, longitude, heading } = location.coords;
+            setUserLocation({ latitude, longitude });
+            setCamera({
+                center: {
+                    latitude: latitude,
+                    longitude: longitude,
+                },
+                pitch: 50,
+                heading: heading,
+                altitude: 0,
+                zoom: 19
             });
 
-            // Coordenadas dos waypoints (1o é a localização atual, o resto é otimizado)
             const waypoints = [
-                { latitude, longitude }, // Localização atual como primeiro ponto
-                { latitude: -23.650644, longitude: -46.578266 },
-                { latitude: -23.626814, longitude: -46.579835 },
-                { latitude: -23.647414, longitude: -46.575591 },
-                { latitude: -23.651001, longitude: -46.579639 },
-                { latitude: -23.631476, longitude: -46.572259 },
+                { name: 'Felipe Matos Silvieri', latitude: latitude, longitude: longitude }, // Localização atual como primeiro ponto
+                { name: 'Davi Soares', latitude: -23.650644, longitude: -46.578266 },
+                { name: 'Gabriel Couto', latitude: -23.626814, longitude: -46.579835 },
+                { name: 'Denverson Dias', latitude: -23.647414, longitude: -46.575591 },
+                { name: 'Henrique Mello', latitude: -23.651001, longitude: -46.579639 },
+                { name: 'Rosana Lima', latitude: -23.631476, longitude: -46.572259 },
             ];
 
             const origin = `${waypoints[0].latitude},${waypoints[0].longitude}`;
@@ -67,36 +85,26 @@ const MapaResponsavel = ({navigation}) => {
                     const route = response.data.routes[0];
                     setTotalDuration(route.legs.reduce((acc, leg) => acc + leg.duration.value, 0)); // duração em segundos
                     setTotalDistance(route.legs.reduce((acc, leg) => acc + leg.distance.value, 0)); // distância em metros
+                    
+                    if (route.legs.length > 0) {
+                        const nextLeg = route.legs[currentLeg];
+                        setNextWaypointDistance(nextLeg.distance.value); // distância em metros
+                        setNextWaypointDuration(nextLeg.duration.value); // duração em segundos
+                    }
                 } else {
                     console.log('No routes found');
                 }
             } catch (error) {
                 console.log('Error fetching directions:', error);
             }
-        })();
+        };
+
+        simulateLocation();
     }, []);
 
-    const getPinImage = (index) => {
-        switch (index) {
-            case 0:
-                return 0
-            case 1:
-                return require('../../assets/icons/pin2.png');
-            case 2:
-                return require('../../assets/icons/pin3.png');
-            case 3:
-                return require('../../assets/icons/pin4.png');
-            case 4:
-                return require('../../assets/icons/pin5.png');
-            default:
-                return require('../../assets/icons/pin6.png');
-                
-        }
-    };
-
-    const monitorAuthState = async() => {
+    const monitorAuthState = async () => {
         onAuthStateChanged(auth, user => {
-            if(!user){
+            if (!user) {
                 navigation.navigate("Login");
                 Toast.show({
                     type: 'success',
@@ -110,11 +118,11 @@ const MapaResponsavel = ({navigation}) => {
 
     monitorAuthState();
 
-    const handleLogout = async() => {
+    const handleLogout = async () => {
         await signOut(auth);
     };
 
-    if (!region) {
+    if (!userLocation) {
         return (
             <View style={styles.loading}>
                 <Text style={styles.text}>Carregando Mapa...</Text>
@@ -122,132 +130,90 @@ const MapaResponsavel = ({navigation}) => {
         );
     }
 
+
     return (
         <View style={styles.view}>
-                <View style={styles.container}>
-                    
-                    <View style={styles.content}>
-                        <MapView
-                            style={styles.map}
-                            region={region}
-                            onRegionChangeComplete={(region) => setRegion(region)}
-                            showsUserLocation={true}
-                            showsMyLocationButton={true}
-                            customMapStyle={mapStyle}
-                        >
-                            {optimizedWaypoints.length > 1 && (
-                                <MapViewDirections
-                                    origin={optimizedWaypoints[0]}
-                                    waypoints={optimizedWaypoints.slice(1, -1)}
-                                    destination={optimizedWaypoints[optimizedWaypoints.length - 1]}
-                                    apikey={apiKey}
-                                    strokeWidth={8}
-                                    strokeColor="orange"
-                                    optimizeWaypoints={true}
-                                    lineCap="round"
-                                    precision="high"
-                                    mode="DRIVING"
-                                />
-                            )}
-                            {optimizedWaypoints.map((coordinate, index) => (
-                                <Marker
-                                    key={index}
-                                    coordinate={coordinate}
-                                    title={`Waypoint ${index + 1}`}
-                                    description={`Parada ${index + 1}`}
-                                >
-                                    <Image
-                                        source={getPinImage(index)}
-                                        style={{ width: 30, height: 30 }} // Ajuste o tamanho aqui
-                                    />
-                                </Marker>
-                            ))}
-                        </MapView>   
-                    </View>
-                </View>
-
-                <View style={styles.footer}>
-                    <View style={styles.infoCard}>
-                        <Text>
-                            Distancia: {totalDistance/1000} Km
-                            Duracao: {totalDuration/3600} Hrs
-                        </Text>
-                    </View>
-                </View>
-                <View style={styles.header}>
-                    <Button 
-                        mode="contained" 
-                        onPress={handleLogout}
+            <View style={styles.container}>
+                <View style={styles.content}>
+                    <MapView
+                        style={styles.map}
+                        showsMyLocationButton={true}
+                        customMapStyle={mapStyle}
+                        camera={camera}
                     >
-                        Sair
-                    </Button>
+                        {userLocation && (
+                            <Marker
+                                coordinate={userLocation}
+                                title="Sua localização"
+                            >
+                                <Image
+                                    source={require('../../assets/icons/van.png')}
+                                    style={{ width: 30, height: 60 }}
+                                />
+                            </Marker>
+                        )}
+                        {optimizedWaypoints.length > 1 && (
+                            <MapViewDirections
+                                origin={optimizedWaypoints[0]}
+                                waypoints={optimizedWaypoints.slice(1, -1)}
+                                destination={optimizedWaypoints[optimizedWaypoints.length - 1]}
+                                apikey={apiKey}
+                                strokeWidth={8}
+                                strokeColor="orange"
+                                optimizeWaypoints={true}
+                                lineCap="round"
+                                precision="high"
+                                mode="DRIVING"
+                            />
+                        )}
+                        {optimizedWaypoints.map((coordinate, index) => (
+                            <Marker
+                                key={index}
+                                coordinate={coordinate}
+                                title={`Waypoint ${index + 1}`}
+                                description={`Parada ${index + 1}`}
+                            >
+                                <Image
+                                    source={getPinImage(index)}
+                                    style={{ width: 30, height: 30 }}
+                                />
+                            </Marker>
+                        ))}
+                    </MapView>
                 </View>
+            </View>
 
+            <View style={styles.footer}>
+                <View style={styles.infoCard}>
+                    <Text>
+                        Distância Total: {(totalDistance / 1000).toFixed(2)} Km{'\n'}
+                        Duração Total: {(totalDuration / 3600).toFixed(2)} Hrs{'\n'}
+                        Distância até o Próximo Ponto: {(nextWaypointDistance / 1000).toFixed(2)} Km{'\n'}
+                        Duração até o Próximo Ponto: {(nextWaypointDuration / 60).toFixed(2)} Min
+                    </Text>
+                </View>
+            </View>
+
+            <View style={styles.header}>
+                <Button
+                    mode="contained"
+                    onPress={handleLogout}
+                >
+                    Sair
+                </Button>
+            </View>
+
+            {/* Renderizando o card da criança
+            {currentChild && (
+                <View style={styles.footer}>
+                    <ChildCard
+                        child={currentChild}
+                        onDeliver={() => setCurrentLeg((prev) => prev + 1)}
+                    />
+                </View>
+            )} */}
         </View>
     );
 };
-
-const styles = StyleSheet.create({
-    view: {
-        flex: 1,
-    },
-    header: {
-        position: 'absolute',
-        alignSelf: 'stretch',
-        marginLeft: 20,
-        marginTop: 50,
-    },
-    container: {
-        flex: 1,
-        justifyContent: 'center',
-        backgroundColor: '#090833',
-    },
-    loading: {
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-        padding: 20,
-        backgroundColor: '#090833',
-    },
-    title: {
-        fontSize: 25,
-        fontWeight: 'bold',
-        color: '#C36005',
-        textAlign: 'center',
-    },
-    content: {
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-    map: {
-        width: '100%',
-        height: '100%',
-    },
-    text: {
-        fontSize: 20,
-        color: '#FFF',
-    },
-    footer: {
-        position: 'absolute',
-        bottom: 70,
-        height: '15%',
-        width: '100%',
-        alignItems: 'center',
-    },
-    infoCard: {
-        backgroundColor: '#FFFFFFDD',
-        width: '95%',
-        height: '100%',
-        borderRadius: 25,
-        justifyContent: 'center',
-        alignItems: 'center',
-        shadowColor: '#000',
-        shadowOffset: { width: 2, height: 2 },
-        shadowOpacity: 0.4,
-        shadowRadius: 5,
-        marginBottom: 20,
-    },
-});
 
 export default MapaResponsavel;
