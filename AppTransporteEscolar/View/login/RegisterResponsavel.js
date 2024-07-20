@@ -8,17 +8,21 @@ import { userTypeEnum } from '../../utils/userTypeEnum';
 import { createUser, updateUserUuid } from '../../data/userServices';
 import { auth } from '../../firebase/firebase';
 
-
 const RegisterResponsavelScreen = ({ navigation }) => {
     const [nome, setNome] = useState('');
     const [cpf, setCpf] = useState('');
     const [telefone, setTelefone] = useState('');
     const [email, setEmail] = useState('');
     const [senha, setSenha] = useState('');
+    const [confSenha, setConfSenha] = useState('');
+    const [cep, setCep] = useState('');
     const [rua, setRua] = useState('');
     const [numero, setNumero] = useState('');
-    const [confSenha, setConfSenha] = useState('');
+    const [cidade, setCidade] = useState('');
+    const [bairro, setBairro] = useState('');
+    const [estado, setEstado] = useState('');
     const [isLoading, setIsLoading] = useState(false);
+    const [step, setStep] = useState(1);
 
     const formatCPF = (value) => {
         return value
@@ -28,10 +32,6 @@ const RegisterResponsavelScreen = ({ navigation }) => {
             .replace(/(\d{3})(\d{1,2})/, '$1-$2')
             .replace(/(-\d{2})\d+?$/, '$1');
     };
-    
-    const goToAluno = () => {
-        navigation.navigate('RegisterAlunoEscolha');
-    }
 
     const formatTelefone = (value) => {
         return value
@@ -40,8 +40,69 @@ const RegisterResponsavelScreen = ({ navigation }) => {
             .replace(/(\d)(\d{4})$/, '$1-$2');
     };
 
+    const handleNextStep = () => {
+        if (step === 1) {
+            if (!nome || !cpf || !telefone || !email) {
+                Toast.show({
+                    type: 'error',
+                    text1: 'Erro',
+                    text2: 'Todos os campos da primeira etapa são obrigatórios',
+                    visibilityTime: 3000,
+                });
+                return;
+            }
+        } else if (step === 2) {
+            if (!cep || !rua || !numero || !bairro || !cidade || !estado) {
+                Toast.show({
+                    type: 'error',
+                    text1: 'Erro',
+                    text2: 'Todos os campos da segunda etapa são obrigatórios',
+                    visibilityTime: 3000,
+                });
+                return;
+            }
+        }
+        setStep(step + 1);
+    };
+
+    const handlePreviousStep = () => {
+        if (step === 1) {
+            navigation.navigate('Login');
+        } else {
+            setStep(step - 1);
+        }
+    };
+
+    const buscarEndereco = async () => {
+        try {
+            const response = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
+            const data = await response.json();
+            if (data.erro) {
+                Toast.show({
+                    type: 'error',
+                    text1: 'Erro',
+                    text2: 'CEP não encontrado',
+                    visibilityTime: 3000,
+                });
+            } else {
+                setRua(data.logradouro);
+                setBairro(data.bairro);
+                setCidade(data.localidade);
+                setEstado(data.uf);
+            }
+        } catch (error) {
+            console.error('Erro ao buscar endereço:', error);
+            Toast.show({
+                type: 'error',
+                text1: 'Erro',
+                text2: 'Erro ao buscar endereço. Verifique sua conexão.',
+                visibilityTime: 3000,
+            });
+        }
+    };
+
     const handleCadastro = async () => {
-        if (!nome || !cpf || !telefone || !email || !senha || !confSenha || !rua || !numero) {
+        if (!nome || !cpf || !telefone || !email || !senha || !confSenha || !rua || !numero || !cidade || !bairro || !estado || !cep) {
             Toast.show({
                 type: 'error',
                 text1: 'Erro',
@@ -71,8 +132,15 @@ const RegisterResponsavelScreen = ({ navigation }) => {
             rg: '',
             phone: telefone.replace(/\D/g, ''),
             user_type_id: userTypeEnum.RESPONSAVEL,
-            address: `${rua}, ${numero}`,
+            address: {
+                address: `${rua}, ${numero}`,
+                city: cidade,
+                neighborhood: bairro,
+                state: estado
+            }
         };
+
+        console.log(registerBody);
 
         const create = await createUser(registerBody);
 
@@ -106,6 +174,10 @@ const RegisterResponsavelScreen = ({ navigation }) => {
                     setNumero('');
                     setSenha('');
                     setConfSenha('');
+                    setCidade('');
+                    setBairro('');
+                    setEstado('');
+                    setCep('');
                     navigation.navigate('Login');
                 } else {
                     Toast.show({
@@ -137,7 +209,7 @@ const RegisterResponsavelScreen = ({ navigation }) => {
             <View style={styles.header}>
                 <Button
                     mode="contained"
-                    onPress={() => navigation.navigate('RegisterAlunoEscolha')}
+                    onPress={handlePreviousStep}
                     style={styles.buttonBack}
                     labelStyle={styles.buttonLabel}
                 >
@@ -153,100 +225,196 @@ const RegisterResponsavelScreen = ({ navigation }) => {
                 <View style={styles.container}>
                     <View style={styles.content}>
                         <Text style={styles.title}>Preencha seu cadastro</Text>
-                        <TextInput
-                            style={styles.input}
-                            label="Nome"
-                            mode="outlined"
-                            activeOutlineColor="#C36005"
-                            keyboardAppearance="dark"
-                            value={nome}
-                            onChangeText={(text) => setNome(text)}
-                        />
-                        <TextInput
-                            style={styles.input}
-                            label="CPF"
-                            mode="outlined"
-                            activeOutlineColor="#C36005"
-                            keyboardAppearance="dark"
-                            value={formatCPF(cpf)}
-                            onChangeText={(text) => setCpf(text)}
-                            keyboardType="numeric"
-                        />
-                        <TextInput
-                            style={styles.input}
-                            label="Telefone"
-                            mode="outlined"
-                            activeOutlineColor="#C36005"
-                            keyboardAppearance="dark"
-                            value={formatTelefone(telefone)}
-                            onChangeText={(text) => setTelefone(text)}
-                            keyboardType="phone-pad"
-                        />
-                        <TextInput
-                            style={styles.input}
-                            label="E-mail"
-                            mode="outlined"
-                            activeOutlineColor="#C36005"
-                            keyboardAppearance="dark"
-                            value={email}
-                            onChangeText={(text) => setEmail(text)}
-                            keyboardType="email-address"
-                        />
-                        <View style={{width:'100%', display: 'flex', flexDirection: 'row'}}>
-                            <TextInput
-                                style={[styles.input, { width: '65%', marginRight: '5%' }]}
-                                label="Rua"
-                                mode="outlined"
-                                activeOutlineColor="#C36005"
-                                keyboardAppearance="dark"
-                                value={rua}
-                                onChangeText={(text) => setRua(text)}
-                            />
-                            <TextInput
-                                style={[styles.input, { width: '30%' }]}
-                                label="N°"
-                                mode="outlined"
-                                activeOutlineColor="#C36005"
-                                keyboardAppearance="dark"
-                                value={numero}
-                                onChangeText={(text) => setNumero(text)}
-                                keyboardType="numeric"
-                            />
-                        </View>
-                        <TextInput
-                            style={styles.input}
-                            label="Senha"
-                            mode="outlined"
-                            activeOutlineColor="#C36005"
-                            keyboardAppearance="dark"
-                            value={senha}
-                            onChangeText={(text) => setSenha(text)}
-                            secureTextEntry={true}
-                            textContentType="none"
-                            autoCompleteType="off"
-                        />
-                        <TextInput
-                            style={styles.input}
-                            label="Confirme sua Senha"
-                            mode="outlined"
-                            activeOutlineColor="#C36005"
-                            keyboardAppearance="dark"
-                            value={confSenha}
-                            onChangeText={(text) => setConfSenha(text)}
-                            secureTextEntry={true}
-                            textContentType="none"
-                            autoCompleteType="off"
-                        />
-                        <Button
-                            mode="contained"
-                            // onPress={handleCadastro}
-                            onPress={goToAluno}
-                            style={styles.button}
-                            labelStyle={styles.buttonLabel}
-                            disabled={isLoading}
-                        >
-                            Cadastrar
-                        </Button>
+                        {step === 1 && (
+                            <>
+                                <TextInput
+                                    style={styles.input}
+                                    label="Nome"
+                                    mode="outlined"
+                                    activeOutlineColor="#C36005"
+                                    keyboardAppearance="dark"
+                                    value={nome}
+                                    onChangeText={(text) => setNome(text)}
+                                />
+                                <TextInput
+                                    style={styles.input}
+                                    label="CPF"
+                                    mode="outlined"
+                                    activeOutlineColor="#C36005"
+                                    keyboardAppearance="dark"
+                                    value={formatCPF(cpf)}
+                                    onChangeText={(text) => setCpf(text)}
+                                    keyboardType="numeric"
+                                />
+                                <TextInput
+                                    style={styles.input}
+                                    label="Telefone"
+                                    mode="outlined"
+                                    activeOutlineColor="#C36005"
+                                    keyboardAppearance="dark"
+                                    value={formatTelefone(telefone)}
+                                    onChangeText={(text) => setTelefone(text)}
+                                    keyboardType="phone-pad"
+                                />
+                                <TextInput
+                                    style={styles.input}
+                                    label="E-mail"
+                                    mode="outlined"
+                                    activeOutlineColor="#C36005"
+                                    keyboardAppearance="dark"
+                                    value={email}
+                                    onChangeText={(text) => setEmail(text)}
+                                    keyboardType="email-address"
+                                />
+                                <Button
+                                    mode="contained"
+                                    onPress={handleNextStep}
+                                    style={styles.button}
+                                    labelStyle={styles.buttonLabel}
+                                >
+                                    Continuar
+                                </Button>
+                            </>
+                        )}
+                        {step === 2 && (
+                            <>  
+                                <View style={{ flexDirection: 'row', justifyContent: 'space-between', paddingHorizontal: 5 }}>
+                                    <TextInput
+                                        style={[styles.input, { marginRight: 10, width:'60%' }]}
+                                        label="CEP"
+                                        mode="outlined"
+                                        activeOutlineColor="#C36005"
+                                        keyboardAppearance="dark"
+                                        value={cep}
+                                        onChangeText={(text) => setCep(text)}
+                                        keyboardType="numeric"
+                                    />
+                                    <Button
+                                        mode="contained"
+                                        onPress={buscarEndereco}
+                                        style={[styles.buttonCEP, { width: '40%'}]}
+                                        labelStyle={styles.buttonLabel}
+                                    >
+                                        Buscar
+                                    </Button>
+                                </View>
+                                <View style={{ flexDirection: 'row', justifyContent: 'space-between', paddingHorizontal: 5 }}>
+                                    <TextInput
+                                        style={[
+                                            styles.input,
+                                            { width: '65%', marginRight: 10 },
+                                            cep.length < 7 && styles.disabledInput
+                                        ]}
+                                        label="Rua"
+                                        mode="outlined"
+                                        activeOutlineColor="#C36005"
+                                        keyboardAppearance="dark"
+                                        value={rua}
+                                        onChangeText={(text) => setRua(text)}
+                                        editable={cep.length > 7}
+                                    />
+                                    <TextInput
+                                        style={[
+                                            styles.input,
+                                            { width: '35%' },
+                                            cep.length < 7 && styles.disabledInput
+                                        ]}
+                                        label="Número"
+                                        mode="outlined"
+                                        activeOutlineColor="#C36005"
+                                        keyboardAppearance="dark"
+                                        value={numero}
+                                        onChangeText={(text) => setNumero(text)}
+                                        keyboardType="numeric"
+                                        editable={cep.length > 7}
+                                    />
+                                </View>
+                                <TextInput
+                                    style={[
+                                        styles.input,
+                                        cep.length < 7 && styles.disabledInput
+                                    ]}
+                                    label="Bairro"
+                                    mode="outlined"
+                                    activeOutlineColor="#C36005"
+                                    keyboardAppearance="dark"
+                                    value={bairro}
+                                    onChangeText={(text) => setBairro(text)}
+                                    editable={cep.length > 7}
+                                />
+                                <TextInput
+                                    style={[
+                                        styles.input,
+                                        cep.length < 7 && styles.disabledInput
+                                    ]}
+                                    label="Cidade"
+                                    mode="outlined"
+                                    activeOutlineColor="#C36005"
+                                    keyboardAppearance="dark"
+                                    value={cidade}
+                                    onChangeText={(text) => setCidade(text)}
+                                    editable={cep.length > 7}
+                                />
+                                <TextInput
+                                    style={[
+                                        styles.input,
+                                        cep.length < 7 && styles.disabledInput
+                                    ]}
+                                    label="Estado"
+                                    mode="outlined"
+                                    activeOutlineColor="#C36005"
+                                    keyboardAppearance="dark"
+                                    value={estado}
+                                    onChangeText={(text) => setEstado(text)}
+                                    editable={cep.length > 7}
+                                />
+                                <Button
+                                    mode="contained"
+                                    onPress={handleNextStep}
+                                    style={styles.button}
+                                    labelStyle={styles.buttonLabel}
+                                >
+                                    <Text>Continuar</Text>
+                                </Button>
+                            </>
+                        )}
+                        {step === 3 && (
+                            <>
+                                <TextInput
+                                    style={styles.input}
+                                    label="Senha"
+                                    mode="outlined"
+                                    activeOutlineColor="#C36005"
+                                    keyboardAppearance="dark"
+                                    value={senha}
+                                    onChangeText={(text) => setSenha(text)}
+                                    secureTextEntry={true}
+                                    textContentType="none"
+                                    autoCompleteType="off"
+                                />
+                                <TextInput
+                                    style={styles.input}
+                                    label="Confirme sua Senha"
+                                    mode="outlined"
+                                    activeOutlineColor="#C36005"
+                                    keyboardAppearance="dark"
+                                    value={confSenha}
+                                    onChangeText={(text) => setConfSenha(text)}
+                                    secureTextEntry={true}
+                                    textContentType="none"
+                                    autoCompleteType="off"
+                                />
+                                <Button
+                                    mode="contained"
+                                    onPress={handleCadastro}
+                                    style={styles.button}
+                                    labelStyle={styles.buttonLabel}
+                                    disabled={isLoading}
+                                >
+                                    Finalizar Cadastro
+                                </Button>
+                            </>
+                        )}
                     </View>
                 </View>
             </KeyboardAwareScrollView>
@@ -288,6 +456,9 @@ const styles = StyleSheet.create({
         paddingHorizontal: 10,
         marginBottom: 20,
     },
+    disabledInput: {
+        backgroundColor: '#808080',
+    },
     content: {
         flex: 1,
         justifyContent: 'flex-start',
@@ -295,11 +466,20 @@ const styles = StyleSheet.create({
         paddingTop: '15%',
     },
     button: {
-        width: 150,
+        width: 200,
         backgroundColor: '#C36005',
         marginVertical: 10,
         borderRadius: 20,
         padding: 5,
+    },
+    buttonCEP: {
+        height: 45,
+        marginTop: 4,
+        borderRadius: 20,
+        backgroundColor: '#C36005',
+        textAlign: 'center',
+        alignContent: 'center',
+        justifyContent: 'center',
     },
     buttonBack: {
         width: 90,

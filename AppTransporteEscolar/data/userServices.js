@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const apiUrl = 'http://192.168.0.149:8000';
+const apiUrl = 'https://school-transport-backend-3fec5c45f086.herokuapp.com';
 const _controller = apiUrl + '/user';
 
 export const createUser = async(body) => {
