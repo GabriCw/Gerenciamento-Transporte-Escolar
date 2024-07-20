@@ -28,3 +28,16 @@ export const updateUserUuid = async(body) => {
         return error.response;
     }
 };
+
+export const getUserByEmail = async(email) => {
+    const _endpoint = `/by-email?email=${email}`;
+
+    try{
+        const response  = await axios.get(_controller + _endpoint);
+
+        return response;
+    }
+    catch(error){
+        return error.response;
+    }
+};

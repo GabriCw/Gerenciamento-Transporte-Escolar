@@ -5,24 +5,36 @@ import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view
 import Toast from 'react-native-toast-message';
 import { signInWithEmailAndPassword, onAuthStateChanged } from '@firebase/auth';
 import {auth} from "../../firebase/firebase";
+import { getUserByEmail } from '../../data/userServices';
 
 const TelaLogin = ({ navigation }) => {
     const [email, setEmail] = useState('');
     const [senha, setSenha] = useState('');
 
     const handleLogInAuthentication = async () => {
-        try {
-            await signInWithEmailAndPassword(auth, email, senha);
-            Toast.show({
-                type: 'success',
-                text1: 'Sucesso',
-                text2: 'Autenticação efetuada com sucesso!',
-            });
-            setEmail('');
-            setSenha('');
-            navigation.navigate('TelaHome');
+        const validEmail = await getUserByEmail(email);
+
+        if(validEmail.status === 200){
+            try {
+                await signInWithEmailAndPassword(auth, email, senha);
+                Toast.show({
+                    type: 'success',
+                    text1: 'Sucesso',
+                    text2: 'Autenticação efetuada com sucesso!',
+                });
+                setEmail('');
+                setSenha('');
+                navigation.navigate('TelaHome');
+                }
+            catch (error) {
+                Toast.show({
+                    type: 'error',
+                    text1: 'Erro de Autenticação',
+                    text2: 'Credencias Incorretas',
+                });
             }
-        catch (error) {
+        }
+        else{
             Toast.show({
                 type: 'error',
                 text1: 'Erro de Autenticação',
