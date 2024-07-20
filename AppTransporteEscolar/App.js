@@ -8,8 +8,6 @@ import ForgotPasswordScreen from './View/login/ForgotPasswordScreen';
 import ConfirmEmailScreen from './View/login/ConfirmEmailScreen';
 import RegisterMotoristaScreen from './View/login/RegisterMotorista';
 import RegisterResponsavelScreen from './View/login/RegisterResponsavel';
-import RegisterAlunoEscolha from './View/login/RegisterAlunoEscolha';
-import RegisterAluno from './View/login/RegisterAluno';
 import Tabs from './View/navigation/tabs';
 
 const Stack = createStackNavigator();
@@ -24,8 +22,6 @@ const App = () => {
           <Stack.Screen name="ConfirmEmail" component={ConfirmEmailScreen} options={{ headerShown: false }}/>
           <Stack.Screen name="Register" component={RegisterResponsavelScreen} options={{ headerShown: false }}/>
           <Stack.Screen name="TelaHome" component={Tabs} options={{ headerShown: false }}/>
-          <Stack.Screen name="RegisterAlunoEscolha" component={RegisterAlunoEscolha} options={{ headerShown: false }}/>
-          <Stack.Screen name="RegisterAluno" component={RegisterAluno} options={{ headerShown: false }}/>
         </Stack.Navigator>
         <Toast ref={(ref) => Toast.setRef(ref)} />
       </NavigationContainer>

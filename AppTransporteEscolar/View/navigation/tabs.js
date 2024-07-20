@@ -5,7 +5,7 @@ import TelaHome from '../homepage/TelaHome';
 import MapaMotorista from '../homepage/MapaMotorista';
 import MapaResponsavel from '../homepage/MapaResponsavel';
 import Perfil from '../homepage/Perfil';
-import Alunos from '../homepage/Alunos';
+import RegisterAlunos from '../login/RegisterAluno';
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -21,7 +21,7 @@ const HomeStack = () => (
 const PerfilStack = () => (
   <Stack.Navigator initialRouteName='Perfil'>
     <Stack.Screen name="Perfil" component={Perfil} options={{ headerShown: false }} />
-    <Stack.Screen name="Alunos" component={Alunos} options={{ headerShown: false }} />
+    <Stack.Screen name="Alunos" component={RegisterAlunos} options={{ headerShown: false }} />
   </Stack.Navigator>
 );
 
@@ -29,6 +29,7 @@ const Tabs = () => {
   return (
     <Tab.Navigator>
       <Tab.Screen name="Home" component={HomeStack} options={{ headerShown: false }} />
+      <Tab.Screen name="Mapa" component={MapaMotorista} options={{ headerShown: false }}/>
       <Tab.Screen name="Perfil" component={PerfilStack} options={{ headerShown: false }} />
     </Tab.Navigator>
   );

@@ -13,12 +13,12 @@ const Perfil = ({navigation}) => {
             <View style={styles.content}>
                 <Text style={styles.text}>Perfil</Text>
                 <Button 
-              onPress={cadastrarAlunos}
-              style={styles.buttonBack}
-              labelStyle={styles.buttonLabel}
-            >
-              Cadastrar Alunos
-            </Button>
+                    onPress={cadastrarAlunos}
+                    style={styles.buttonBack}
+                    labelStyle={styles.buttonLabel}
+                    >
+                    Ver Alunos
+                </Button>
             </View>
         </View>
     );
