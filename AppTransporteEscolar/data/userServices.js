@@ -1,6 +1,7 @@
 import axios from "axios";
+import { APP_URL } from "@env";
 
-const apiUrl = 'https://school-transport-backend-3fec5c45f086.herokuapp.com';
+const apiUrl = APP_URL;
 const _controller = apiUrl + '/user';
 
 export const createUser = async(body) => {

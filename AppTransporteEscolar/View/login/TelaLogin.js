@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useState } from 'react';
-import { View, StyleSheet, Text, TouchableOpacity } from 'react-native';
+import { View, StyleSheet, Text, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { TextInput, Button } from 'react-native-paper';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import Toast from 'react-native-toast-message';
@@ -9,12 +9,16 @@ import { getUserByEmail } from '../../data/userServices';
 import { AuthContext } from '../../providers/AuthProvider';
 
 const TelaLogin = ({ navigation }) => {
-    const [email, setEmail] = useState('');
-    const [senha, setSenha] = useState('');
-
     const {handleGenerateToken, handleSaveUserData, handleVerifyStudent} = useContext(AuthContext);
 
+    const [email, setEmail] = useState('');
+    const [senha, setSenha] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
+
+
     const handleLogInAuthentication = async () => {
+        setIsLoading(true);
+
         const validEmail = await getUserByEmail(email);
 
         if(validEmail.status === 200){
@@ -47,6 +51,8 @@ const TelaLogin = ({ navigation }) => {
                 text2: 'Credencias Incorretas',
             });
         }
+
+        setIsLoading(false);
     };
 
     const handlePress = () => {
@@ -114,6 +120,11 @@ const TelaLogin = ({ navigation }) => {
                 </TouchableOpacity>
             </View>
             </View>
+            {isLoading && (
+                <View style={styles.loadingOverlay}>
+                    <ActivityIndicator size="large" color="#C36005" />
+                </View>
+            )}
         </KeyboardAwareScrollView>
     );
 };
@@ -184,6 +195,12 @@ const styles = StyleSheet.create({
     buttonLabel: {
         color: 'white',
         fontWeight: 'bold',
+    },
+    loadingOverlay: {
+        ...StyleSheet.absoluteFillObject,
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+        justifyContent: 'center',
+        alignItems: 'center',
     },
 });
 

@@ -16,12 +16,6 @@ const TelaHome = ({ navigation }) => {
       onAuthStateChanged(auth, user => {
         if (!user) {
           navigation.navigate("Login");
-          Toast.show({
-            type: 'success',
-            text1: 'Sucesso',
-            text2: 'Logout realizado com sucesso!',
-            visibilityTime: 3000,
-          });
         }
       });
     };
