@@ -6,10 +6,13 @@ import Toast from 'react-native-toast-message';
 import { signInWithEmailAndPassword, onAuthStateChanged } from '@firebase/auth';
 import {auth} from "../../firebase/firebase";
 import { getUserByEmail } from '../../data/userServices';
+import { AuthContext } from '../../providers/AuthProvider';
 
 const TelaLogin = ({ navigation }) => {
     const [email, setEmail] = useState('');
     const [senha, setSenha] = useState('');
+
+    const {handleGenerateToken, handleSaveUserData, handleVerifyStudent} = useContext(AuthContext);
 
     const handleLogInAuthentication = async () => {
         const validEmail = await getUserByEmail(email);
@@ -24,6 +27,9 @@ const TelaLogin = ({ navigation }) => {
                 });
                 setEmail('');
                 setSenha('');
+                handleGenerateToken();
+                handleSaveUserData(validEmail.data);
+                handleVerifyStudent(validEmail.data);
                 navigation.navigate('TelaHome');
                 }
             catch (error) {
@@ -32,7 +38,7 @@ const TelaLogin = ({ navigation }) => {
                     text1: 'Erro de Autenticação',
                     text2: 'Credencias Incorretas',
                 });
-            }
+            }            
         }
         else{
             Toast.show({
