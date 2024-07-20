@@ -29,8 +29,6 @@ const PerfilStack = () => (
 
 const Tabs = () => {
   const {userData} = useContext(AuthContext);
-  
-  console.log(userData);
 
   return (
     <Tab.Navigator>

@@ -29,7 +29,7 @@ const TelaLogin = ({ navigation }) => {
                 setSenha('');
                 handleGenerateToken();
                 handleSaveUserData(validEmail.data);
-                handleVerifyStudent(validEmail.data);
+                const hasStudent = await handleVerifyStudent(validEmail.data);
                 navigation.navigate('TelaHome');
                 }
             catch (error) {

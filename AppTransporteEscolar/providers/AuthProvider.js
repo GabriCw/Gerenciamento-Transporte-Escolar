@@ -1,6 +1,7 @@
 import { createContext, useEffect, useState } from "react";
 import { auth } from "../firebase/firebase";
 import { userTypeEnum } from "../utils/userTypeEnum";
+import { getStudentByResponsible } from "../data/studentServices";
 
 const defaultAuthProvider = {
     userData: null,
@@ -8,7 +9,7 @@ const defaultAuthProvider = {
     hasStudent: false,
     handleGenerateToken: () => {},
     handleSaveUserData: (data) => {},
-    handleVerifyStudent: (data) => {}
+    handleVerifyStudent: async(data) => {}
 };
 
 export const AuthContext = createContext(defaultAuthProvider);
@@ -22,9 +23,18 @@ export function AuthProvider({children}) {
         setUserData(data);
     };
     
-    const handleVerifyStudent = (data) => {
+    const handleVerifyStudent = async(data) => {
         if(data.user_type_id === userTypeEnum.RESPONSAVEL){
-            
+            const response = await getStudentByResponsible(data.id);
+
+            if(response.status === 200){
+                setHasStudent(true);
+                return true;
+            }
+            else{
+                setHasStudent(false);
+                return false;
+            }
         }
     };
 
@@ -47,6 +57,7 @@ export function AuthProvider({children}) {
         value={{
             userData,
             token,
+            hasStudent,
             handleGenerateToken,
             handleSaveUserData,
             handleVerifyStudent
