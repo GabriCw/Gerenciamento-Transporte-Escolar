@@ -1,24 +1,21 @@
-import React, { useEffect } from 'react';
+import React, { useContext, useEffect } from 'react';
 import { View, StyleSheet, Text } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import Toast from 'react-native-toast-message';
 import { auth } from "../../firebase/firebase";
 import { onAuthStateChanged, signOut } from 'firebase/auth';
 import { Button } from 'react-native-paper';
+import { AuthContext } from '../../providers/AuthProvider';
 
 const TelaHome = ({ navigation }) => {
+
+  const {userData} = useContext(AuthContext);
 
   useEffect(() => {
     const monitorAuthState = () => {
       onAuthStateChanged(auth, user => {
         if (!user) {
           navigation.navigate("Login");
-          Toast.show({
-            type: 'success',
-            text1: 'Sucesso',
-            text2: 'Logout realizado com sucesso!',
-            visibilityTime: 3000,
-          });
         }
       });
     };

@@ -9,12 +9,13 @@ import ConfirmEmailScreen from './View/login/ConfirmEmailScreen';
 import RegisterMotoristaScreen from './View/login/RegisterMotorista';
 import RegisterResponsavelScreen from './View/login/RegisterResponsavel';
 import Tabs from './View/navigation/tabs';
+import { AuthProvider } from './providers/AuthProvider';
 
 const Stack = createStackNavigator();
 
 const App = () => {
   return (
-    <>
+    <AuthProvider>
       <NavigationContainer>
         <Stack.Navigator initialRouteName="Login">
           <Stack.Screen name="Login" component={TelaLogin} options={{ headerShown: false }}/>
@@ -25,7 +26,7 @@ const App = () => {
         </Stack.Navigator>
         <Toast ref={(ref) => Toast.setRef(ref)} />
       </NavigationContainer>
-    </>
+    </AuthProvider>
   );
 };
 

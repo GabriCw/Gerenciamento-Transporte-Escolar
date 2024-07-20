@@ -1,6 +1,7 @@
 import axios from "axios";
+import { APP_URL } from "@env";
 
-const apiUrl = 'https://school-transport-backend-3fec5c45f086.herokuapp.com';
+const apiUrl = APP_URL;
 const _controller = apiUrl + '/user';
 
 export const createUser = async(body) => {
@@ -21,6 +22,19 @@ export const updateUserUuid = async(body) => {
 
     try{
         const response  = await axios.put(_controller + _endpoint, body);
+
+        return response;
+    }
+    catch(error){
+        return error.response;
+    }
+};
+
+export const getUserByEmail = async(email) => {
+    const _endpoint = `/by-email?email=${email}`;
+
+    try{
+        const response  = await axios.get(_controller + _endpoint);
 
         return response;
     }

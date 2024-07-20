@@ -1,11 +1,13 @@
-import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import React, { useContext } from 'react';
 import { createStackNavigator } from '@react-navigation/stack';
 import TelaHome from '../homepage/TelaHome';
 import MapaMotorista from '../homepage/MapaMotorista';
 import MapaResponsavel from '../homepage/MapaResponsavel';
 import Perfil from '../homepage/Perfil';
 import RegisterAlunos from '../login/RegisterAluno';
+import { AuthContext } from '../../providers/AuthProvider';
+import { userTypeEnum } from '../../utils/userTypeEnum';
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -26,6 +28,8 @@ const PerfilStack = () => (
 );
 
 const Tabs = () => {
+  const {userData} = useContext(AuthContext);
+
   return (
     <Tab.Navigator>
       <Tab.Screen name="Home" component={HomeStack} options={{ headerShown: false }} />

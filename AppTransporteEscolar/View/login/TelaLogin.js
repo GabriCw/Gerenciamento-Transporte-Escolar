@@ -1,34 +1,58 @@
 import React, { useContext, useEffect, useState } from 'react';
-import { View, StyleSheet, Text, TouchableOpacity } from 'react-native';
+import { View, StyleSheet, Text, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { TextInput, Button } from 'react-native-paper';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import Toast from 'react-native-toast-message';
 import { signInWithEmailAndPassword, onAuthStateChanged } from '@firebase/auth';
 import {auth} from "../../firebase/firebase";
+import { getUserByEmail } from '../../data/userServices';
+import { AuthContext } from '../../providers/AuthProvider';
 
 const TelaLogin = ({ navigation }) => {
+    const {handleGenerateToken, handleSaveUserData, handleVerifyStudent} = useContext(AuthContext);
+
     const [email, setEmail] = useState('');
     const [senha, setSenha] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
+
 
     const handleLogInAuthentication = async () => {
-        try {
-            await signInWithEmailAndPassword(auth, email, senha);
-            Toast.show({
-                type: 'success',
-                text1: 'Sucesso',
-                text2: 'Autenticação efetuada com sucesso!',
-            });
-            setEmail('');
-            setSenha('');
-            navigation.navigate('TelaHome');
-            }
-        catch (error) {
+        setIsLoading(true);
+
+        const validEmail = await getUserByEmail(email);
+
+        if(validEmail.status === 200){
+            try {
+                await signInWithEmailAndPassword(auth, email, senha);
+                Toast.show({
+                    type: 'success',
+                    text1: 'Sucesso',
+                    text2: 'Autenticação efetuada com sucesso!',
+                });
+                setEmail('');
+                setSenha('');
+                handleGenerateToken();
+                handleSaveUserData(validEmail.data);
+                const hasStudent = await handleVerifyStudent(validEmail.data);
+                navigation.navigate('TelaHome');
+                }
+            catch (error) {
+                Toast.show({
+                    type: 'error',
+                    text1: 'Erro de Autenticação',
+                    text2: 'Credencias Incorretas',
+                });
+            }            
+        }
+        else{
             Toast.show({
                 type: 'error',
                 text1: 'Erro de Autenticação',
                 text2: 'Credencias Incorretas',
             });
         }
+
+        setIsLoading(false);
     };
 
     const handlePress = () => {
@@ -96,6 +120,11 @@ const TelaLogin = ({ navigation }) => {
                 </TouchableOpacity>
             </View>
             </View>
+            {isLoading && (
+                <View style={styles.loadingOverlay}>
+                    <ActivityIndicator size="large" color="#C36005" />
+                </View>
+            )}
         </KeyboardAwareScrollView>
     );
 };
@@ -166,6 +195,12 @@ const styles = StyleSheet.create({
     buttonLabel: {
         color: 'white',
         fontWeight: 'bold',
+    },
+    loadingOverlay: {
+        ...StyleSheet.absoluteFillObject,
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+        justifyContent: 'center',
+        alignItems: 'center',
     },
 });
 
