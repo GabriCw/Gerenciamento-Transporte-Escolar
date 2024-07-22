@@ -8,6 +8,6 @@
 package com.facebook.react.animated;
 
 /** Interface used to listen to {@link ValueAnimatedNode} updates. */
-interface AnimatedNodeValueListener {
+public interface AnimatedNodeValueListener {
   void onValueUpdate(double value);
 }

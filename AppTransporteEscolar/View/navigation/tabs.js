@@ -4,8 +4,9 @@ import { createStackNavigator } from '@react-navigation/stack';
 import TelaHome from '../homepage/TelaHome';
 import MapaMotorista from '../homepage/MapaMotorista';
 import MapaResponsavel from '../homepage/MapaResponsavel';
-import Perfil from '../homepage/Perfil';
+import PerfilResp from '../homepage/PerfilResp';
 import RegisterAlunos from '../login/RegisterAluno';
+import VerPerfilResp from '../homepage/VerPerfilResp';
 import { AuthContext } from '../../providers/AuthProvider';
 import { userTypeEnum } from '../../utils/userTypeEnum';
 
@@ -22,8 +23,9 @@ const HomeStack = () => (
 
 const PerfilStack = () => (
   <Stack.Navigator initialRouteName='Perfil'>
-    <Stack.Screen name="Perfil" component={Perfil} options={{ headerShown: false }} />
+    <Stack.Screen name="Perfil" component={PerfilResp} options={{ headerShown: false }} />
     <Stack.Screen name="Alunos" component={RegisterAlunos} options={{ headerShown: false }} />
+    <Stack.Screen name="VerPerfilResp" component={VerPerfilResp} options={{ headerShown: false }} />
   </Stack.Navigator>
 );
 
