@@ -3,5 +3,14 @@
     "@react-native-async-storage/async-storage": "1.17.11",
     "axios": "^1.7.2",
     "react-native-dotenv": "^3.4.11"
-  }
+  },
+  "name": "gerenciamento-transporte-escolar",
+  "description": "Repositório para o TCC do Aplicativo de Gerenciamento de Transporte Escolar com IoT",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC"
 }

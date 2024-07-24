@@ -11,7 +11,7 @@ import androidx.annotation.Nullable;
 import androidx.core.util.Pools.SimplePool;
 
 /** Implementation of Dynamic wrapping a ReadableMap. */
-class DynamicFromMap implements Dynamic {
+public class DynamicFromMap implements Dynamic {
   private static final ThreadLocal<SimplePool<DynamicFromMap>> sPool =
       new ThreadLocal<SimplePool<DynamicFromMap>>() {
         @Override
