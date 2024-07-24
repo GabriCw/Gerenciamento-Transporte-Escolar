@@ -5,7 +5,7 @@ import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view
 import { FontAwesome } from '@expo/vector-icons';
 import { AuthContext } from '../../providers/AuthProvider';
 
-const VerPerfilResp = ({ navigation }) => {
+const VerPerfilMoto = ({ navigation }) => {
     const { userData } = useContext(AuthContext);
     const [isEditingName, setIsEditingName] = useState(false);
     const [isEditingEmail, setIsEditingEmail] = useState(false);
@@ -328,4 +328,4 @@ const styles = StyleSheet.create({
     },
 });
 
-export default VerPerfilResp;
+export default VerPerfilMoto;
