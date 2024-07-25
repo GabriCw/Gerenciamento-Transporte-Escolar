@@ -11,6 +11,7 @@ import { auth } from '../../firebase/firebase';
 const RegisterResponsavelScreen = ({ navigation }) => {
     const [nome, setNome] = useState('');
     const [cpf, setCpf] = useState('');
+    const [rg, setRg] = useState('');
     const [telefone, setTelefone] = useState('');
     const [email, setEmail] = useState('');
     const [senha, setSenha] = useState('');
@@ -33,6 +34,15 @@ const RegisterResponsavelScreen = ({ navigation }) => {
             .replace(/(-\d{2})\d+?$/, '$1');
     };
 
+    const formatRG = (value) => {
+        return value
+            .replace(/\D/g, '')
+            .replace(/(\d{2})(\d)/, '$1.$2')
+            .replace(/(\d{3})(\d)/, '$1.$2')
+            .replace(/(\d{3})(\d{1,2})/, '$1-$2')
+            .replace(/(-\d{1})\d+?$/, '$1');
+    };
+
     const formatTelefone = (value) => {
         return value
             .replace(/\D/g, '')
@@ -42,7 +52,7 @@ const RegisterResponsavelScreen = ({ navigation }) => {
 
     const handleNextStep = () => {
         if (step === 1) {
-            if (!nome || !cpf || !telefone || !email) {
+            if (!nome || !cpf || !rg || !telefone || !email) {
                 Toast.show({
                     type: 'error',
                     text1: 'Erro',
@@ -102,7 +112,7 @@ const RegisterResponsavelScreen = ({ navigation }) => {
     };
 
     const handleCadastro = async () => {
-        if (!nome || !cpf || !telefone || !email || !senha || !confSenha || !rua || !numero || !cidade || !bairro || !estado || !cep) {
+        if (!nome || !cpf || !rg || !telefone || !email || !senha || !confSenha || !rua || !numero || !cidade || !bairro || !estado || !cep) {
             Toast.show({
                 type: 'error',
                 text1: 'Erro',
@@ -129,7 +139,7 @@ const RegisterResponsavelScreen = ({ navigation }) => {
             email: email,
             cpf: cpf.replace(/\D/g, ''),
             cnh: '',
-            rg: '',
+            rg: rg.replace(/\D/g, ''),
             phone: telefone.replace(/\D/g, ''),
             user_type_id: userTypeEnum.RESPONSAVEL,
             address: {
@@ -168,6 +178,7 @@ const RegisterResponsavelScreen = ({ navigation }) => {
                     });
                     setNome('');
                     setCpf('');
+                    setRg('');
                     setTelefone('');
                     setEmail('');
                     setRua('');
@@ -244,6 +255,16 @@ const RegisterResponsavelScreen = ({ navigation }) => {
                                     keyboardAppearance="dark"
                                     value={formatCPF(cpf)}
                                     onChangeText={(text) => setCpf(text)}
+                                    keyboardType="numeric"
+                                />
+                                <TextInput
+                                    style={styles.input}
+                                    label="RG"
+                                    mode="outlined"
+                                    activeOutlineColor="#C36005"
+                                    keyboardAppearance="dark"
+                                    value={formatRG(rg)}
+                                    onChangeText={(text) => setRg(text)}
                                     keyboardType="numeric"
                                 />
                                 <TextInput

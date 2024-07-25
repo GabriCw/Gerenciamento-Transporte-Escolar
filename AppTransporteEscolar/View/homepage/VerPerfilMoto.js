@@ -22,7 +22,12 @@ const VerPerfilMoto = ({ navigation }) => {
         return cpf.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
     };
 
+    const formatRG = (rg) => {
+        return rg.replace(/(\d{2})(\d{3})(\d{3})(\d{1})/, '$1.$2.$3-$4');
+    };
+
     const [cpf] = useState(formatCPF(userData.cpf));
+    const [rg] = useState(formatRG(userData.rg));
     const [isModalVisible, setIsModalVisible] = useState(false);
 
     const toggleEditing = (setter) => {
@@ -127,6 +132,9 @@ const VerPerfilMoto = ({ navigation }) => {
                         </View>
                         <View style={[styles.inputRow, { marginTop: 18, marginBottom: 30 }]}>
                             <Text style={styles.textInput2}>CPF: {cpf}</Text>
+                        </View>
+                        <View style={[styles.inputRow, { marginTop: 16, marginBottom: 25 }]}>
+                            <Text style={styles.textInput2}>RG: {rg}</Text>
                         </View>
                         <Card style={styles.addressCard}>
                             <Card.Title

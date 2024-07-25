@@ -13,6 +13,7 @@ import RegisterVeiculo from '../homepage/RegisterVeiculo';
 import VerPerfilMoto from '../homepage/VerPerfilMoto';
 import { AuthContext } from '../../providers/AuthProvider';
 import { userTypeEnum } from '../../utils/userTypeEnum';
+import { FontAwesome } from '@expo/vector-icons';
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -46,12 +47,25 @@ const Tabs = () => {
   const {userData} = useContext(AuthContext);
   console.log(userData)
   return (
-    <Tab.Navigator>
-      <Tab.Screen name="Home" component={HomeStack} options={{ headerShown: false }} />
-      <Tab.Screen name="Mapa" component={MapaMotorista} options={{ headerShown: false }}/>
+    <Tab.Navigator
+      tabBarOptions={{
+        activeTintColor: '#C36005',
+        inactiveTintColor: 'black',
+        style: {
+          backgroundColor: 'white',
+          borderTopWidth: 0,
+          shadowOffset: {width: 5, height: 3},
+          shadowColor: 'black',
+          shadowOpacity: 0.5,
+          elevation: 5,
+        },
+      }}
+    >
+      <Tab.Screen name="Home" component={HomeStack} options={{ headerShown: false, tabBarIcon: ({focused}) =>(<FontAwesome name="home" size={24} color= {focused? '#C36005' : 'black'}/>)}} />
+      <Tab.Screen name="Mapa" component={MapaMotorista} options={{ headerShown: false, tabBarIcon: ({focused}) =>(<FontAwesome name="map" size={20} color= {focused? '#C36005' : 'black'}/>)}} />
       {userData.user_type_id === userTypeEnum.RESPONSAVEL?
-      <Tab.Screen name="Perfil" component={PerfilRespStack} options={{ headerShown: false }} />
-      : <Tab.Screen name="Perfil" component={PerfilMotoStack} options={{ headerShown: false }} />}
+      <Tab.Screen name="Perfil" component={PerfilRespStack} options={{ headerShown: false, tabBarIcon: ({focused}) =>(<FontAwesome name="user" size={24} color= {focused? '#C36005' : 'black'}/>)}} />
+      : <Tab.Screen name="Perfil" component={PerfilMotoStack} options={{ headerShown: false, tabBarIcon: ({focused}) =>(<FontAwesome name="user" size={24} color= {focused? '#C36005' : 'black'}/>)}} />}
     </Tab.Navigator>
   );
 };
