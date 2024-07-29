@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, Text, Image } from 'react-native';
-import MapView, { Marker } from 'react-native-maps';
+import { View, Text, Image } from 'react-native';
+import MapView, { Marker, Polyline } from 'react-native-maps';
 import MapViewDirections from 'react-native-maps-directions';
 import * as Location from 'expo-location';
 import axios from 'axios';
@@ -11,6 +11,8 @@ import { Button } from 'react-native-paper';
 import { getPinImage } from '../../utils/getPinImage';
 import { formatTime, formatDistance } from '../../utils/formatUtils';
 import { styles } from './Style/mapaResponsavelStyle';
+import { getDistance } from 'geolib';
+import polyline from '@mapbox/polyline';
 
 const MapaResponsavel = ({ navigation }) => {
     const [camera, setCamera] = useState({
@@ -18,7 +20,6 @@ const MapaResponsavel = ({ navigation }) => {
             latitude: 0,
             longitude: 0,
         },
-        pitch: 45,
         heading: 0,
         altitude: 0,
         zoom: 19,
@@ -31,84 +32,104 @@ const MapaResponsavel = ({ navigation }) => {
     const [nextWaypointDistance, setNextWaypointDistance] = useState(null);
     const [nextWaypointDuration, setNextWaypointDuration] = useState(null);
     const [userLocation, setUserLocation] = useState(null);
-    const [currentLeg, setCurrentLeg] = useState(2);
-    const [currentLegName, setCurrentLegName] = useState('Felipe')
-    
+    const [currentLeg, setCurrentLeg] = useState(0);
+    const [currentLegName, setCurrentLegName] = useState('Felipe');
     const [speed, setSpeed] = useState(null);
     const [heading, setHeading] = useState(null);
+    const [traveledRoute, setTraveledRoute] = useState([]);
+    const [remainingRoute, setRemainingRoute] = useState([]);
+    const [routePoints, setRoutePoints] = useState([]);
+    const [apiCallCount, setApiCallCount] = useState(0); // Estado para contar chamadas à API, começa com 1 chamada
+    const [waypointProximity, setWaypointProximity] = useState(true)
+
+    const proximityThreshold = 20; // Distância em metros para atualizar a polilinha
+    const recalculateThreshold = 50; // Distância em metros para recalcular a rota
+
+    // Inicialização da tela (Permissão de localização inicial, set da câmera)
 
     useEffect(() => {
-        let locationSubscription;
-        let headingSubscription;
-
-        (async () => {
+        const initializeLocation = async () => {
             let { status } = await Location.requestForegroundPermissionsAsync();
             if (status !== 'granted') {
                 console.log('Permission to access location was denied');
                 return;
             }
+
             const location = await Location.getCurrentPositionAsync({
                 accuracy: Location.Accuracy.BestForNavigation
             });
-            const { latitude, longitude, heading } = location.coords;
+            const { latitude, longitude } = location.coords;
             setUserLocation({ latitude, longitude });
             setCamera((prevCamera) => ({
                 ...prevCamera,
-                center: {
-                    latitude,
-                    longitude,
-                },
-                heading,
-                pitch: 70
-            }));
+                center: { latitude, longitude },
+                heading: location.coords.heading,
+            }));// Colocar 'region' ao invés de camera pra incializar
 
-            
-            
-            const waypoints = [
-                { name: 'Felipe Matos Silvieri', latitude: latitude, longitude: longitude }, // Localização atual como primeiro ponto
-                { name: 'Davi Soares', latitude: -23.650644, longitude: -46.578266 },
-                { name: 'Gabriel Couto', latitude: -23.626814, longitude: -46.579835 },
-                { name: 'Denverson Dias', latitude: -23.647414, longitude: -46.575591 },
-                { name: 'Henrique Mello', latitude: -23.651001, longitude: -46.579639 },
-                { name: 'Rosana Lima', latitude: -23.631476, longitude: -46.572259 },
-            ];
-            
-            const origin = `${waypoints[0].latitude},${waypoints[0].longitude}`;
-            const destination = `${waypoints[waypoints.length - 1].latitude},${waypoints[waypoints.length - 1].longitude}`;
-            const waypointsString = waypoints
+            // Chamada inicial para calcular a rota
+            calculateRoute({ latitude, longitude });
+        };
+
+        initializeLocation();
+    }, []);
+
+    const decodePolyline = (encoded) => {
+        return polyline.decode(encoded).map(([latitude, longitude]) => ({ latitude, longitude }));
+    };
+
+    // Calcula de fato a rota, utilizando a API do Google Directions, com otimização de waypoints
+
+    const calculateRoute = async (currentLocation) => {
+        setApiCallCount(prevCount => prevCount + 1); // Incrementa o contador de chamadas
+        console.log(`Chamando API do Google Maps: ${apiCallCount + 1} vez(es)`); // Log para monitorar chamadas
+        
+        const waypoints = [
+            { name: 'Felipe Matos Silvieri', latitude: currentLocation.latitude, longitude: currentLocation.longitude }, // Localização atual como primeiro ponto
+            { name: 'Davi Soares', latitude: -23.650644, longitude: -46.578266 },
+            { name: 'Gabriel Couto', latitude: -23.626814, longitude: -46.579835 },
+            { name: 'Denverson Dias', latitude: -23.647414, longitude: -46.575591 },
+            { name: 'Henrique Mello', latitude: -23.651001, longitude: -46.579639 },
+            { name: 'Rosana Lima', latitude: -23.631476, longitude: -46.572259 },
+        ];
+        
+        const origin = `${currentLocation.latitude},${currentLocation.longitude}`;
+        const destination = `${waypoints[waypoints.length - 1].latitude},${waypoints[waypoints.length - 1].longitude}`;
+        const waypointsString = waypoints
             .slice(1, -1)
             .map(point => `${point.latitude},${point.longitude}`)
             .join('|');
-            
-            const url = `https://maps.googleapis.com/maps/api/directions/json?origin=${origin}&destination=${destination}&waypoints=optimize:true|${waypointsString}&key=${apiKey}&overview=full&polylineQuality=high`;
-            
-            try {
-                const response = await axios.get(url);
-                console.log('chamou a API')
-                if (response.data.routes && response.data.routes.length) {
-                    const optimizedOrder = response.data.routes[0].waypoint_order;
-                    const optimizedWaypoints = [waypoints[0], ...optimizedOrder.map(index => waypoints[index + 1]), waypoints[waypoints.length - 1]];
-                    setOptimizedWaypoints(optimizedWaypoints);
-                    
-                    // Atualizar a duração e a distância total
-                    const route = response.data.routes[0];
-                    setTotalDuration(route.legs.reduce((acc, leg) => acc + leg.duration.value, 0)); // duração em segundos
-                    setTotalDistance(route.legs.reduce((acc, leg) => acc + leg.distance.value, 0)); // distância em metros
-                    
-                    if (route.legs.length > 0) {
-                        const nextLeg = route.legs[currentLeg];
-                        setNextWaypointDistance(nextLeg.distance.value); // distância em metros
-                        setNextWaypointDuration(nextLeg.duration.value); // duração em segundos
-                    }
-                    // console.log(route)
-                } else {
-                    console.log('No routes found');
+        
+        const url = `https://maps.googleapis.com/maps/api/directions/json?origin=${origin}&destination=${destination}&waypoints=optimize:true|${waypointsString}&key=${apiKey}&overview=full&polylineQuality=high`;
+        
+        try {
+            const response = await axios.get(url);
+            if (response.data.routes && response.data.routes.length) {
+                const route = response.data.routes[0];
+                const decodedPolyline = decodePolyline(route.overview_polyline.points);
+                setRoutePoints(decodedPolyline);
+                setOptimizedWaypoints(waypoints);
+        
+                setTotalDuration(route.legs.reduce((acc, leg) => acc + leg.duration.value, 0)); // duração em segundos
+                setTotalDistance(route.legs.reduce((acc, leg) => acc + leg.distance.value, 0)); // distância em metros
+        
+                if (route.legs.length > 0) {
+                    const nextLeg = route.legs[currentLeg];
+                    setNextWaypointDistance(nextLeg.distance.value); // distância em metros
+                    setNextWaypointDuration(nextLeg.duration.value); // duração em segundos
                 }
-            } catch (error) {
-                console.log('Error fetching directions:', error);
+            } else {
+                console.log('No routes found');
             }
+        } catch (error) {
+            console.log(`Error fetching directions: ${error.message || error}`);
+        }
+    };    
+    
 
-
+    useEffect(() => {
+        let locationSubscription;
+    
+        const startLocationWatch = async () => {
             locationSubscription = await Location.watchPositionAsync(
                 {
                     accuracy: Location.Accuracy.BestForNavigation,
@@ -116,24 +137,86 @@ const MapaResponsavel = ({ navigation }) => {
                     distanceInterval: 5,
                 },
                 (location) => {
-                    console.log(location)
                     const { latitude, longitude } = location.coords;
-                    setSpeed(location.coords.speed)
-                    setHeading(location.coords.heading)
                     setUserLocation({ latitude, longitude });
+                    if (routePoints.length > 0) {
+                        updatePolyline(latitude, longitude);
+                    }
                 }
             );
-        })();
-
+        };
+    
+        startLocationWatch();
+    
         return () => {
             if (locationSubscription) {
                 locationSubscription.remove();
             }
-            if (headingSubscription) {
-                headingSubscription.remove();
-            }
         };
-    }, []);
+    }, [routePoints]);  // Adicione routePoints como dependência
+    
+
+    const updatePolyline = (latitude, longitude) => {
+        const currentLocation = { latitude, longitude };
+        console.log('Localização atual:', currentLocation);
+        // console.log('Pontos da rota:', routePoints);
+    
+        if (routePoints.length === 0) {
+            console.log('Nenhum ponto de rota disponível para cálculo de distância.');
+            return;
+        }
+    
+        // Calcular a distância mínima entre a localização atual e qualquer ponto na rota
+        const distances = routePoints.map(point => getDistance(currentLocation, point));
+        const distanceToNearestPoint = Math.min(...distances);
+        console.log('Distância ao ponto mais próximo:', distanceToNearestPoint);
+    
+        if (distanceToNearestPoint > recalculateThreshold) {
+            console.log(distanceToNearestPoint, ' --- Usuário está longe da rota. Recalculando...');
+            calculateRoute(currentLocation);
+        } else {
+            let foundIndex = -1;
+    
+            // Encontrar o índice do ponto mais próximo dentro do limiar de proximidade
+            for (let i = 0; i < routePoints.length; i++) {
+                if (getDistance(routePoints[i], currentLocation) < proximityThreshold) {
+                    foundIndex = i;
+                    break;
+                }
+            }
+    
+            if (foundIndex !== -1) {
+                const traveledPoints = routePoints.slice(0, foundIndex + 1);
+                const remainingPoints = routePoints.slice(foundIndex + 1);
+    
+                setTraveledRoute(traveledPoints);
+                setRemainingRoute(remainingPoints);
+    
+                // Atualizar todos os pontos percorridos
+                setAllTraveledPoints(prevPoints => [...prevPoints, ...traveledPoints]);
+    
+                console.log('Pontos percorridos:', traveledPoints.length());
+                console.log('Pontos restantes:', remainingPoints.length());
+            } else {
+                console.log('Nenhum ponto próximo o suficiente. Continuar verificando...');
+            }
+        }
+    };
+
+    // ---------- Gerencia a entrega do aluno ----------
+    const handleEntrega = (bool) => {
+        if (bool){
+            setCurrentLeg(currentLeg+1);
+        }
+        else{
+            console.log('Criança não entregue!')
+        }
+
+        setWaypointProximity(false);
+    }
+        
+    
+    // ---------- Monitora o Estado de autenticação do Firebase ----------
 
     const monitorAuthState = async () => {
         onAuthStateChanged(auth, user => {
@@ -148,7 +231,7 @@ const MapaResponsavel = ({ navigation }) => {
             }
         });
     };
-
+ 
     monitorAuthState();
 
     const handleLogout = async () => {
@@ -163,7 +246,6 @@ const MapaResponsavel = ({ navigation }) => {
         );
     }
 
-
     return (
         <View style={styles.view}>
             <View style={styles.container}>
@@ -171,7 +253,6 @@ const MapaResponsavel = ({ navigation }) => {
                     <MapView
                         style={styles.map}
                         showsMyLocationButton={true}
-                        // customMapStyle={mapStyle}
                         camera={camera}
                         mapType='standard'
                     >
@@ -186,24 +267,28 @@ const MapaResponsavel = ({ navigation }) => {
                                 />
                             </Marker>
                         )}
-                        {optimizedWaypoints.length > 1 && (
+                        {routePoints.length > 1 && (
                             <MapViewDirections
                                 origin={optimizedWaypoints[0]}
                                 waypoints={optimizedWaypoints.slice(1, -1)}
                                 destination={optimizedWaypoints[optimizedWaypoints.length - 1]}
                                 apikey={apiKey}
-                                strokeWidth={12}
-                                strokeColor="orange"
+                                strokeWidth={5}
                                 optimizeWaypoints={true}
                                 lineCap="round"
                                 precision="high"
                                 mode="DRIVING"
-                            />
+                                onReady={result => {
+                                    const points = result.coordinates; // Captura os pontos da rota
+                                    setRoutePoints(points); // Atualiza routePoints com os pontos gerados pelo MapViewDirections
+                                }}
+                            /> 
                         )}
-                        {optimizedWaypoints.map((coordinate, index) => (
+                        
+                        {optimizedWaypoints.length > 0 && optimizedWaypoints.map((coordinate, index) => (
                             <Marker
                                 key={index}
-                                coordinate={coordinate}
+                                coordinate={{ latitude: coordinate.latitude, longitude: coordinate.longitude }}
                                 title={`Waypoint ${index + 1}`}
                                 description={`Parada ${index + 1}`}
                             >
@@ -214,9 +299,11 @@ const MapaResponsavel = ({ navigation }) => {
                             </Marker>
                         ))}
                     </MapView>
+
                 </View>
             </View>
-
+            
+            {/* ---------- CARD INFO ROTA ---------- */}
             <View style={styles.footer}>
                 <View style={styles.infoCard}>
                     <View style={styles.infoCardNextStop}>
@@ -244,11 +331,28 @@ const MapaResponsavel = ({ navigation }) => {
                                 </Text>
                             </View>
                         )}
-                        
                     </View>
                 </View>
             </View>
-
+            
+            {/* ---------- CARD ALUNO ENTREGUE ---------- */}
+            {waypointProximity && (
+                <View style={styles.DeliveredCardPosition}> 
+                    <View style={styles.deliveredCardContent}>
+                        <Text style={styles.deliveredCardText}>O ALUNO FELIPE FOI ENTREGUE?</Text>
+                        <View style={styles.deliveredCardButtons}>
+                            <Button style={styles.deliveredCardButtonYes} mode="contained" onPress={() => handleEntrega(true)}>
+                                SIM
+                            </Button>
+                            <Button style={styles.deliveredCardButtonNo} mode="contained" onPress={() => handleEntrega(false)}>
+                                NÃO
+                            </Button>
+                        </View>
+                    </View>
+                </View>
+            )}
+            
+            {/* ---------- BOTÃO SAIR ---------- */}
             <View style={styles.header}>
                 <Button
                     mode="contained"
@@ -258,15 +362,10 @@ const MapaResponsavel = ({ navigation }) => {
                 </Button>
             </View>
 
-            {/* Renderizando o card da criança
-            {currentChild && (
-                <View style={styles.footer}>
-                    <ChildCard
-                        child={currentChild}
-                        onDeliver={() => setCurrentLeg((prev) => prev + 1)}
-                    />
-                </View>
-            )} */}
+            {/* ---------- CONTADOR CHAMADAS API ---------- */}
+            <View style={styles.counterContainer}>
+                <Text style={styles.counterText}>API Calls: {apiCallCount}</Text>
+            </View>
         </View>
     );
 };
