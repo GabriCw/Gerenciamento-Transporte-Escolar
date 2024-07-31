@@ -1,37 +1,45 @@
-import React, { useState, useContext } from 'react';
+import React, { useState, useContext, useEffect } from 'react';
 import { View, StyleSheet, Text, Alert } from 'react-native';
 import { Button, TextInput, IconButton, Modal, Portal, Card, Provider } from 'react-native-paper';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { FontAwesome } from '@expo/vector-icons';
 import { AuthContext } from '../../providers/AuthProvider';
+import { updateUser } from '../../data/userServices';
+import Toast from 'react-native-toast-message';
+import { formatCPF, formatRG } from '../../utils/formatUtils';
+import { getAddressByCEP } from '../../data/cepServices';
 
 const VerPerfilResp = ({ navigation }) => {
-    const { userData } = useContext(AuthContext);
-    const [isEditingName, setIsEditingName] = useState(false);
-    const [isEditingEmail, setIsEditingEmail] = useState(false);
+    const { userData, handleUpdateUserdata } = useContext(AuthContext);
 
-    const [name, setName] = useState(userData.name);
-    const [email, setEmail] = useState(userData.email);
-    const [cep, setCep] = useState(userData.cep || '03333000');
-    const [address, setAddress] = useState(userData.address || 'Rua Marechal Barbacena');
-    const [number, setNumber] = useState(userData.number || '926');
-    const [state, setState] = useState(userData.state || 'SP');
-    const [city, setCity] = useState(userData.city || 'São Paulo');
+    console.log(userData);
 
-    const formatCPF = (cpf) => {
-        return cpf.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
-    };
-
-    const formatRG = (rg) => {
-        return rg.replace(/(\d{2})(\d{3})(\d{3})(\d{1})/, '$1.$2.$3-$4');
-    };
-
-    const [cpf] = useState(formatCPF(userData.cpf));
-    const [rg] = useState(formatRG(userData.rg));
+    const [name, setName] = useState(null);
+    const [email, setEmail] = useState(null);
+    const [cep, setCep] = useState(null);
+    const [address, setAddress] = useState(null);
+    const [number, setNumber] = useState(null);
+    const [state, setState] = useState(null);
+    const [city, setCity] = useState(null);
+    const [cpf, setCpf] = useState(null);
+    const [rg, setRg] = useState(null);
     const [isModalVisible, setIsModalVisible] = useState(false);
+    const [isModalVisibleUser, setIsModalVisibleUser] = useState(false);
 
-    const toggleEditing = (setter) => {
-        setter(prevState => !prevState);
+    useEffect(() => {
+        setName(userData.name);
+        setEmail(userData.email);
+        setCep(userData.cep);
+        setAddress(userData.address);
+        setNumber(userData.number);
+        setState(userData.state);
+        setCity(userData.city);
+        setCpf(formatCPF(userData.cpf));
+        setRg(formatRG(userData.rg));
+    }, [navigation, userData]);
+
+    const handleOpenModalUser = () => {
+        setIsModalVisibleUser(!isModalVisibleUser);
     };
 
     const handleModalToggle = () => {
@@ -47,18 +55,67 @@ const VerPerfilResp = ({ navigation }) => {
         handleModalToggle();
     };
 
-    const fetchAddress = async () => {
-        try {
-            const response = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
-            const data = await response.json();
-            if (data.erro) {
-                Alert.alert('Erro', 'CEP não encontrado');
-                return;
+    const handleSaveUser = async() => {
+        if (!name || !email || !cpf || ( rg && !rg)) {
+            Alert.alert('Erro', 'Preencha todos os campos para salvar o endereço');
+            return;
+        }
+
+        const body = {
+            id: userData.id,
+            name: name,
+            email: email,
+            cnh: "",
+            cpf: cpf?.replace(/[.\-]/g, ''),
+            rg: rg?.replace(/[.\-]/g, ''),
+            user_type_id: 3
+        };
+
+        const response = await updateUser(body);
+
+        if(response.status === 200){
+            const reload = await handleUpdateUserdata();
+
+            if(reload === true){
+                setTimeout(() => {
+                    Toast.show({
+                        type: 'success',
+                        text1: 'Sucesso',
+                        text2: 'Edição realizada com sucesso!',
+                        visibilityTime: 3000,
+                    });
+                    handleOpenModalUser();
+                }, 1000);
             }
+            else{
+                Toast.show({
+                    type: 'error',
+                    text1: 'Sucesso',
+                    text2: 'Erro ao atualizar',
+                    visibilityTime: 3000,
+                });
+            }
+        }
+        else{
+            Toast.show({
+                type: 'error',
+                text1: 'Sucesso',
+                text2: 'Erro ao editar',
+                visibilityTime: 3000,
+            });
+        }
+    };
+
+    const searchAddressByCEP = async() => {
+        const response = await getAddressByCEP(cep);
+
+        if(response.status === 200){
             setAddress(data.logradouro);
             setState(data.uf);
             setCity(data.localidade);
-        } catch (error) {
+            setNumber(null);
+        }
+        else{
             Alert.alert('Erro', 'Não foi possível buscar o endereço');
         }
     };
@@ -86,56 +143,23 @@ const VerPerfilResp = ({ navigation }) => {
                             <FontAwesome name="user" size={40} color="#000" />
                         </View>
                     </View>
-                    <View style={{ justifyContent: 'flex-start', marginTop: '5%', marginLeft: '5%' }}>
-                        <Text style={[styles.title, { textDecorationLine: 'underline' }]}>Meus Dados</Text>
-                    </View>
                     <View style={styles.content}>
-                        <View style={styles.inputRow}>
-                            {isEditingName ? (
-                                <TextInput
-                                    value={name}
-                                    onChangeText={setName}
-                                    style={styles.textInput}
-                                    mode="outlined"
-                                    activeOutlineColor="#C36005"
-                                    keyboardAppearance="dark"
-                                />
-                            ) : (
-                                <Text style={styles.textInput2}>Nome: {name}</Text>
-                            )}
-                            <IconButton
-                                icon={isEditingName ? "check" : "pencil"}
-                                onPress={() => toggleEditing(setIsEditingName)}
-                                style={styles.editButton}
-                                color="white"
+                        <Card style={styles.addressCard}>
+                            <Card.Title
+                                title="Dados Pessoais"
+                                titleStyle={styles.cardTitle}
+                                right={(props) => <IconButton {...props} icon="pencil" onPress={handleOpenModalUser} />}
                             />
-                        </View>
-                        <View style={styles.inputRow}>
-                            {isEditingEmail ? (
-                                <TextInput
-                                    value={email}
-                                    onChangeText={setEmail}
-                                    style={styles.textInput}
-                                    mode="outlined"
-                                    activeOutlineColor="#C36005"
-                                    keyboardAppearance="dark"
-                                />
-                            ) : (
-                                <Text style={styles.textInput2}>Email: {email}</Text>
-                            )}
-                            <IconButton
-                                icon={isEditingEmail ? "check" : "pencil"}
-                                onPress={() => toggleEditing(setIsEditingEmail)}
-                                style={styles.editButton}
-                                color="white"
-                            />
-                        </View>
-                        <View style={[styles.inputRow, { marginTop: 18, marginBottom: 30 }]}>
-                            <Text style={styles.textInput2}>CPF: {cpf}</Text>
-                        </View>
-                        <View style={[styles.inputRow, { marginTop: 16, marginBottom: 25 }]}>
-                            <Text style={styles.textInput2}>RG: {rg}</Text>
-                        </View>
+                            <Card.Content>
+                                <Text style={styles.cardText}>Nome: {name}</Text>
+                                <Text style={styles.cardText}>Email: {email}</Text>
+                                <Text style={styles.cardText}>CPF: {cpf}</Text>
+                                {
+                                    rg && <Text style={styles.cardText}>RG: {rg}</Text>
+                                }
+                            </Card.Content>
+                        </Card>
+
                         <Card style={styles.addressCard}>
                             <Card.Title
                                 title="Meu Endereço"
@@ -152,6 +176,53 @@ const VerPerfilResp = ({ navigation }) => {
                     </View>
                 </KeyboardAwareScrollView>
                 <Portal>
+                    <Modal visible={isModalVisibleUser} onDismiss={handleOpenModalUser} contentContainerStyle={styles.modalContainer}>
+                        <Text style={styles.modalTitle}>Editar Usuário</Text>
+                        <TextInput
+                            label="Nome"
+                            value={name}
+                            onChangeText={(text) => {
+                                setName(text);
+                            }}
+                            style={styles.textInputModal}
+                            mode="outlined"
+                            activeOutlineColor="#C36005"
+                            keyboardAppearance="dark"
+                        />
+                        <TextInput
+                            label="Email"
+                            value={email}
+                            onChangeText={setEmail}
+                            style={styles.textInputModal}
+                            mode="outlined"
+                            activeOutlineColor="#C36005"
+                            keyboardAppearance="dark"
+                        />
+                        <TextInput
+                            label="CPF"
+                            value={cpf}
+                            onChangeText={setCpf}
+                            style={styles.textInputModal}
+                            mode="outlined"
+                            activeOutlineColor="#C36005"
+                            keyboardAppearance="dark"
+                        />
+                        {
+                            rg && <TextInput
+                                    label="RG"
+                                    value={rg}
+                                    onChangeText={setRg}
+                                    style={styles.textInputModal}
+                                    mode="outlined"
+                                    activeOutlineColor="#C36005"
+                                    keyboardAppearance="dark"
+                                />
+                        }
+                        <Button mode="contained" onPress={handleSaveUser} style={styles.saveButton}>
+                            Salvar
+                        </Button>
+                    </Modal>
+
                     <Modal visible={isModalVisible} onDismiss={handleModalToggle} contentContainerStyle={styles.modalContainer}>
                         <Text style={styles.modalTitle}>Editar Endereço</Text>
                         <TextInput
@@ -165,18 +236,18 @@ const VerPerfilResp = ({ navigation }) => {
                             activeOutlineColor="#C36005"
                             keyboardAppearance="dark"
                         />
-                        <Button mode="contained" onPress={fetchAddress} style={[styles.searchButton, {marginTop:15, marginBottom:15}]} disabled={cep.length !== 8}>
+                        <Button mode="contained" onPress={searchAddressByCEP} style={[styles.searchButton, {marginTop:15, marginBottom:15}]} disabled={cep?.length !== 8}>
                             Buscar
                         </Button>
                         <TextInput
                             label="Endereço"
                             value={address}
                             onChangeText={setAddress}
-                            style={[styles.textInputModal, cep.length !== 8 && styles.disabledTextInput]}
+                            style={[styles.textInputModal, cep?.length !== 8 && styles.disabledTextInput]}
                             mode="outlined"
                             activeOutlineColor="#C36005"
                             keyboardAppearance="dark"
-                            editable={cep.length === 8}
+                            editable={cep?.length === 8}
                         />
                         <TextInput
                             label="Número"
@@ -191,21 +262,21 @@ const VerPerfilResp = ({ navigation }) => {
                             label="Estado"
                             value={state}
                             onChangeText={setState}
-                            style={[styles.textInputModal, cep.length !== 8 && styles.disabledTextInput]}
+                            style={[styles.textInputModal, cep?.length !== 8 && styles.disabledTextInput]}
                             mode="outlined"
                             activeOutlineColor="#C36005"
                             keyboardAppearance="dark"
-                            editable={cep.length === 8}
+                            editable={cep?.length === 8}
                         />
                         <TextInput
                             label="Cidade"
                             value={city}
                             onChangeText={setCity}
-                            style={[styles.textInputModal, cep.length !== 8 && styles.disabledTextInput]}
+                            style={[styles.textInputModal, cep?.length !== 8 && styles.disabledTextInput]}
                             mode="outlined"
                             activeOutlineColor="#C36005"
                             keyboardAppearance="dark"
-                            editable={cep.length === 8}
+                            editable={cep?.length === 8}
                         />
                         <Button mode="contained" onPress={handleSaveAddress} style={styles.saveButton}>
                             Salvar

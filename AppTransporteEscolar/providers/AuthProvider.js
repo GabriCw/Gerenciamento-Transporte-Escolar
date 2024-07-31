@@ -2,6 +2,7 @@ import { createContext, useEffect, useState } from "react";
 import { auth } from "../firebase/firebase";
 import { userTypeEnum } from "../utils/userTypeEnum";
 import { getStudentByResponsible } from "../data/studentServices";
+import { getUserByEmail } from "../data/userServices";
 
 const defaultAuthProvider = {
     userData: null,
@@ -9,7 +10,8 @@ const defaultAuthProvider = {
     hasStudent: false,
     handleGenerateToken: () => {},
     handleSaveUserData: (data) => {},
-    handleVerifyStudent: async(data) => {}
+    handleVerifyStudent: async(data) => {},
+    handleUpdateUserdata: async() => {}
 };
 
 export const AuthContext = createContext(defaultAuthProvider);
@@ -52,6 +54,17 @@ export function AuthProvider({children}) {
         }
     };
 
+    const handleUpdateUserdata = async() => {
+        const response = await getUserByEmail(userData.email);
+
+        if(response.status === 200){
+            return true;
+        }
+        else{
+            return false;
+        }
+    };
+
     return (
         <AuthContext.Provider
         value={{
@@ -60,7 +73,8 @@ export function AuthProvider({children}) {
             hasStudent,
             handleGenerateToken,
             handleSaveUserData,
-            handleVerifyStudent
+            handleVerifyStudent,
+            handleUpdateUserdata
         }}>
             {children}
         </AuthContext.Provider>

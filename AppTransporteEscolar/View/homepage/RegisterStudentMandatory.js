@@ -5,6 +5,8 @@ import { FontAwesome } from '@expo/vector-icons'; // Importa o FontAwesome
 import { createStudentList, deleteStudent, getStudentByResponsible, updateStudent } from '../../data/studentServices';
 import { AuthContext } from '../../providers/AuthProvider';
 import Toast from 'react-native-toast-message';
+import { signOut } from 'firebase/auth';
+import { auth } from '../../firebase/firebase';
 
 const RegisterStudentMandatory = ({ navigation }) => {
     const { userData } = useContext(AuthContext);
@@ -174,10 +176,24 @@ const RegisterStudentMandatory = ({ navigation }) => {
         );
     };
 
+    const handleLogout = async () => {
+        await signOut(auth);
+      };
+
     return (
         <Provider>
             <Portal.Host>
                 <View style={styles.view}>
+                    <View style={styles.header}>
+                        <Button 
+                            mode="contained" 
+                            onPress={handleLogout}
+                            style={styles.buttonBack}
+                            labelStyle={styles.buttonLabel}
+                            >
+                            Sair
+                        </Button>
+                    </View>
                     <View style={styles.content}>
                         <Text style={styles.text}>Crie o seu aluno</Text>
                         <View style={styles.scrollContainer}>
@@ -282,6 +298,13 @@ const RegisterStudentMandatory = ({ navigation }) => {
 const styles = StyleSheet.create({
     view: {
         flex: 1,
+        backgroundColor: '#090833',
+    },
+    header: {
+        alignSelf: 'stretch',
+        alignItems: 'flex-start',
+        marginLeft: 20,
+        marginTop: 50,
         backgroundColor: '#090833',
     },
     text: {

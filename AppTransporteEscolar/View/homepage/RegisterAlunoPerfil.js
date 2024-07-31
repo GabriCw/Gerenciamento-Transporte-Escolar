@@ -1,6 +1,6 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { View, StyleSheet, Text, ScrollView, Alert } from 'react-native';
-import { Button, Card, Modal, Portal, TextInput, Provider, IconButton } from 'react-native-paper';
+import { Button, Card, Modal, Portal, TextInput, Provider, IconButton, ActivityIndicator } from 'react-native-paper';
 import { FontAwesome } from '@expo/vector-icons'; // Importa o FontAwesome
 import { createStudentList, deleteStudent, getStudentByResponsible, updateStudent } from '../../data/studentServices';
 import { AuthContext } from '../../providers/AuthProvider';
@@ -15,8 +15,11 @@ const RegisterAlunoPerfil = ({ navigation }) => {
     const [tempAluno, setTempAluno] = useState({ name: '', year: '' });
     const [selectedAluno, setSelectedAluno] = useState(null);
     const [reload, setReload] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
 
     const requestData = async() => {
+        setIsLoading(true);
+
         const response = await getStudentByResponsible(userData.id);
 
         if(response.status === 200){
@@ -31,6 +34,8 @@ const RegisterAlunoPerfil = ({ navigation }) => {
         else{
             setAlunos([]);
         }
+
+        setIsLoading(false);
     };
 
     useEffect(() => {
@@ -229,6 +234,11 @@ const RegisterAlunoPerfil = ({ navigation }) => {
                                 </Button>
                             }
                         </View>
+                        {isLoading && (
+                            <View style={styles.loadingOverlay}>
+                                <ActivityIndicator size="large" color="#C36005" />
+                            </View>
+                        )}
                     </View>
                     <Portal>
                         <Modal visible={modalVisible} onDismiss={handleModalToggle} contentContainerStyle={styles.modalContainer}>
@@ -398,7 +408,13 @@ const styles = StyleSheet.create({
     buttonContainer: {
         display: "flex",
         flexDirection: "row"
-    }
+    },
+    loadingOverlay: {
+        ...StyleSheet.absoluteFillObject,
+        backgroundColor: '#090833',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
 });
 
 export default RegisterAlunoPerfil;

@@ -24,9 +24,13 @@ const TelaHome = ({ navigation }) => {
   }, [navigation]);
 
   useEffect(() => {
-    if(!hasStudent){
-      navigation.navigate("StudentMandatory");
-    }
+    console.log(hasStudent);
+    setTimeout(() => {     
+      console.log(hasStudent); 
+      if(!hasStudent){
+        navigation.navigate("StudentMandatory");
+      }
+    }, 1500);
   }, [navigation, hasStudent]);
   
   const handleLogout = async () => {

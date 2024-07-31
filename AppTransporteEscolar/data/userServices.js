@@ -42,3 +42,16 @@ export const getUserByEmail = async(email) => {
         return error.response;
     }
 };
+
+export const updateUser = async(body) => {
+    const _endpoint = '/update';
+
+    try{
+        const response  = await axios.put(_controller + _endpoint, body);
+
+        return response;
+    }
+    catch(error){
+        return error.response;
+    }
+};
