@@ -193,7 +193,6 @@ const MapaResponsavel = ({ navigation }) => {
                 setRemainingRoute(remainingPoints);
     
                 // Atualizar todos os pontos percorridos
-                setAllTraveledPoints(prevPoints => [...prevPoints, ...traveledPoints]);
     
                 console.log('Pontos percorridos:', traveledPoints.length());
                 console.log('Pontos restantes:', remainingPoints.length());
@@ -252,7 +251,11 @@ const MapaResponsavel = ({ navigation }) => {
                 <View style={styles.content}>
                     <MapView
                         style={styles.map}
-                        showsMyLocationButton={true}
+                        showsMyLocationButton={false}
+                        showsCompass={false}
+                        showsTraffic={true}
+                        showsBuildings={false}
+                        pitchEnabled={false}
                         camera={camera}
                         mapType='standard'
                     >
@@ -273,7 +276,7 @@ const MapaResponsavel = ({ navigation }) => {
                                 waypoints={optimizedWaypoints.slice(1, -1)}
                                 destination={optimizedWaypoints[optimizedWaypoints.length - 1]}
                                 apikey={apiKey}
-                                strokeWidth={5}
+                                strokeWidth={15}
                                 optimizeWaypoints={true}
                                 lineCap="round"
                                 precision="high"
