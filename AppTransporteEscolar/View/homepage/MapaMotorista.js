@@ -89,6 +89,16 @@ const MapaMotorista = ({ navigation }) => {
                         showsBuildings={false}
                         pitchEnabled={false}
                         region={region}
+                        camera={{
+                            center: {
+                                latitude: region.latitude,
+                                longitude: region.longitude,
+                            },
+                            pitch: 0,
+                            heading: heading, // Controla a direção do mapa
+                            altitude: 0,
+                            zoom: 18, // Ajuste o zoom conforme necessário
+                        }}
                     >
                         <Marker
                             coordinate={region}
