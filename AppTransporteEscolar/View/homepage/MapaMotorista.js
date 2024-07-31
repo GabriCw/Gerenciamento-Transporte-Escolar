@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { StyleSheet, View, Image } from 'react-native';
 import MapView, { Marker } from 'react-native-maps';
 import * as Location from 'expo-location';
@@ -6,9 +6,6 @@ import * as Location from 'expo-location';
 const MapaMotorista = ({ navigation }) => {
     const [region, setRegion] = useState(null);
     const [heading, setHeading] = useState(0);
-    const mapRef = useRef(null);
-    const inactivityTimeout = useRef(null);
-    const [isUserInteracting, setIsUserInteracting] = useState(false);
 
     useEffect(() => {
         const initializeLocation = async () => {
@@ -56,14 +53,12 @@ const MapaMotorista = ({ navigation }) => {
                 (location) => {
                     if (location) {
                         const { latitude, longitude, heading } = location.coords;
-                        if (!isUserInteracting) {
-                            setRegion({
-                                latitude,
-                                longitude,
-                                latitudeDelta: 0.005,
-                                longitudeDelta: 0.005,
-                            });
-                        }
+                        setRegion({
+                            latitude,
+                            longitude,
+                            latitudeDelta: 0.005,
+                            longitudeDelta: 0.005,
+                        });
                         setHeading(heading || 0);
                     } else {
                         console.log('Location update failed');
@@ -79,38 +74,13 @@ const MapaMotorista = ({ navigation }) => {
                 locationSubscription.remove();
             }
         };
-    }, [isUserInteracting]);
-
-    const recenterMap = () => {
-        if (region) {
-            setIsUserInteracting(false);
-            mapRef.current.animateCamera({
-                center: {
-                    latitude: region.latitude,
-                    longitude: region.longitude,
-                },
-                pitch: 0,
-                heading: heading,
-                zoom: 18, // Ajuste o zoom conforme necessário
-                altitude: 0,
-            }, { duration: 1000 }); // Anima a recentralização
-        }
-    };
-
-    const handleUserInteraction = () => {
-        setIsUserInteracting(true);
-        if (inactivityTimeout.current) {
-            clearTimeout(inactivityTimeout.current);
-        }
-        inactivityTimeout.current = setTimeout(recenterMap, 5000); // 5 segundos de inatividade
-    };
+    }, []);
 
     return (
         <View style={styles.view}>
             <View style={styles.content}>
                 {region && (
                     <MapView
-                        ref={mapRef}
                         style={styles.map}
                         showsUserLocation={false}
                         showsMyLocationButton={false}
@@ -119,9 +89,6 @@ const MapaMotorista = ({ navigation }) => {
                         showsBuildings={false}
                         pitchEnabled={false}
                         region={region}
-                        onPanDrag={handleUserInteraction}
-                        onRegionChangeComplete={handleUserInteraction}
-                        onPress={handleUserInteraction}
                         camera={{
                             center: {
                                 latitude: region.latitude,
@@ -137,7 +104,7 @@ const MapaMotorista = ({ navigation }) => {
                             coordinate={region}
                             title="Sua localização"
                             anchor={{ x: 0.5, y: 0.5 }}
-                            rotation={heading} // Define a rotação do marcador
+                            rotation={0} // Define a rotação do marcador
                         >
                             <Image
                                 source={require('../../assets/icons/van.png')}
