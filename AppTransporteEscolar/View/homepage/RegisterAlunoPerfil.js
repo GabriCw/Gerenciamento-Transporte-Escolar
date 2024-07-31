@@ -2,7 +2,7 @@ import React, { useContext, useEffect, useState } from 'react';
 import { View, StyleSheet, Text, ScrollView, Alert } from 'react-native';
 import { Button, Card, Modal, Portal, TextInput, Provider, IconButton } from 'react-native-paper';
 import { FontAwesome } from '@expo/vector-icons'; // Importa o FontAwesome
-import { createStudentList, getStudentByResponsible } from '../../data/studentServices';
+import { createStudentList, deleteStudent, getStudentByResponsible, updateStudent } from '../../data/studentServices';
 import { AuthContext } from '../../providers/AuthProvider';
 import Toast from 'react-native-toast-message';
 
@@ -14,26 +14,36 @@ const RegisterAlunoPerfil = ({ navigation }) => {
     const [alunos, setAlunos] = useState([]);
     const [tempAluno, setTempAluno] = useState({ name: '', year: '' });
     const [selectedAluno, setSelectedAluno] = useState(null);
+    const [reload, setReload] = useState(false);
+
+    const requestData = async() => {
+        const response = await getStudentByResponsible(userData.id);
+
+        if(response.status === 200){
+            const studentFormat = response.data.map(item => ({
+                id: item.id,
+                name: item.name,
+                year: item.year
+            }));
+
+            setAlunos(studentFormat);
+        }
+        else{
+            setAlunos([]);
+        }
+    };
 
     useEffect(() => {
-        const requestData = async() => {
-            const response = await getStudentByResponsible(userData.id);
-
-            if(response.status === 200){
-                const studentFormat = response.data.map(item => ({
-                    name: item.name,
-                    year: item.year
-                }));
-
-                setAlunos(studentFormat);
-            }
-            else{
-                setAlunos([]);
-            }
-        };
-
         requestData();
     }, []);
+
+    useEffect(() => {
+        if(reload){
+            setTimeout(() => {
+                requestData();
+            }, 1000);
+        }
+    }, [reload]);
 
     const handleModalToggle = () => {
         setModalVisible(!modalVisible);
@@ -57,8 +67,7 @@ const RegisterAlunoPerfil = ({ navigation }) => {
         const studentsBody = alunos.map(item => ({
             name: item.name,
             year: item.year,
-            responsible_id: userData.id,
-            point_id: 2
+            responsible_id: userData.id
         }));
 
         const response = await createStudentList(studentsBody);
@@ -84,18 +93,43 @@ const RegisterAlunoPerfil = ({ navigation }) => {
 
     const handleEdit = (aluno) => {
         setSelectedAluno(aluno);
-        setTempAluno({ name: aluno.name, year: aluno.year.toString() }); // Converta idade para string
+        setTempAluno({ id: aluno?.id, name: aluno.name, year: aluno.year.toString() }); // Converta idade para string
         handleEditModalToggle();
     };
 
-    const handleUpdate = () => {
-        if (tempAluno.nome && tempAluno.idade) {
-            const updatedAlunos = alunos.map(aluno =>
-                aluno === selectedAluno ? { ...tempAluno, year: parseInt(tempAluno.year, 10) } : aluno
-            );
-            setAlunos(updatedAlunos);
-            setTempAluno({ name: '', year: '' });
-            setEditModalVisible(false);
+    const handleUpdate = async() => {
+        if (tempAluno.name && tempAluno.year) {
+            if(tempAluno?.id !== undefined){
+                const response = await updateStudent(tempAluno);
+
+                if(response.status === 200){
+                    Toast.show({
+                        type: 'success',
+                        text1: 'Sucesso',
+                        text2: 'Edição realizada com sucesso!',
+                        visibilityTime: 3000,
+                    });
+
+                    setEditModalVisible(false);
+                    setReload(true);
+                }
+                else{
+                    Toast.show({
+                    type: 'error',
+                    text1: 'Erro',
+                    text2: 'Erro ao editar',
+                    visibilityTime: 3000,
+                    });
+                }
+            }
+            else{
+                const updatedAlunos = alunos.map(aluno =>
+                    aluno === selectedAluno ? { ...tempAluno, year: parseInt(tempAluno.year, 10) } : aluno
+                );
+                setAlunos(updatedAlunos);
+                setTempAluno({ name: '', year: '' });
+                setEditModalVisible(false);
+            }
         } else {
             alert('Por favor, preencha todos os campos');
         }
@@ -109,8 +143,31 @@ const RegisterAlunoPerfil = ({ navigation }) => {
                 { text: 'Cancelar', style: 'cancel' },
                 {
                     text: 'Excluir',
-                    onPress: () => {
-                        setAlunos(alunos.filter(aluno => aluno !== alunoToDelete));
+                    onPress: async() => {
+                        if(alunoToDelete?.id !== undefined){
+                            const response = await deleteStudent(alunoToDelete?.id)
+                            
+                            if(response.status === 200){
+                                setReload(true);
+                                Toast.show({
+                                    type: 'success',
+                                    text1: 'Sucesso',
+                                    text2: 'Remoção realizada com sucesso!',
+                                    visibilityTime: 3000,
+                                });
+                            }
+                            else{
+                                Toast.show({
+                                    type: 'error',
+                                    text1: 'Sucesso',
+                                    text2: 'Erro ao remover',
+                                    visibilityTime: 3000,
+                                });
+                            }
+                        }
+                        else{
+                            setAlunos(alunos.filter(aluno => aluno !== alunoToDelete));
+                        }
                     },
                 },
             ]

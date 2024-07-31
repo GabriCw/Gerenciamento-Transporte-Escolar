@@ -29,3 +29,29 @@ export const createStudentList = async(body) => {
         return error.response;
     }
 };
+
+export const deleteStudent = async(id) => {
+    const _endpoint = `/delete?student_id=${id}`;
+
+    try{
+        const response  = await axios.delete(_controller + _endpoint);
+
+        return response;
+    }
+    catch(error){
+        return error.response;
+    }
+};
+
+export const updateStudent = async(body) => {
+    const _endpoint = `/update`;
+
+    try{
+        const response  = await axios.put(_controller + _endpoint, body);
+
+        return response;
+    }
+    catch(error){
+        return error.response;
+    }
+};
