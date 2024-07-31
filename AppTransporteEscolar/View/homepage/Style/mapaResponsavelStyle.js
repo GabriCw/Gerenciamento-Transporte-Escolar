@@ -86,7 +86,7 @@ export const styles = StyleSheet.create({
         fontWeight: 'bold',
         fontSize: 30
     },
-    DeliveredCardPosition: {
+    deliveredCardPosition: {
         position: 'absolute',
         top: '13%',
         height: '8%',
