@@ -1,17 +1,11 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { StyleSheet, View, Image } from 'react-native';
-import MapView, { Marker, AnimatedRegion } from 'react-native-maps';
+import MapView, { Marker } from 'react-native-maps';
 import * as Location from 'expo-location';
 
 const MapaMotorista = ({ navigation }) => {
     const [userLocation, setUserLocation] = useState(null);
     const [heading, setHeading] = useState(0);
-    const mapAnimation = useRef(new AnimatedRegion({
-        latitude: 0,
-        longitude: 0,
-        latitudeDelta: 0.0122,
-        longitudeDelta: 0.0121,
-    })).current;
 
     useEffect(() => {
         const initializeLocation = async () => {
@@ -29,12 +23,6 @@ const MapaMotorista = ({ navigation }) => {
                 if (location) {
                     setUserLocation(location.coords);
                     setHeading(location.coords.heading || 0);
-                    mapAnimation.setValue({
-                        latitude: location.coords.latitude,
-                        longitude: location.coords.longitude,
-                        latitudeDelta: 0.0122,
-                        longitudeDelta: 0.0121,
-                    });
                 } else {
                     console.log('Could not get current location');
                 }
@@ -53,20 +41,11 @@ const MapaMotorista = ({ navigation }) => {
             locationSubscription = await Location.watchPositionAsync(
                 {
                     accuracy: Location.Accuracy.BestForNavigation,
-                    timeInterval: 1000, // Atualiza a cada 1 segundo
-                    distanceInterval: 1, // Ou a cada 1 metro
+                    timeInterval: 1000, // Atualiza a cada 5 segundos
+                    distanceInterval: 1, // Ou a cada 1 metros
                 },
                 (location) => {
                     if (location) {
-                        const { latitude, longitude } = location.coords;
-
-                        mapAnimation.timing({
-                            latitude,
-                            longitude,
-                            duration: 500, // duração da animação
-                            useNativeDriver: false
-                        }).start();
-
                         setUserLocation(location.coords);
                         setHeading(location.coords.heading || 0);
                     } else {
@@ -76,14 +55,16 @@ const MapaMotorista = ({ navigation }) => {
             );
         };
 
-        startLocationUpdates();
+        if (userLocation) {
+            startLocationUpdates();
+        }
 
         return () => {
             if (locationSubscription) {
                 locationSubscription.remove();
             }
         };
-    }, []);
+    }, [userLocation]);
 
     return (
         <View style={styles.view}>
@@ -97,15 +78,15 @@ const MapaMotorista = ({ navigation }) => {
                         showsTraffic={true}
                         showsBuildings={false}
                         pitchEnabled={false}
-                        region={{
-                            latitude: mapAnimation.latitude.__getValue(),
-                            longitude: mapAnimation.longitude.__getValue(),
+                        initialRegion={{
+                            latitude: userLocation.latitude,
+                            longitude: userLocation.longitude,
                             latitudeDelta: 0.0122,
                             longitudeDelta: 0.0121,
                         }}
                     >
-                        <Marker.Animated
-                            coordinate={mapAnimation}
+                        <Marker
+                            coordinate={userLocation}
                             title="Sua localização"
                             anchor={{ x: 0.5, y: 0.5 }}
                             rotation={heading} // Define a rotação do marcador
@@ -114,7 +95,7 @@ const MapaMotorista = ({ navigation }) => {
                                 source={require('../../assets/icons/van.png')}
                                 style={styles.vanImage}
                             />
-                        </Marker.Animated>
+                        </Marker>
                     </MapView>
                 )}
             </View>
