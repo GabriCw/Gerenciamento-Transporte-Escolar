@@ -4,7 +4,7 @@ import MapView, { Marker } from 'react-native-maps';
 import * as Location from 'expo-location';
 
 const MapaMotorista = ({ navigation }) => {
-    const [userLocation, setUserLocation] = useState(null);
+    const [region, setRegion] = useState(null);
     const [heading, setHeading] = useState(0);
 
     useEffect(() => {
@@ -21,8 +21,14 @@ const MapaMotorista = ({ navigation }) => {
                 });
 
                 if (location) {
-                    setUserLocation(location.coords);
-                    setHeading(location.coords.heading || 0);
+                    const { latitude, longitude, heading } = location.coords;
+                    setRegion({
+                        latitude,
+                        longitude,
+                        latitudeDelta: 0.005,  // Ajuste o zoom conforme necessário
+                        longitudeDelta: 0.005,
+                    });
+                    setHeading(heading || 0);
                 } else {
                     console.log('Could not get current location');
                 }
@@ -41,13 +47,19 @@ const MapaMotorista = ({ navigation }) => {
             locationSubscription = await Location.watchPositionAsync(
                 {
                     accuracy: Location.Accuracy.BestForNavigation,
-                    timeInterval: 1000, // Atualiza a cada 5 segundos
-                    distanceInterval: 1, // Ou a cada 1 metros
+                    timeInterval: 1000, // Atualiza a cada 1 segundo
+                    distanceInterval: 1, // Ou a cada 1 metro
                 },
                 (location) => {
                     if (location) {
-                        setUserLocation(location.coords);
-                        setHeading(location.coords.heading || 0);
+                        const { latitude, longitude, heading } = location.coords;
+                        setRegion({
+                            latitude,
+                            longitude,
+                            latitudeDelta: 0.005,
+                            longitudeDelta: 0.005,
+                        });
+                        setHeading(heading || 0);
                     } else {
                         console.log('Location update failed');
                     }
@@ -55,21 +67,19 @@ const MapaMotorista = ({ navigation }) => {
             );
         };
 
-        if (userLocation) {
-            startLocationUpdates();
-        }
+        startLocationUpdates();
 
         return () => {
             if (locationSubscription) {
                 locationSubscription.remove();
             }
         };
-    }, [userLocation]);
+    }, []);
 
     return (
         <View style={styles.view}>
             <View style={styles.content}>
-                {userLocation && (
+                {region && (
                     <MapView
                         style={styles.map}
                         showsUserLocation={false}
@@ -78,15 +88,10 @@ const MapaMotorista = ({ navigation }) => {
                         showsTraffic={true}
                         showsBuildings={false}
                         pitchEnabled={false}
-                        initialRegion={{
-                            latitude: userLocation.latitude,
-                            longitude: userLocation.longitude,
-                            latitudeDelta: 0.0122,
-                            longitudeDelta: 0.0121,
-                        }}
+                        region={region}
                     >
                         <Marker
-                            coordinate={userLocation}
+                            coordinate={region}
                             title="Sua localização"
                             anchor={{ x: 0.5, y: 0.5 }}
                             rotation={heading} // Define a rotação do marcador
