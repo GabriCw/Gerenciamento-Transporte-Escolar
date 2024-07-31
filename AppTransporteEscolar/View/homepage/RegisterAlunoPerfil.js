@@ -1,18 +1,39 @@
-import React, { useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { View, StyleSheet, Text, ScrollView, Alert } from 'react-native';
 import { Button, Card, Modal, Portal, TextInput, Provider, IconButton } from 'react-native-paper';
 import { FontAwesome } from '@expo/vector-icons'; // Importa o FontAwesome
+import { createStudentList, getStudentByResponsible } from '../../data/studentServices';
+import { AuthContext } from '../../providers/AuthProvider';
+import Toast from 'react-native-toast-message';
 
 const RegisterAlunoPerfil = ({ navigation }) => {
+    const { userData } = useContext(AuthContext);
+
     const [modalVisible, setModalVisible] = useState(false);
     const [editModalVisible, setEditModalVisible] = useState(false);
-    const [alunos, setAlunos] = useState([
-        { nome: 'João', idade: 8 },
-        { nome: 'Maria', idade: 9 },
-        { nome: 'Carlos', idade: 10 },
-    ]);
-    const [tempAluno, setTempAluno] = useState({ nome: '', idade: '' });
+    const [alunos, setAlunos] = useState([]);
+    const [tempAluno, setTempAluno] = useState({ name: '', year: '' });
     const [selectedAluno, setSelectedAluno] = useState(null);
+
+    useEffect(() => {
+        const requestData = async() => {
+            const response = await getStudentByResponsible(userData.id);
+
+            if(response.status === 200){
+                const studentFormat = response.data.map(item => ({
+                    name: item.name,
+                    year: item.year
+                }));
+
+                setAlunos(studentFormat);
+            }
+            else{
+                setAlunos([]);
+            }
+        };
+
+        requestData();
+    }, []);
 
     const handleModalToggle = () => {
         setModalVisible(!modalVisible);
@@ -23,28 +44,57 @@ const RegisterAlunoPerfil = ({ navigation }) => {
     };
 
     const handleSave = () => {
-        if (tempAluno.nome && tempAluno.idade) {
-            setAlunos([...alunos, { ...tempAluno, idade: parseInt(tempAluno.idade, 10) }]);
-            setTempAluno({ nome: '', idade: '' });
+        if (tempAluno.name && tempAluno.year) {
+            setAlunos([...alunos, { ...tempAluno, year: parseInt(tempAluno.year, 10) }]);
+            setTempAluno({ name: '', year: '' });
             setModalVisible(false);
         } else {
             alert('Por favor, preencha todos os campos');
         }
     };
 
+    const handleAddStudent = async() => {
+        const studentsBody = alunos.map(item => ({
+            name: item.name,
+            year: item.year,
+            responsible_id: userData.id,
+            point_id: 2
+        }));
+
+        const response = await createStudentList(studentsBody);
+
+        if(response.status === 201){
+            Toast.show({
+                type: 'success',
+                text1: 'Sucesso',
+                text2: 'Cadastro realizado com sucesso!',
+                visibilityTime: 3000,
+            });
+            navigation.goBack();
+        }
+        else{
+            Toast.show({
+                type: 'error',
+                text1: 'Erro',
+                text2: 'Erro ao cadastrar',
+                visibilityTime: 3000,
+            });
+        }
+    };
+
     const handleEdit = (aluno) => {
         setSelectedAluno(aluno);
-        setTempAluno({ nome: aluno.nome, idade: aluno.idade.toString() }); // Converta idade para string
+        setTempAluno({ name: aluno.name, year: aluno.year.toString() }); // Converta idade para string
         handleEditModalToggle();
     };
 
     const handleUpdate = () => {
         if (tempAluno.nome && tempAluno.idade) {
             const updatedAlunos = alunos.map(aluno =>
-                aluno === selectedAluno ? { ...tempAluno, idade: parseInt(tempAluno.idade, 10) } : aluno
+                aluno === selectedAluno ? { ...tempAluno, year: parseInt(tempAluno.year, 10) } : aluno
             );
             setAlunos(updatedAlunos);
-            setTempAluno({ nome: '', idade: '' });
+            setTempAluno({ name: '', year: '' });
             setEditModalVisible(false);
         } else {
             alert('Por favor, preencha todos os campos');
@@ -91,8 +141,8 @@ const RegisterAlunoPerfil = ({ navigation }) => {
                                                 <FontAwesome name="child" size={45} color="black" style={styles.icon} />
                                             </View>
                                             <View style={styles.cardDetails}>
-                                                <Text style={[styles.cardText, {marginTop:1}]}>Nome: {aluno.nome}</Text>
-                                                <Text style={styles.cardText}>Idade: {aluno.idade}</Text>
+                                                <Text style={[styles.cardText, {marginTop:1}]}>Nome: {aluno.name}</Text>
+                                                <Text style={styles.cardText}>Idade: {aluno.year}</Text>
                                             </View>
                                             <IconButton  icon="pencil" size={20} onPress={() => handleEdit(aluno)}>
                                             </IconButton>
@@ -103,34 +153,43 @@ const RegisterAlunoPerfil = ({ navigation }) => {
                                 ))}
                             </ScrollView>
                         </View>
-                        <Button
-                            mode="contained"
-                            onPress={handleModalToggle}
-                            style={styles.addButton}
-                        >
-                            Cadastrar Aluno
-                        </Button>
+                        <View style={styles.buttonContainer}>
+                            <Button
+                                mode="contained"
+                                onPress={handleModalToggle}
+                                style={styles.addButton}
+                            >
+                                Cadastrar Aluno
+                            </Button>
+                            <Button
+                                mode="contained"
+                                onPress={handleAddStudent}
+                                style={styles.addButton}
+                            >
+                                Salvar
+                            </Button>
+                        </View>
                     </View>
                     <Portal>
                         <Modal visible={modalVisible} onDismiss={handleModalToggle} contentContainerStyle={styles.modalContainer}>
                             <Text style={styles.modalTitle}>Cadastrar Aluno</Text>
                             <TextInput
                                 label="Nome"
-                                value={tempAluno.nome}
+                                value={tempAluno.name}
                                 mode="outlined"
                                 activeOutlineColor="#C36005"
                                 keyboardAppearance="dark"
-                                onChangeText={(text) => setTempAluno({ ...tempAluno, nome: text })}
+                                onChangeText={(text) => setTempAluno({ ...tempAluno, name: text })}
                                 style={styles.input}
                             />
                             <TextInput
                                 label="Idade"
-                                value={tempAluno.idade}
+                                value={tempAluno.year}
                                 mode="outlined"
                                 activeOutlineColor="#C36005"
                                 keyboardAppearance="dark"
                                 keyboardType="numeric"
-                                onChangeText={(text) => setTempAluno({ ...tempAluno, idade: text })}
+                                onChangeText={(text) => setTempAluno({ ...tempAluno, year: text })}
                                 style={styles.input}
                             />
                             <Button mode="contained" onPress={handleSave} style={styles.saveButton}>
@@ -141,21 +200,21 @@ const RegisterAlunoPerfil = ({ navigation }) => {
                             <Text style={styles.modalTitle}>Editar Aluno</Text>
                             <TextInput
                                 label="Nome"
-                                value={tempAluno.nome}
+                                value={tempAluno.name}
                                 mode="outlined"
                                 activeOutlineColor="#C36005"
                                 keyboardAppearance="dark"
-                                onChangeText={(text) => setTempAluno({ ...tempAluno, nome: text })}
+                                onChangeText={(text) => setTempAluno({ ...tempAluno, name: text })}
                                 style={styles.input}
                             />
                             <TextInput
                                 label="Idade"
-                                value={tempAluno.idade}
+                                value={tempAluno.year}
                                 mode="outlined"
                                 activeOutlineColor="#C36005"
                                 keyboardAppearance="dark"
                                 keyboardType="numeric"
-                                onChangeText={(text) => setTempAluno({ ...tempAluno, idade: text })}
+                                onChangeText={(text) => setTempAluno({ ...tempAluno, year: text })}
                                 style={styles.input}
                             />
                             <Button mode="contained" onPress={handleUpdate} style={styles.saveButton}>
@@ -276,6 +335,10 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
     },
+    buttonContainer: {
+        display: "flex",
+        flexDirection: "row"
+    }
 });
 
 export default RegisterAlunoPerfil;

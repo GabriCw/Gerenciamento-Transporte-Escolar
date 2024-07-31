@@ -16,3 +16,16 @@ export const getStudentByResponsible = async(userId) => {
         return error.response;
     }
 };
+
+export const createStudentList = async(body) => {
+    const _endpoint = `/create-list`;
+
+    try{
+        const response  = await axios.post(_controller + _endpoint, body);
+
+        return response;
+    }
+    catch(error){
+        return error.response;
+    }
+};
