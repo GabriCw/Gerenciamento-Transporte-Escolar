@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { StyleSheet, View, Image } from 'react-native';
 import MapView, { Marker } from 'react-native-maps';
 import * as Location from 'expo-location';
@@ -6,6 +6,8 @@ import * as Location from 'expo-location';
 const MapaMotorista = ({ navigation }) => {
     const [region, setRegion] = useState(null);
     const [heading, setHeading] = useState(0);
+    const mapRef = useRef(null);
+    const inactivityTimeout = useRef(null);
 
     useEffect(() => {
         const initializeLocation = async () => {
@@ -76,11 +78,34 @@ const MapaMotorista = ({ navigation }) => {
         };
     }, []);
 
+    const recenterMap = () => {
+        if (region) {
+            mapRef.current.animateCamera({
+                center: {
+                    latitude: region.latitude,
+                    longitude: region.longitude,
+                },
+                pitch: 0,
+                heading: heading,
+                zoom: 18, // Ajuste o zoom conforme necessário
+                altitude: 0,
+            }, { duration: 1000 }); // Anima a recentralização
+        }
+    };
+
+    const resetInactivityTimeout = () => {
+        if (inactivityTimeout.current) {
+            clearTimeout(inactivityTimeout.current);
+        }
+        inactivityTimeout.current = setTimeout(recenterMap, 5000); // 5 segundos de inatividade
+    };
+
     return (
         <View style={styles.view}>
             <View style={styles.content}>
                 {region && (
                     <MapView
+                        ref={mapRef}
                         style={styles.map}
                         showsUserLocation={false}
                         showsMyLocationButton={false}
@@ -89,6 +114,9 @@ const MapaMotorista = ({ navigation }) => {
                         showsBuildings={false}
                         pitchEnabled={false}
                         region={region}
+                        onPanDrag={resetInactivityTimeout}
+                        onRegionChangeComplete={resetInactivityTimeout}
+                        onPress={resetInactivityTimeout}
                         camera={{
                             center: {
                                 latitude: region.latitude,
