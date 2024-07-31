@@ -8,6 +8,7 @@ const MapaMotorista = ({ navigation }) => {
     const [heading, setHeading] = useState(0);
     const mapRef = useRef(null);
     const inactivityTimeout = useRef(null);
+    const [isUserInteracting, setIsUserInteracting] = useState(false);
 
     useEffect(() => {
         const initializeLocation = async () => {
@@ -55,12 +56,14 @@ const MapaMotorista = ({ navigation }) => {
                 (location) => {
                     if (location) {
                         const { latitude, longitude, heading } = location.coords;
-                        setRegion({
-                            latitude,
-                            longitude,
-                            latitudeDelta: 0.005,
-                            longitudeDelta: 0.005,
-                        });
+                        if (!isUserInteracting) {
+                            setRegion({
+                                latitude,
+                                longitude,
+                                latitudeDelta: 0.005,
+                                longitudeDelta: 0.005,
+                            });
+                        }
                         setHeading(heading || 0);
                     } else {
                         console.log('Location update failed');
@@ -76,10 +79,11 @@ const MapaMotorista = ({ navigation }) => {
                 locationSubscription.remove();
             }
         };
-    }, []);
+    }, [isUserInteracting]);
 
     const recenterMap = () => {
         if (region) {
+            setIsUserInteracting(false);
             mapRef.current.animateCamera({
                 center: {
                     latitude: region.latitude,
@@ -93,7 +97,8 @@ const MapaMotorista = ({ navigation }) => {
         }
     };
 
-    const resetInactivityTimeout = () => {
+    const handleUserInteraction = () => {
+        setIsUserInteracting(true);
         if (inactivityTimeout.current) {
             clearTimeout(inactivityTimeout.current);
         }
@@ -114,9 +119,9 @@ const MapaMotorista = ({ navigation }) => {
                         showsBuildings={false}
                         pitchEnabled={false}
                         region={region}
-                        onPanDrag={resetInactivityTimeout}
-                        onRegionChangeComplete={resetInactivityTimeout}
-                        onPress={resetInactivityTimeout}
+                        onPanDrag={handleUserInteraction}
+                        onRegionChangeComplete={handleUserInteraction}
+                        onPress={handleUserInteraction}
                         camera={{
                             center: {
                                 latitude: region.latitude,
