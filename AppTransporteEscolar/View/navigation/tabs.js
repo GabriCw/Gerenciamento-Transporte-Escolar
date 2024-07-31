@@ -27,13 +27,13 @@ const HomeStack = () => (
   </Stack.Navigator>
 );
 
-const PerfilRespStack = () => (
-  <Stack.Navigator initialRouteName='Perfil'>
+const PerfilRespStack = () => {
+  return <Stack.Navigator initialRouteName={'Perfil'}>
     <Stack.Screen name="Perfil" component={PerfilResp} options={{ headerShown: false }} />
     <Stack.Screen name="Alunos" component={RegisterAlunoPerfil} options={{ headerShown: false }} />
     <Stack.Screen name="VerPerfilResp" component={VerPerfilResp} options={{ headerShown: false }} />
   </Stack.Navigator>
-);
+};
 
 const PerfilMotoStack = () => (
   <Stack.Navigator initialRouteName='Perfil'>
@@ -44,7 +44,7 @@ const PerfilMotoStack = () => (
 );
 
 const Tabs = () => {
-  const {userData} = useContext(AuthContext);
+  const {userData, hasStudent} = useContext(AuthContext);
 
   return (
     <Tab.Navigator
@@ -61,11 +61,19 @@ const Tabs = () => {
         },
       }}
     >
-      <Tab.Screen name="Home" component={HomeStack} options={{ headerShown: false, tabBarIcon: ({focused}) =>(<FontAwesome name="home" size={24} color= {focused? '#C36005' : 'black'}/>)}} />
-      <Tab.Screen name="Mapa" component={MapaMotorista} options={{ headerShown: false, tabBarIcon: ({focused}) =>(<FontAwesome name="map" size={20} color= {focused? '#C36005' : 'black'}/>)}} />
-      {userData.user_type_id === userTypeEnum.RESPONSAVEL?
-      <Tab.Screen name="Perfil" component={PerfilRespStack} options={{ headerShown: false, tabBarIcon: ({focused}) =>(<FontAwesome name="user" size={24} color= {focused? '#C36005' : 'black'}/>)}} />
-      : <Tab.Screen name="Perfil" component={PerfilMotoStack} options={{ headerShown: false, tabBarIcon: ({focused}) =>(<FontAwesome name="user" size={24} color= {focused? '#C36005' : 'black'}/>)}} />}
+      {
+        userData.user_type_id === userTypeEnum.RESPONSAVEL ?
+        <>
+          <Tab.Screen name="Home" component={HomeStack} options={{ headerShown: false, tabBarIcon: ({focused}) =>(<FontAwesome name="home" size={24} color= {focused? '#C36005' : 'black'}/>)}} />
+          <Tab.Screen name="Mapa" component={MapaMotorista} options={{ headerShown: false, tabBarIcon: ({focused}) =>(<FontAwesome name="map" size={20} color= {focused? '#C36005' : 'black'}/>)}} />
+          <Tab.Screen name="Perfil" component={PerfilRespStack} options={{ headerShown: false, tabBarIcon: ({focused}) =>(<FontAwesome name="user" size={24} color= {focused? '#C36005' : 'black'}/>)}} />        
+        </>
+        :
+        <>
+          <Tab.Screen name="Home" component={HomeStack} options={{ headerShown: false, tabBarIcon: ({focused}) =>(<FontAwesome name="home" size={24} color= {focused? '#C36005' : 'black'}/>)}} />
+          <Tab.Screen name="Mapa" component={MapaMotorista} options={{ headerShown: false, tabBarIcon: ({focused}) =>(<FontAwesome name="map" size={20} color= {focused? '#C36005' : 'black'}/>)}} />
+          <Tab.Screen name="Perfil" component={PerfilMotoStack} options={{ headerShown: false, tabBarIcon: ({focused}) =>(<FontAwesome name="user" size={24} color= {focused? '#C36005' : 'black'}/>)}} />        </>
+      }
     </Tab.Navigator>
   );
 };

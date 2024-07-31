@@ -9,7 +9,7 @@ import { AuthContext } from '../../providers/AuthProvider';
 
 const TelaHome = ({ navigation }) => {
 
-  const {userData} = useContext(AuthContext);
+  const {hasStudent} = useContext(AuthContext);
 
   useEffect(() => {
     const monitorAuthState = () => {
@@ -23,6 +23,12 @@ const TelaHome = ({ navigation }) => {
     monitorAuthState();
   }, [navigation]);
 
+  useEffect(() => {
+    if(!hasStudent){
+      navigation.navigate("StudentMandatory");
+    }
+  }, [navigation, hasStudent]);
+  
   const handleLogout = async () => {
     await signOut(auth);
   };

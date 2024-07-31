@@ -6,7 +6,7 @@ import { createStudentList, deleteStudent, getStudentByResponsible, updateStuden
 import { AuthContext } from '../../providers/AuthProvider';
 import Toast from 'react-native-toast-message';
 
-const RegisterAlunoPerfil = ({ navigation }) => {
+const RegisterStudentMandatory = ({ navigation }) => {
     const { userData } = useContext(AuthContext);
 
     const [modalVisible, setModalVisible] = useState(false);
@@ -178,17 +178,8 @@ const RegisterAlunoPerfil = ({ navigation }) => {
         <Provider>
             <Portal.Host>
                 <View style={styles.view}>
-                    <View style={styles.header}>
-                        <Button
-                            onPress={() => navigation.goBack()}
-                            style={styles.buttonBack}
-                            labelStyle={styles.buttonLabel}
-                        >
-                            <Text>Voltar</Text>
-                        </Button>
-                    </View>
                     <View style={styles.content}>
-                        <Text style={styles.text}>Seus Alunos</Text>
+                        <Text style={styles.text}>Crie o seu aluno</Text>
                         <View style={styles.scrollContainer}>
                             <ScrollView contentContainerStyle={styles.scrollContent}>
                                 {alunos.map((aluno, index) => (
@@ -302,8 +293,10 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
     },
     content: {
+        display: "flex",
+        flexDirection: "column",
         flex: 1,
-        marginTop: 30,
+        justifyContent: "center",
         alignItems: 'center',
     },
     scrollContainer: {
@@ -401,4 +394,4 @@ const styles = StyleSheet.create({
     }
 });
 
-export default RegisterAlunoPerfil;
+export default RegisterStudentMandatory;

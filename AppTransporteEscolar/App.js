@@ -11,6 +11,7 @@ import RegisterResponsavelScreen from './View/login/RegisterResponsavel';
 import Tabs from './View/navigation/tabs';
 import { AuthProvider } from './providers/AuthProvider';
 import { Provider as PaperProvider } from 'react-native-paper';
+import RegisterStudentMandatory from './View/homepage/RegisterStudentMandatory';
 
 const Stack = createStackNavigator();
 
@@ -24,6 +25,7 @@ const App = () => {
             <Stack.Screen name="ForgotPassword" component={ForgotPasswordScreen} options={{ headerShown: false }}/>
             <Stack.Screen name="ConfirmEmail" component={ConfirmEmailScreen} options={{ headerShown: false }}/>
             <Stack.Screen name="Register" component={RegisterResponsavelScreen} options={{ headerShown: false }}/>
+            <Stack.Screen name="StudentMandatory" component={RegisterStudentMandatory} options={{ headerShown: false }}/>
             <Stack.Screen name="TelaHome" component={Tabs} options={{ headerShown: false }}/>
           </Stack.Navigator>
           <Toast ref={(ref) => Toast.setRef(ref)} />
