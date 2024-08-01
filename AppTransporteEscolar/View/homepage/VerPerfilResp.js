@@ -14,7 +14,6 @@ import { pointTypeEnum } from '../../utils/pointTypeEnum';
 const VerPerfilResp = ({ navigation }) => {
     const { userData, pointsData, phonesData, handleUpdateUserdata } = useContext(AuthContext);
 
-    const [userId, setUserId] = useState(null);
     const [pointId, setPointId] = useState(null);
     const [pointName, setPointName] = useState(null);
     const [pointDescription, setPointDescription] = useState(null);
@@ -56,7 +55,7 @@ const VerPerfilResp = ({ navigation }) => {
         setIsModalVisibleUser(!isModalVisibleUser);
     };
 
-    const handleModalToggle = () => {
+    const handleOpenModalPoint = () => {
         setIsModalVisible(!isModalVisible);
     };
 
@@ -90,8 +89,8 @@ const VerPerfilResp = ({ navigation }) => {
                         text2: 'Edição realizada com sucesso!',
                         visibilityTime: 3000,
                     });
-                    handleModalToggle();
-                }, 1500);
+                    handleOpenModalPoint();
+                }, 1000);
             }
             else{
                 Toast.show({
@@ -223,7 +222,7 @@ const VerPerfilResp = ({ navigation }) => {
                                 <Card.Title
                                     title="Meu Endereço"
                                     titleStyle={styles.cardTitle}
-                                    right={(props) => <IconButton {...props} icon="pencil" onPress={handleModalToggle} />}
+                                    right={(props) => <IconButton {...props} icon="pencil" onPress={handleOpenModalPoint} />}
                                 />
                                 <Card.Content>
                                     <Text style={styles.cardText}>Endereço: {address}, {number}</Text>
@@ -283,7 +282,7 @@ const VerPerfilResp = ({ navigation }) => {
                         </Button>
                     </Modal>
 
-                    <Modal visible={isModalVisible} onDismiss={handleModalToggle} contentContainerStyle={styles.modalContainer}>
+                    <Modal visible={isModalVisible} onDismiss={handleOpenModalPoint} contentContainerStyle={styles.modalContainer}>
                         <Text style={styles.modalTitle}>Editar Endereço</Text>
                         <TextInput
                             label="CEP"
