@@ -31,7 +31,6 @@ const VerPerfilResp = ({ navigation }) => {
     const [isModalVisibleUser, setIsModalVisibleUser] = useState(false);
 
     useEffect(() => {
-        setUserId(userData.id);
         setName(userData.name);
         setEmail(userData.email);
         setCpf(formatCPF(userData.cpf));
