@@ -2,16 +2,18 @@ import { createContext, useEffect, useState } from "react";
 import { auth } from "../firebase/firebase";
 import { userTypeEnum } from "../utils/userTypeEnum";
 import { getStudentByResponsible } from "../data/studentServices";
-import { getUserByEmail } from "../data/userServices";
+import { getUserByEmail, getUserDetails } from "../data/userServices";
 
 const defaultAuthProvider = {
     userData: null,
     token: null,
     hasStudent: false,
-    handleGenerateToken: () => {},
-    handleSaveUserData: (data) => {},
+    pointsData: [],
+    phonesData: [],
+    handleGenerateToken: async() => {},
     handleVerifyStudent: async(data) => {},
-    handleUpdateUserdata: async() => {}
+    handleUpdateUserdata: async() => {},
+    handleGetUserDetails: async(id) => {}
 };
 
 export const AuthContext = createContext(defaultAuthProvider);
@@ -20,11 +22,24 @@ export function AuthProvider({children}) {
     const [token, setToken] = useState("");
     const [hasStudent, setHasStudent] = useState(false);
     const [userData, setUserData] = useState(null);
+    const [pointsData, setPointsData] = useState([]);
+    const [phonesData, setPhonesData] = useState([]);
 
-    const handleSaveUserData = (data) => {
-        setUserData(data);
+    const handleGetUserDetails = async(id) => {
+        const response = await getUserDetails(id);
+
+        if(response.status === 200){
+            setUserData(response.data.user);
+            setPointsData(response.data.points);
+            setPhonesData(response.data.phone);
+
+            return true;
+        }
+        else{
+            return false;
+        }
     };
-    
+
     const handleVerifyStudent = async(data) => {
         if(data.user_type_id === userTypeEnum.RESPONSAVEL){
             const response = await getStudentByResponsible(data.id);
@@ -55,14 +70,9 @@ export function AuthProvider({children}) {
     };
 
     const handleUpdateUserdata = async() => {
-        const response = await getUserByEmail(userData.email);
+        const response = await handleGetUserDetails(userData.id);
 
-        if(response.status === 200){
-            return true;
-        }
-        else{
-            return false;
-        }
+        return response;
     };
 
     return (
@@ -71,10 +81,12 @@ export function AuthProvider({children}) {
             userData,
             token,
             hasStudent,
+            pointsData,
+            phonesData,
             handleGenerateToken,
-            handleSaveUserData,
             handleVerifyStudent,
-            handleUpdateUserdata
+            handleUpdateUserdata,
+            handleGetUserDetails
         }}>
             {children}
         </AuthContext.Provider>

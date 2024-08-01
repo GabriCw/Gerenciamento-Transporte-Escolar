@@ -46,6 +46,8 @@ const PerfilMotoStack = () => (
 const Tabs = () => {
   const {userData, hasStudent} = useContext(AuthContext);
 
+  console.log(userData);
+
   return (
     <Tab.Navigator
       tabBarOptions={{

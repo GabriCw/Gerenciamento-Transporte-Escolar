@@ -8,18 +8,23 @@ import { updateUser } from '../../data/userServices';
 import Toast from 'react-native-toast-message';
 import { formatCPF, formatRG } from '../../utils/formatUtils';
 import { getAddressByCEP } from '../../data/cepServices';
+import { updatePoint } from '../../data/pointServices';
+import { pointTypeEnum } from '../../utils/pointTypeEnum';
 
 const VerPerfilResp = ({ navigation }) => {
-    const { userData, handleUpdateUserdata } = useContext(AuthContext);
+    const { userData, pointsData, phonesData, handleUpdateUserdata } = useContext(AuthContext);
 
-    console.log(userData);
-
+    const [userId, setUserId] = useState(null);
+    const [pointId, setPointId] = useState(null);
+    const [pointName, setPointName] = useState(null);
+    const [pointDescription, setPointDescription] = useState(null);
     const [name, setName] = useState(null);
     const [email, setEmail] = useState(null);
     const [cep, setCep] = useState(null);
     const [address, setAddress] = useState(null);
     const [number, setNumber] = useState(null);
     const [state, setState] = useState(null);
+    const [neighborhood, setNeighborhood] = useState(null);
     const [city, setCity] = useState(null);
     const [cpf, setCpf] = useState(null);
     const [rg, setRg] = useState(null);
@@ -27,16 +32,25 @@ const VerPerfilResp = ({ navigation }) => {
     const [isModalVisibleUser, setIsModalVisibleUser] = useState(false);
 
     useEffect(() => {
+        setUserId(userData.id);
         setName(userData.name);
         setEmail(userData.email);
-        setCep(userData.cep);
-        setAddress(userData.address);
-        setNumber(userData.number);
-        setState(userData.state);
-        setCity(userData.city);
         setCpf(formatCPF(userData.cpf));
         setRg(formatRG(userData.rg));
-    }, [navigation, userData]);
+
+        const point = pointsData[0];
+        const address = point.address.split(",");
+
+        setPointId(point.id);
+        setAddress(address[0]);
+        setNumber(address[1]);
+        setCep(point?.cep);
+        setState(point?.state);
+        setCity(point?.city);
+        setNeighborhood(point?.neighborhood);
+        setPointDescription(point.description);
+        setPointName(point.name);
+    }, [navigation, userData, pointsData]);
 
     const handleOpenModalUser = () => {
         setIsModalVisibleUser(!isModalVisibleUser);
@@ -46,16 +60,59 @@ const VerPerfilResp = ({ navigation }) => {
         setIsModalVisible(!isModalVisible);
     };
 
-    const handleSaveAddress = () => {
+    const handleUpdatePoint = async() => {
         if (!cep || !address || !number || !state || !city) {
             Alert.alert('Erro', 'Preencha todos os campos para salvar o endereço');
             return;
         }
-        // Salvar alterações de endereço
-        handleModalToggle();
+
+        const body = {
+            id: pointId,
+            name: pointName,
+            address: `${address}, ${number}`,
+            city: city,
+            neighborhood: neighborhood,
+            state: state,
+            description: pointDescription,
+            point_type_id: pointTypeEnum.RESIDÊNCIA
+        };
+
+        const response = await updatePoint(body);
+
+        if(response.status === 200){
+            const reload = await handleUpdateUserdata();
+
+            if(reload === true){
+                setTimeout(() => {
+                    Toast.show({
+                        type: 'success',
+                        text1: 'Sucesso',
+                        text2: 'Edição realizada com sucesso!',
+                        visibilityTime: 3000,
+                    });
+                    handleModalToggle();
+                }, 1500);
+            }
+            else{
+                Toast.show({
+                    type: 'error',
+                    text1: 'Sucesso',
+                    text2: 'Erro ao atualizar',
+                    visibilityTime: 3000,
+                });
+            }
+        }
+        else{
+            Toast.show({
+                type: 'error',
+                text1: 'Sucesso',
+                text2: 'Erro ao editar',
+                visibilityTime: 3000,
+            });
+        }
     };
 
-    const handleSaveUser = async() => {
+    const handleUpdateUser = async() => {
         if (!name || !email || !cpf || ( rg && !rg)) {
             Alert.alert('Erro', 'Preencha todos os campos para salvar o endereço');
             return;
@@ -110,9 +167,10 @@ const VerPerfilResp = ({ navigation }) => {
         const response = await getAddressByCEP(cep);
 
         if(response.status === 200){
-            setAddress(data.logradouro);
-            setState(data.uf);
-            setCity(data.localidade);
+            setAddress(response.data.logradouro);
+            setState(response.data.uf);
+            setCity(response.data.localidade);
+            setNeighborhood(response.data.bairro);
             setNumber(null);
         }
         else{
@@ -160,19 +218,21 @@ const VerPerfilResp = ({ navigation }) => {
                             </Card.Content>
                         </Card>
 
-                        <Card style={styles.addressCard}>
-                            <Card.Title
-                                title="Meu Endereço"
-                                titleStyle={styles.cardTitle}
-                                right={(props) => <IconButton {...props} icon="pencil" onPress={handleModalToggle} />}
-                            />
-                            <Card.Content>
-                                <Text style={styles.cardText}>CEP: {cep}</Text>
-                                <Text style={styles.cardText}>Endereço: {address}, {number}</Text>
-                                <Text style={styles.cardText}>Estado: {state}</Text>
-                                <Text style={styles.cardText}>Cidade: {city}</Text>
-                            </Card.Content>
-                        </Card>
+                        {
+                            pointsData?.length > 0 && <Card style={styles.addressCard}>
+                                <Card.Title
+                                    title="Meu Endereço"
+                                    titleStyle={styles.cardTitle}
+                                    right={(props) => <IconButton {...props} icon="pencil" onPress={handleModalToggle} />}
+                                />
+                                <Card.Content>
+                                    <Text style={styles.cardText}>Endereço: {address}, {number}</Text>
+                                    <Text style={styles.cardText}>Bairro: {neighborhood}</Text>
+                                    <Text style={styles.cardText}>Estado: {state}</Text>
+                                    <Text style={styles.cardText}>Cidade: {city}</Text>
+                                </Card.Content>
+                            </Card>
+                        }
                     </View>
                 </KeyboardAwareScrollView>
                 <Portal>
@@ -218,7 +278,7 @@ const VerPerfilResp = ({ navigation }) => {
                                     keyboardAppearance="dark"
                                 />
                         }
-                        <Button mode="contained" onPress={handleSaveUser} style={styles.saveButton}>
+                        <Button mode="contained" onPress={handleUpdateUser} style={styles.saveButton}>
                             Salvar
                         </Button>
                     </Modal>
@@ -253,10 +313,21 @@ const VerPerfilResp = ({ navigation }) => {
                             label="Número"
                             value={number}
                             onChangeText={setNumber}
-                            style={styles.textInputModal}
+                            style={[styles.textInputModal, cep?.length !== 8 && styles.disabledTextInput]}
                             mode="outlined"
                             activeOutlineColor="#C36005"
                             keyboardAppearance="dark"
+                            editable={cep?.length === 8}
+                        />
+                        <TextInput
+                            label="Bairro"
+                            value={neighborhood}
+                            onChangeText={setNeighborhood}
+                            style={[styles.textInputModal, cep?.length !== 8 && styles.disabledTextInput]}
+                            mode="outlined"
+                            activeOutlineColor="#C36005"
+                            keyboardAppearance="dark"
+                            editable={cep?.length === 8}
                         />
                         <TextInput
                             label="Estado"
@@ -278,7 +349,7 @@ const VerPerfilResp = ({ navigation }) => {
                             keyboardAppearance="dark"
                             editable={cep?.length === 8}
                         />
-                        <Button mode="contained" onPress={handleSaveAddress} style={styles.saveButton}>
+                        <Button mode="contained" onPress={handleUpdatePoint} style={styles.saveButton}>
                             Salvar
                         </Button>
                     </Modal>

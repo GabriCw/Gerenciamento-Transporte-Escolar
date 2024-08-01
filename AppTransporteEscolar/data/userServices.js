@@ -43,6 +43,19 @@ export const getUserByEmail = async(email) => {
     }
 };
 
+export const getUserDetails = async(id) => {
+    const _endpoint = `/details?user_id=${id}`;
+
+    try{
+        const response  = await axios.get(_controller + _endpoint);
+
+        return response;
+    }
+    catch(error){
+        return error.response;
+    }
+};
+
 export const updateUser = async(body) => {
     const _endpoint = '/update';
 

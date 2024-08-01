@@ -9,7 +9,7 @@ import { getUserByEmail } from '../../data/userServices';
 import { AuthContext } from '../../providers/AuthProvider';
 
 const TelaLogin = ({ navigation }) => {
-    const {handleGenerateToken, handleSaveUserData, handleVerifyStudent} = useContext(AuthContext);
+    const {handleGenerateToken, handleVerifyStudent, handleGetUserDetails} = useContext(AuthContext);
 
     const [email, setEmail] = useState('');
     const [senha, setSenha] = useState('');
@@ -23,17 +23,14 @@ const TelaLogin = ({ navigation }) => {
 
         if(validEmail.status === 200){
             try {
-                await signInWithEmailAndPassword(auth, email, senha);
+                await Promise.all([signInWithEmailAndPassword(auth, email, senha), handleGenerateToken(), 
+                    handleGetUserDetails(validEmail?.data?.id), handleVerifyStudent(validEmail?.data)]);
+
                 Toast.show({
                     type: 'success',
                     text1: 'Sucesso',
                     text2: 'Autenticação efetuada com sucesso!',
                 });
-                setEmail('');
-                setSenha('');
-                handleGenerateToken();
-                handleSaveUserData(validEmail.data);
-                const hasStudent = await handleVerifyStudent(validEmail.data);
                 navigation.navigate('TelaHome');
                 }
             catch (error) {
