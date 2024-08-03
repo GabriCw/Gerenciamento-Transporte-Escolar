@@ -5,8 +5,6 @@ import TelaHome from '../homepage/TelaHome';
 import MapaMotorista from '../homepage/MapaMotorista';
 import MapaResponsavel from '../homepage/MapaResponsavel';
 import PerfilResp from '../homepage/PerfilResp';
-import RegisterAlunos from '../login/RegisterAluno';
-import RegisterAlunoPerfil from '../homepage/RegisterAlunoPerfil';
 import VerPerfilResp from '../homepage/VerPerfilResp';
 import PerfilMoto from '../homepage/PerfilMoto';
 import RegisterVeiculo from '../homepage/RegisterVeiculo';
@@ -14,6 +12,7 @@ import VerPerfilMoto from '../homepage/VerPerfilMoto';
 import { AuthContext } from '../../providers/AuthProvider';
 import { userTypeEnum } from '../../utils/userTypeEnum';
 import { FontAwesome } from '@expo/vector-icons';
+import Students from '../students/Students';
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -23,14 +22,13 @@ const HomeStack = () => (
     <Stack.Screen name="HomeTela" component={TelaHome} options={{ headerShown: false }} />
     <Stack.Screen name="MapaMotorista" component={MapaMotorista} options={{ headerShown: false }} />
     <Stack.Screen name="MapaResponsavel" component={MapaResponsavel} options={{ headerShown: false }} />
-    {/* <Stack.Screen name="Alunos" component={RegisterAlunos} options={{ headerShown: false }} /> */}
   </Stack.Navigator>
 );
 
 const PerfilRespStack = () => {
   return <Stack.Navigator initialRouteName={'Perfil'}>
     <Stack.Screen name="Perfil" component={PerfilResp} options={{ headerShown: false }} />
-    <Stack.Screen name="Alunos" component={RegisterAlunoPerfil} options={{ headerShown: false }} />
+    <Stack.Screen name="Alunos" component={Students} options={{ headerShown: false }} />
     <Stack.Screen name="VerPerfilResp" component={VerPerfilResp} options={{ headerShown: false }} />
   </Stack.Navigator>
 };

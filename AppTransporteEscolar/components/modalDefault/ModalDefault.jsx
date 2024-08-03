@@ -8,9 +8,6 @@ const ModalDefault = ({open, onClose, title, children, onConfirm}) => {
                     <ScrollView>
                         {children}
                     </ScrollView>
-                    <Button mode="contained" onPress={onConfirm} style={styles.saveButton}>
-                        Salvar
-                    </Button>
                 </Modal>
         </Portal> 
 };
@@ -27,11 +24,7 @@ const styles = StyleSheet.create({
         color: '#FFF',
         textAlign: 'center',
         marginBottom: 20,
-    },
-    saveButton: {
-        backgroundColor: '#C36005',
-        marginTop: 20,
-    },
+    }
 });
 
 export default ModalDefault;

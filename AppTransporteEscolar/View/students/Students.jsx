@@ -6,8 +6,10 @@ import { createStudentList, deleteStudent, getStudentByResponsible, updateStuden
 import { AuthContext } from '../../providers/AuthProvider';
 import Toast from 'react-native-toast-message';
 import ModalDefault from '../../components/modalDefault/ModalDefault';
+import ModalRegister from './components/ModalRegister';
+import ModalEdit from './components/ModalEdit';
 
-const RegisterAlunoPerfil = ({ navigation }) => {
+const Students = ({ navigation }) => {
     const { userData } = useContext(AuthContext);
 
     const [modalVisible, setModalVisible] = useState(false);
@@ -19,8 +21,6 @@ const RegisterAlunoPerfil = ({ navigation }) => {
     const [isLoading, setIsLoading] = useState(false);
 
     const requestData = async() => {
-        setIsLoading(true);
-
         const response = await getStudentByResponsible(userData.id);
 
         if(response.status === 200){
@@ -36,6 +36,7 @@ const RegisterAlunoPerfil = ({ navigation }) => {
             setAlunos([]);
         }
 
+        setReload(false);
         setIsLoading(false);
     };
 
@@ -59,10 +60,9 @@ const RegisterAlunoPerfil = ({ navigation }) => {
         setEditModalVisible(!editModalVisible);
     };
 
-    const handleSave = () => {
-        if (tempAluno.name && tempAluno.year) {
-            setAlunos([...alunos, { ...tempAluno, year: parseInt(tempAluno.year, 10) }]);
-            setTempAluno({ name: '', year: '' });
+    const handleSave = (student) => {
+        if (student.name && student.year) {
+            setAlunos([...alunos, { ...student, year: parseInt(student.year, 10) }]);
             setModalVisible(false);
         } else {
             alert('Por favor, preencha todos os campos');
@@ -71,10 +71,13 @@ const RegisterAlunoPerfil = ({ navigation }) => {
 
     const handleAddStudent = async() => {
         const studentsBody = alunos.map(item => ({
+            id: item.id ?? null,
             name: item.name,
             year: item.year,
             responsible_id: userData.id
         }));
+
+        setIsLoading(true);
 
         const response = await createStudentList(studentsBody);
 
@@ -103,10 +106,12 @@ const RegisterAlunoPerfil = ({ navigation }) => {
         handleEditModalToggle();
     };
 
-    const handleUpdate = async() => {
-        if (tempAluno.name && tempAluno.year) {
-            if(tempAluno?.id !== undefined){
-                const response = await updateStudent(tempAluno);
+    const handleUpdate = async(student) => {
+        if (student.name && student.year) {
+            if(student?.id !== undefined){
+                const response = await updateStudent(student);
+
+                setIsLoading(true);
 
                 if(response.status === 200){
                     Toast.show({
@@ -151,6 +156,9 @@ const RegisterAlunoPerfil = ({ navigation }) => {
                     text: 'Excluir',
                     onPress: async() => {
                         if(alunoToDelete?.id !== undefined){
+
+                            setIsLoading(true);
+                            
                             const response = await deleteStudent(alunoToDelete?.id)
                             
                             if(response.status === 200){
@@ -241,52 +249,19 @@ const RegisterAlunoPerfil = ({ navigation }) => {
                             </View>
                         )}
                     </View>
-                    <ModalDefault title="Cadastrar Aluno" open={modalVisible} onClose={handleModalToggle} onConfirm={handleSave}>
-                        <>
-                            <TextInput
-                                label="Nome"
-                                value={tempAluno.name}
-                                mode="outlined"
-                                activeOutlineColor="#C36005"
-                                keyboardAppearance="dark"
-                                onChangeText={(text) => setTempAluno({ ...tempAluno, name: text })}
-                                style={styles.input}
-                            />
-                            <TextInput
-                                label="Idade"
-                                value={tempAluno.year}
-                                mode="outlined"
-                                activeOutlineColor="#C36005"
-                                keyboardAppearance="dark"
-                                keyboardType="numeric"
-                                onChangeText={(text) => setTempAluno({ ...tempAluno, year: text })}
-                                style={styles.input}
-                            />
-                        </>
-                    </ModalDefault>
-                    <ModalDefault title="Editar Aluno" open={editModalVisible} onClose={handleEditModalToggle} onConfirm={handleUpdate}>
-                        <>
-                            <TextInput
-                                label="Nome"
-                                value={tempAluno.name}
-                                mode="outlined"
-                                activeOutlineColor="#C36005"
-                                keyboardAppearance="dark"
-                                onChangeText={(text) => setTempAluno({ ...tempAluno, name: text })}
-                                style={styles.input}
-                            />
-                            <TextInput
-                                label="Idade"
-                                value={tempAluno.year}
-                                mode="outlined"
-                                activeOutlineColor="#C36005"
-                                keyboardAppearance="dark"
-                                keyboardType="numeric"
-                                onChangeText={(text) => setTempAluno({ ...tempAluno, year: text })}
-                                style={styles.input}
-                            />
-                        </>
-                    </ModalDefault>
+                    
+                    <ModalRegister
+                        open={modalVisible}
+                        onClose={handleModalToggle}
+                        handleConfirm={handleSave}
+                    />
+
+                    <ModalEdit
+                        data={tempAluno}
+                        open={editModalVisible}
+                        onClose={handleEditModalToggle}
+                        handleConfirm={handleUpdate}
+                    />
                 </View>
             </Portal.Host>
         </Provider>
@@ -412,4 +387,4 @@ const styles = StyleSheet.create({
     },
 });
 
-export default RegisterAlunoPerfil;
+export default Students;
