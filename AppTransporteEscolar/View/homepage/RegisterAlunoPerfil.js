@@ -1,10 +1,11 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { View, StyleSheet, Text, ScrollView, Alert } from 'react-native';
-import { Button, Card, Modal, Portal, TextInput, Provider, IconButton, ActivityIndicator } from 'react-native-paper';
+import { Button, Card, Portal, TextInput, Provider, IconButton, ActivityIndicator } from 'react-native-paper';
 import { FontAwesome } from '@expo/vector-icons'; // Importa o FontAwesome
 import { createStudentList, deleteStudent, getStudentByResponsible, updateStudent } from '../../data/studentServices';
 import { AuthContext } from '../../providers/AuthProvider';
 import Toast from 'react-native-toast-message';
+import ModalDefault from '../../components/modalDefault/ModalDefault';
 
 const RegisterAlunoPerfil = ({ navigation }) => {
     const { userData } = useContext(AuthContext);
@@ -240,9 +241,8 @@ const RegisterAlunoPerfil = ({ navigation }) => {
                             </View>
                         )}
                     </View>
-                    <Portal>
-                        <Modal visible={modalVisible} onDismiss={handleModalToggle} contentContainerStyle={styles.modalContainer}>
-                            <Text style={styles.modalTitle}>Cadastrar Aluno</Text>
+                    <ModalDefault title="Cadastrar Aluno" open={modalVisible} onClose={handleModalToggle} onConfirm={handleSave}>
+                        <>
                             <TextInput
                                 label="Nome"
                                 value={tempAluno.name}
@@ -262,12 +262,10 @@ const RegisterAlunoPerfil = ({ navigation }) => {
                                 onChangeText={(text) => setTempAluno({ ...tempAluno, year: text })}
                                 style={styles.input}
                             />
-                            <Button mode="contained" onPress={handleSave} style={styles.saveButton}>
-                                Salvar
-                            </Button>
-                        </Modal>
-                        <Modal visible={editModalVisible} onDismiss={handleEditModalToggle} contentContainerStyle={styles.modalContainer}>
-                            <Text style={styles.modalTitle}>Editar Aluno</Text>
+                        </>
+                    </ModalDefault>
+                    <ModalDefault title="Editar Aluno" open={editModalVisible} onClose={handleEditModalToggle} onConfirm={handleUpdate}>
+                        <>
                             <TextInput
                                 label="Nome"
                                 value={tempAluno.name}
@@ -287,11 +285,8 @@ const RegisterAlunoPerfil = ({ navigation }) => {
                                 onChangeText={(text) => setTempAluno({ ...tempAluno, year: text })}
                                 style={styles.input}
                             />
-                            <Button mode="contained" onPress={handleUpdate} style={styles.saveButton}>
-                                Atualizar
-                            </Button>
-                        </Modal>
-                    </Portal>
+                        </>
+                    </ModalDefault>
                 </View>
             </Portal.Host>
         </Provider>
@@ -318,7 +313,7 @@ const styles = StyleSheet.create({
     },
     scrollContainer: {
         width: '90%',
-        height: 400,
+        height: "50%",
         maxHeight: 400,
         backgroundColor: '#f0f0f0',
         borderColor: '#d0d0d0',

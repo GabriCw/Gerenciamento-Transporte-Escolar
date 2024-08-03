@@ -1,19 +1,20 @@
 import React, { useState, useContext, useEffect } from 'react';
 import { View, StyleSheet, Text, Alert } from 'react-native';
-import { Button, TextInput, IconButton, Modal, Portal, Card, Provider } from 'react-native-paper';
+import { Button, TextInput, IconButton, Modal, Portal, Card, Provider, ActivityIndicator } from 'react-native-paper';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { FontAwesome } from '@expo/vector-icons';
 import { AuthContext } from '../../providers/AuthProvider';
-import { updateUser } from '../../data/userServices';
+import { getUserById, getUserDetails, updateUser } from '../../data/userServices';
 import Toast from 'react-native-toast-message';
 import { formatCPF, formatRG } from '../../utils/formatUtils';
 import { getAddressByCEP } from '../../data/cepServices';
-import { updatePoint } from '../../data/pointServices';
+import { getPointByUser, updatePoint } from '../../data/pointServices';
 import { pointTypeEnum } from '../../utils/pointTypeEnum';
 
 const VerPerfilResp = ({ navigation }) => {
-    const { userData, pointsData, phonesData, handleUpdateUserdata } = useContext(AuthContext);
+    const { userData } = useContext(AuthContext);
 
+    const [isLoading, setIsLoading] = useState(false);
     const [pointId, setPointId] = useState(null);
     const [pointName, setPointName] = useState(null);
     const [pointDescription, setPointDescription] = useState(null);
@@ -29,26 +30,59 @@ const VerPerfilResp = ({ navigation }) => {
     const [rg, setRg] = useState(null);
     const [isModalVisible, setIsModalVisible] = useState(false);
     const [isModalVisibleUser, setIsModalVisibleUser] = useState(false);
+    const [reload, setReload] = useState(false);
+
+    const requestData = async() => {
+        const [user, points] = await Promise.all([getUserById(userData.id), getPointByUser(userData.id)])
+
+        console.log(user.data)
+        console.log(points.data)
+
+        if(user.status === 200 && points.status === 200){
+            setName(user.data.name);
+            setEmail(user.data.email);
+            setCpf(formatCPF(user.data.cpf));
+            setRg(formatRG(user.data.rg));
+
+            const point = points.data[0];
+            const address = point.address.split(",");
+
+            setPointId(point.id);
+            setAddress(address[0]);
+            setNumber(address[1]);
+            setCep(point?.cep);
+            setState(point?.state);
+            setCity(point?.city);
+            setNeighborhood(point?.neighborhood);
+            setPointDescription(point.description);
+            setPointName(point.name); 
+        }
+        else{
+            Toast.show({
+                type: 'error',
+                text1: 'Sucesso',
+                text2: 'Erro ao carregar informações',
+                visibilityTime: 3000,
+            });
+            navigation.goBack()                
+        }
+
+        setIsLoading(false);
+        setReload(false);
+    };
 
     useEffect(() => {
-        setName(userData.name);
-        setEmail(userData.email);
-        setCpf(formatCPF(userData.cpf));
-        setRg(formatRG(userData.rg));
+        setIsLoading(true);
+        requestData();
+    }, []);
 
-        const point = pointsData[0];
-        const address = point.address.split(",");
-
-        setPointId(point.id);
-        setAddress(address[0]);
-        setNumber(address[1]);
-        setCep(point?.cep);
-        setState(point?.state);
-        setCity(point?.city);
-        setNeighborhood(point?.neighborhood);
-        setPointDescription(point.description);
-        setPointName(point.name);
-    }, [navigation, userData, pointsData]);
+    useEffect(() => {
+        if(reload === true){
+            setTimeout(() => {
+                requestData();
+            }, 2000);
+        }
+    }, [reload]);
 
     const handleOpenModalUser = () => {
         setIsModalVisibleUser(!isModalVisibleUser);
@@ -58,12 +92,12 @@ const VerPerfilResp = ({ navigation }) => {
         setIsModalVisible(!isModalVisible);
     };
 
-    const handleUpdatePoint = async() => {
+    const handleUpdatePoint = async() => { 
         if (!cep || !address || !number || !state || !city) {
             Alert.alert('Erro', 'Preencha todos os campos para salvar o endereço');
             return;
         }
-
+        
         const body = {
             id: pointId,
             name: pointName,
@@ -74,31 +108,20 @@ const VerPerfilResp = ({ navigation }) => {
             description: pointDescription,
             point_type_id: pointTypeEnum.RESIDÊNCIA
         };
+        
+        setIsLoading(true);
 
         const response = await updatePoint(body);
 
         if(response.status === 200){
-            const reload = await handleUpdateUserdata();
-
-            if(reload === true){
-                setTimeout(() => {
-                    Toast.show({
-                        type: 'success',
-                        text1: 'Sucesso',
-                        text2: 'Edição realizada com sucesso!',
-                        visibilityTime: 3000,
-                    });
-                    handleOpenModalPoint();
-                }, 1000);
-            }
-            else{
-                Toast.show({
-                    type: 'error',
-                    text1: 'Sucesso',
-                    text2: 'Erro ao atualizar',
-                    visibilityTime: 3000,
-                });
-            }
+            Toast.show({
+                type: 'success',
+                text1: 'Sucesso',
+                text2: 'Edição realizada com sucesso!',
+                visibilityTime: 3000,
+            });
+            handleOpenModalPoint();
+            setReload(true);    
         }
         else{
             Toast.show({
@@ -126,30 +149,19 @@ const VerPerfilResp = ({ navigation }) => {
             user_type_id: 3
         };
 
+        setIsLoading(true);
+
         const response = await updateUser(body);
 
         if(response.status === 200){
-            const reload = await handleUpdateUserdata();
-
-            if(reload === true){
-                setTimeout(() => {
-                    Toast.show({
-                        type: 'success',
-                        text1: 'Sucesso',
-                        text2: 'Edição realizada com sucesso!',
-                        visibilityTime: 3000,
-                    });
-                    handleOpenModalUser();
-                }, 1000);
-            }
-            else{
-                Toast.show({
-                    type: 'error',
-                    text1: 'Sucesso',
-                    text2: 'Erro ao atualizar',
-                    visibilityTime: 3000,
-                });
-            }
+            Toast.show({
+                type: 'success',
+                text1: 'Sucesso',
+                text2: 'Edição realizada com sucesso!',
+                visibilityTime: 3000,
+            });
+            handleOpenModalUser();
+            setReload(true);
         }
         else{
             Toast.show({
@@ -217,7 +229,7 @@ const VerPerfilResp = ({ navigation }) => {
                         </Card>
 
                         {
-                            pointsData?.length > 0 && <Card style={styles.addressCard}>
+                            pointId && <Card style={styles.addressCard}>
                                 <Card.Title
                                     title="Meu Endereço"
                                     titleStyle={styles.cardTitle}
@@ -232,6 +244,12 @@ const VerPerfilResp = ({ navigation }) => {
                             </Card>
                         }
                     </View>
+
+                    {isLoading && (
+                            <View style={styles.loadingOverlay}>
+                                <ActivityIndicator size="large" color="#C36005" />
+                            </View>
+                        )}
                 </KeyboardAwareScrollView>
                 <Portal>
                     <Modal visible={isModalVisibleUser} onDismiss={handleOpenModalUser} contentContainerStyle={styles.modalContainer}>
@@ -473,6 +491,12 @@ const styles = StyleSheet.create({
     },
     disabledTextInput: {
         backgroundColor: '#808080',
+    },
+    loadingOverlay: {
+        ...StyleSheet.absoluteFillObject,
+        backgroundColor: '#090833',
+        justifyContent: 'center',
+        alignItems: 'center',
     },
 });
 
