@@ -41,6 +41,8 @@ const Students = ({ navigation }) => {
     };
 
     useEffect(() => {
+        setIsLoading(true);
+        
         requestData();
     }, []);
 
