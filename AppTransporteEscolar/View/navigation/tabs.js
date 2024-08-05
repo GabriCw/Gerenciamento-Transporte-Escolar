@@ -7,12 +7,12 @@ import MapaResponsavel from '../homepage/MapaResponsavel';
 import PerfilResp from '../homepage/PerfilResp';
 import VerPerfilResp from '../homepage/VerPerfilResp';
 import PerfilMoto from '../homepage/PerfilMoto';
-import RegisterVeiculo from '../homepage/RegisterVeiculo';
 import VerPerfilMoto from '../homepage/VerPerfilMoto';
 import { AuthContext } from '../../providers/AuthProvider';
 import { userTypeEnum } from '../../utils/userTypeEnum';
 import { FontAwesome } from '@expo/vector-icons';
 import Students from '../students/Students';
+import Vehicle from '../vehicle/Vehicle';
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -36,7 +36,7 @@ const PerfilRespStack = () => {
 const PerfilMotoStack = () => (
   <Stack.Navigator initialRouteName='Perfil'>
     <Stack.Screen name="Perfil" component={PerfilMoto} options={{ headerShown: false }} />
-    <Stack.Screen name="Veiculo" component={RegisterVeiculo} options={{ headerShown: false }} />
+    <Stack.Screen name="Veiculo" component={Vehicle} options={{ headerShown: false }} />
     <Stack.Screen name="VerPerfilMoto" component={VerPerfilMoto} options={{ headerShown: false }} />
   </Stack.Navigator>
 );
@@ -60,7 +60,7 @@ const Tabs = () => {
       }}
     >
       {
-        userData.user_type_id === userTypeEnum.RESPONSAVEL ?
+        userData.user_type_id === userTypeEnum.ADMINISTRADOR ?
         <>
           <Tab.Screen name="Home" component={HomeStack} options={{ headerShown: false, tabBarIcon: ({focused}) =>(<FontAwesome name="home" size={24} color= {focused? '#C36005' : 'black'}/>)}} />
           <Tab.Screen name="Mapa" component={MapaMotorista} options={{ headerShown: false, tabBarIcon: ({focused}) =>(<FontAwesome name="map" size={20} color= {focused? '#C36005' : 'black'}/>)}} />
@@ -70,7 +70,8 @@ const Tabs = () => {
         <>
           <Tab.Screen name="Home" component={HomeStack} options={{ headerShown: false, tabBarIcon: ({focused}) =>(<FontAwesome name="home" size={24} color= {focused? '#C36005' : 'black'}/>)}} />
           <Tab.Screen name="Mapa" component={MapaMotorista} options={{ headerShown: false, tabBarIcon: ({focused}) =>(<FontAwesome name="map" size={20} color= {focused? '#C36005' : 'black'}/>)}} />
-          <Tab.Screen name="Perfil" component={PerfilMotoStack} options={{ headerShown: false, tabBarIcon: ({focused}) =>(<FontAwesome name="user" size={24} color= {focused? '#C36005' : 'black'}/>)}} />        </>
+          <Tab.Screen name="Perfil" component={PerfilMotoStack} options={{ headerShown: false, tabBarIcon: ({focused}) =>(<FontAwesome name="user" size={24} color= {focused? '#C36005' : 'black'}/>)}} />        
+        </>
       }
     </Tab.Navigator>
   );
