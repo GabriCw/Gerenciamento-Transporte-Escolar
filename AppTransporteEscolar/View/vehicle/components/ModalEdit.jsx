@@ -11,7 +11,8 @@ const ModalEdit = ({data, open, onClose, handleConfirm}) => {
             id: data?.id,
             plate: data?.plate.toUpperCase(),
             model: data?.model ?? "Não informado",
-            color: data?.color ?? "Não informado"
+            color: data?.color ?? "Não informado",
+            year: data?.year ?? "Não informado",
         });
     }, [data]);
 
@@ -42,6 +43,15 @@ const ModalEdit = ({data, open, onClose, handleConfirm}) => {
                 activeOutlineColor="#C36005"
                 keyboardAppearance="dark"
                 onChangeText={(text) => setVehicle({ ...vehicle, color: text })}
+                style={styles.input}
+            />
+            <TextInput
+                label="Ano"
+                value={vehicle?.year}
+                mode="outlined"
+                activeOutlineColor="#C36005"
+                keyboardAppearance="dark"
+                onChangeText={(text) => setVehicle({ ...vehicle, year: text })}
                 style={styles.input}
             />
             <Button mode="contained" onPress={() => handleConfirm(vehicle)} style={styles.saveButton}>

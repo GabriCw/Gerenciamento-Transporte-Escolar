@@ -1,12 +1,13 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { View, StyleSheet, Text } from 'react-native';
-import { Button, Card, Modal, Portal, TextInput, IconButton, Provider, ActivityIndicator } from 'react-native-paper';
+import { Button, IconButton, ActivityIndicator } from 'react-native-paper';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import ModalEdit from './components/ModalEdit';
 import { getVehicleByUser } from '../../data/vehicleServices';
 import { auth } from '../../firebase/firebase';
 import { AuthContext } from '../../providers/AuthProvider';
 import Toast from 'react-native-toast-message';
+import { FontAwesome } from '@expo/vector-icons';
 
 const Vehicle = ({ navigation }) => {
     const { userData } = useContext(AuthContext);
@@ -65,24 +66,23 @@ const Vehicle = ({ navigation }) => {
         <KeyboardAwareScrollView>
             <View style={styles.content}>
                 <Text style={styles.text}>Seu Veículo Registrado</Text>
-                <Card style={styles.card}>
-                    <Card.Title 
-                        title={"Veículo Registrado"} 
-                        titleStyle={styles.cardTitle}
-                        right={(props) => (
-                            <IconButton 
-                                {...props} 
-                                icon="pencil" 
-                                onPress={handleOpenModalEdit} 
-                            />
-                        )} 
-                    />
-                    <Card.Content>
-                        <Text style={styles.cardText}>Placa: {vehicle?.plate.toUpperCase()}</Text>
-                        <Text style={styles.cardText}>Modelo: {vehicle?.model ?? "Não informado"}</Text>
-                        <Text style={styles.cardText}>Cor: {vehicle?.color ?? "Não informado"}</Text>
-                    </Card.Content>
-                </Card>
+                <View style={styles.card}>
+                    <View style={styles.iconEdit}>
+                        <IconButton 
+                            icon="pencil" 
+                            onPress={handleOpenModalEdit} 
+                        />
+                    </View>
+                    <View style={styles.cardContent}>
+                        <View style={styles.iconContent}>
+                            <FontAwesome name="bus" size={"40%"} color="black"/>
+                        </View>
+                        <View style={styles.textContent}>
+                            <Text style={styles.cardText}>Placa: {vehicle?.plate.toUpperCase()}</Text>
+                            <Text style={styles.cardText}>Modelo: {vehicle?.model ?? "Não informado"}</Text>
+                        </View>
+                    </View>
+                </View>
             </View>
         </KeyboardAwareScrollView>
         <ModalEdit data={vehicle} open={modalVisible} onClose={handleOpenModalEdit} handleConfirm={handleUpdate}/>
@@ -99,12 +99,19 @@ const styles = StyleSheet.create({
         flex: 1,
         backgroundColor: '#090833',
     },
+    iconEdit: {
+        position: "absolute",
+        right: 0,
+        zIndex: 2
+    }, 
     text: {
-        fontSize: 20,
+        fontSize: 25,
         color: '#FFF',
         margin: 20,
+        marginBottom: 40,
         textAlign: 'center',
-    },
+        fontWeight: 'bold',
+    },  
     content: {
         flex: 1,
         justifyContent: 'center',
@@ -112,7 +119,23 @@ const styles = StyleSheet.create({
     },
     card: {
         width: '90%',
-        margin: 20,
+        backgroundColor: "#fff",
+        borderRadius: 10,
+        padding: 10
+    },
+    cardContent: {
+        display: "flex",
+        flexDirection: "row",
+        alignItems: "center"
+    },  
+    iconContent: {
+        flex: 1,
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center"
+    },
+    textContent:{
+        flex: 3
     },
     modalContainer: {
         backgroundColor: '#090833',
