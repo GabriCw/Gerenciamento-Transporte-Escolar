@@ -6,12 +6,11 @@ import Toast from 'react-native-toast-message';
 import TelaLogin from "./View/login/TelaLogin"
 import ForgotPasswordScreen from './View/login/ForgotPasswordScreen';
 import ConfirmEmailScreen from './View/login/ConfirmEmailScreen';
-import RegisterMotoristaScreen from './View/login/RegisterMotorista';
 import RegisterResponsavelScreen from './View/login/RegisterResponsavel';
 import Tabs from './View/navigation/tabs';
 import { AuthProvider } from './providers/AuthProvider';
 import { Provider as PaperProvider } from 'react-native-paper';
-import RegisterStudentMandatory from './View/homepage/RegisterStudentMandatory';
+import Students from './View/students/Students';
 
 const Stack = createStackNavigator();
 
@@ -25,7 +24,7 @@ const App = () => {
             <Stack.Screen name="ForgotPassword" component={ForgotPasswordScreen} options={{ headerShown: false }}/>
             <Stack.Screen name="ConfirmEmail" component={ConfirmEmailScreen} options={{ headerShown: false }}/>
             <Stack.Screen name="Register" component={RegisterResponsavelScreen} options={{ headerShown: false }}/>
-            <Stack.Screen name="StudentMandatory" component={RegisterStudentMandatory} options={{ headerShown: false }}/>
+            <Stack.Screen name="Students" component={Students} options={{ headerShown: false }}/>
             <Stack.Screen name="TelaHome" component={Tabs} options={{ headerShown: false }}/>
           </Stack.Navigator>
           <Toast ref={(ref) => Toast.setRef(ref)} />
