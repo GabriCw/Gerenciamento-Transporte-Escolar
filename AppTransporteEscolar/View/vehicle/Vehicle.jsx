@@ -1,32 +1,39 @@
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { View, StyleSheet, Text } from 'react-native';
-import { Button, Card, Modal, Portal, TextInput, IconButton, Provider } from 'react-native-paper';
+import { Button, Card, Modal, Portal, TextInput, IconButton, Provider, ActivityIndicator } from 'react-native-paper';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import ModalEdit from './components/ModalEdit';
+import { getVehicleByUser } from '../../data/vehicleServices';
+import { auth } from '../../firebase/firebase';
+import { AuthContext } from '../../providers/AuthProvider';
+import Toast from 'react-native-toast-message';
 
 const Vehicle = ({ navigation }) => {
+    const { userData } = useContext(AuthContext);
     const [modalVisible, setModalVisible] = useState(false);
     const [vehicle, setVehicle] = useState(null);
+    const [isLoading, setIsLoading] = useState(false);
 
     useEffect(() => {
         const requestData = async() => {
-            // const response = await 
-            const response = {
-                model: null ?? "Não informado",
-                plate: "cpk1212".toUpperCase(),
-                vehicle_type_id: 1,
-                chassi: null,
-                user_id: 3,
-                change_date: null,
-                id: 3,
-                color: null ?? "Não informado",
-                year: null ?? "Não informado",
-                renavam: null,
-                creation_user: 2,
-                change_user: null
-            };
+            setIsLoading(true);
 
-            setVehicle(response);
+            const response = await getVehicleByUser(userData.id) ;
+
+            if(response.status === 200){
+                setVehicle(response.data);
+            }
+            else{
+                navigation.goBack();
+                Toast.show({
+                    type: 'error',
+                    text1: 'Erro',
+                    text2: response.data.detail,
+                    visibilityTime: 3000,
+                });
+            }
+
+            setIsLoading(false);
         };
 
         requestData();
@@ -44,7 +51,6 @@ const Vehicle = ({ navigation }) => {
     const handleOpenModalEdit = () => {
         setModalVisible(!modalVisible);
     };
-
 
     return <View style={styles.view}>
         <View style={styles.header}>
@@ -72,14 +78,19 @@ const Vehicle = ({ navigation }) => {
                         )} 
                     />
                     <Card.Content>
-                        <Text style={styles.cardText}>Placa: {vehicle?.plate}</Text>
-                        <Text style={styles.cardText}>Modelo: {vehicle?.model}</Text>
-                        <Text style={styles.cardText}>Cor: {vehicle?.color}</Text>
+                        <Text style={styles.cardText}>Placa: {vehicle?.plate.toUpperCase()}</Text>
+                        <Text style={styles.cardText}>Modelo: {vehicle?.model ?? "Não informado"}</Text>
+                        <Text style={styles.cardText}>Cor: {vehicle?.color ?? "Não informado"}</Text>
                     </Card.Content>
                 </Card>
             </View>
         </KeyboardAwareScrollView>
         <ModalEdit data={vehicle} open={modalVisible} onClose={handleOpenModalEdit} handleConfirm={handleUpdate}/>
+        {isLoading && (
+            <View style={styles.loadingOverlay}>
+                <ActivityIndicator size="large" color="#C36005" />
+            </View>
+        )}
     </View>  
 };
 
@@ -151,6 +162,12 @@ const styles = StyleSheet.create({
         color: '#FFF',
         textAlign: 'center',
         marginBottom: 20,
+    },
+    loadingOverlay: {
+        ...StyleSheet.absoluteFillObject,
+        backgroundColor: '#090833',
+        justifyContent: 'center',
+        alignItems: 'center',
     },
 });
 

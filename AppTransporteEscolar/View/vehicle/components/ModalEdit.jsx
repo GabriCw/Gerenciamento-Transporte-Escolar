@@ -9,9 +9,9 @@ const ModalEdit = ({data, open, onClose, handleConfirm}) => {
     useEffect(() => {
         setVehicle({
             id: data?.id,
-            plate: data?.plate,
-            model: data?.model,
-            color: data?.color
+            plate: data?.plate.toUpperCase(),
+            model: data?.model ?? "Não informado",
+            color: data?.color ?? "Não informado"
         });
     }, [data]);
 
