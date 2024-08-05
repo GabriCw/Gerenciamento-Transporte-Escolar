@@ -18,7 +18,6 @@ export const getVehicleByUser = async(id) => {
 };
 
 export const updateVehicle = async(body) => {
-    console.log(_controller + _endpoint)
     const _endpoint = '/update';
 
     try{
