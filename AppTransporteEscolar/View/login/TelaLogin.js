@@ -91,7 +91,7 @@ const TelaLogin = ({ navigation }) => {
                     inputMode="email"
                     keyboardAppearance='dark'
                     value={email}
-                    onChangeText={text => setEmail(text)}
+                    onChangeText={text => setEmail(text.toLowerCase())}
                     style={styles.input}
                 />
                 <TextInput
