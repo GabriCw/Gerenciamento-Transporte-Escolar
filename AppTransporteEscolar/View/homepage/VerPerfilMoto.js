@@ -1,5 +1,5 @@
 import React, { useState, useContext } from 'react';
-import { View, StyleSheet, Text, Alert } from 'react-native';
+import { View, StyleSheet, Text, Alert, ScrollView } from 'react-native';
 import { Button, TextInput, IconButton, Modal, Portal, Card, Provider } from 'react-native-paper';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { FontAwesome } from '@expo/vector-icons';
@@ -29,6 +29,7 @@ const VerPerfilMoto = ({ navigation }) => {
     const [cpf] = useState(formatCPF(userData.cpf));
     const [rg] = useState(formatRG(userData.rg));
     const [isModalVisible, setIsModalVisible] = useState(false);
+
 
     const toggleEditing = (setter) => {
         setter(prevState => !prevState);
@@ -75,7 +76,8 @@ const VerPerfilMoto = ({ navigation }) => {
                         <Text>Voltar</Text>
                     </Button>
                 </View>
-                <KeyboardAwareScrollView
+                <ScrollView>
+                    <KeyboardAwareScrollView
                     contentContainerStyle={styles.container}
                     enableOnAndroid={true}
                     extraScrollHeight={20}
@@ -150,7 +152,8 @@ const VerPerfilMoto = ({ navigation }) => {
                             </Card.Content>
                         </Card>
                     </View>
-                </KeyboardAwareScrollView>
+                    </KeyboardAwareScrollView>
+                </ScrollView>
                 <Portal>
                     <Modal visible={isModalVisible} onDismiss={handleModalToggle} contentContainerStyle={styles.modalContainer}>
                         <Text style={styles.modalTitle}>Editar Endereço</Text>
@@ -243,6 +246,7 @@ const styles = StyleSheet.create({
     },
     container: {
         flex: 1,
+        height: "100%",
         justifyContent: 'center',
         backgroundColor: '#090833',
     },

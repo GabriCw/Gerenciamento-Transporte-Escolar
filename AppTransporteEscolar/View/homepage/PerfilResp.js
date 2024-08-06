@@ -30,11 +30,11 @@ const Perfil = ({navigation}) => {
                     </View>
                 </View>
                 <KeyboardAwareScrollView
-                contentContainerStyle={styles.container}
-                enableOnAndroid={true}
-                extraScrollHeight={20}
-                keyboardShouldPersistTaps="handled"
-                >
+                    contentContainerStyle={styles.container}
+                    enableOnAndroid={true}
+                    extraScrollHeight={20}
+                    keyboardShouldPersistTaps="handled"
+                    >
                     <View style={styles.content}>
                         <Button 
                             onPress={verPerfil}

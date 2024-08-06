@@ -5,14 +5,13 @@ import TelaHome from '../homepage/TelaHome';
 import MapaMotorista from '../homepage/MapaMotorista';
 import MapaResponsavel from '../homepage/MapaResponsavel';
 import PerfilResp from '../homepage/PerfilResp';
-import VerPerfilResp from '../homepage/VerPerfilResp';
 import PerfilMoto from '../homepage/PerfilMoto';
-import VerPerfilMoto from '../homepage/VerPerfilMoto';
 import { AuthContext } from '../../providers/AuthProvider';
 import { userTypeEnum } from '../../utils/userTypeEnum';
 import { FontAwesome } from '@expo/vector-icons';
 import Students from '../students/Students';
 import Vehicle from '../vehicle/Vehicle';
+import Profile from '../profile/Profile';
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -29,7 +28,7 @@ const PerfilRespStack = () => {
   return <Stack.Navigator initialRouteName={'Perfil'}>
     <Stack.Screen name="Perfil" component={PerfilResp} options={{ headerShown: false }} />
     <Stack.Screen name="Alunos" component={Students} options={{ headerShown: false }} />
-    <Stack.Screen name="VerPerfilResp" component={VerPerfilResp} options={{ headerShown: false }} />
+    <Stack.Screen name="VerPerfilResp" component={Profile} options={{ headerShown: false }} />
   </Stack.Navigator>
 };
 
@@ -37,12 +36,12 @@ const PerfilMotoStack = () => (
   <Stack.Navigator initialRouteName='Perfil'>
     <Stack.Screen name="Perfil" component={PerfilMoto} options={{ headerShown: false }} />
     <Stack.Screen name="Veiculo" component={Vehicle} options={{ headerShown: false }} />
-    <Stack.Screen name="VerPerfilMoto" component={VerPerfilMoto} options={{ headerShown: false }} />
+    <Stack.Screen name="VerPerfilMoto" component={Profile} options={{ headerShown: false }} />
   </Stack.Navigator>
 );
 
 const Tabs = () => {
-  const {userData, hasStudent} = useContext(AuthContext);
+  const {userData} = useContext(AuthContext);
 
   return (
     <Tab.Navigator
@@ -60,7 +59,7 @@ const Tabs = () => {
       }}
     >
       {
-        userData.user_type_id === userTypeEnum.ADMINISTRADOR ?
+        userData?.user_type_id === userTypeEnum.ADMINISTRADOR ?
         <>
           <Tab.Screen name="Home" component={HomeStack} options={{ headerShown: false, tabBarIcon: ({focused}) =>(<FontAwesome name="home" size={24} color= {focused? '#C36005' : 'black'}/>)}} />
           <Tab.Screen name="Mapa" component={MapaMotorista} options={{ headerShown: false, tabBarIcon: ({focused}) =>(<FontAwesome name="map" size={20} color= {focused? '#C36005' : 'black'}/>)}} />

@@ -1,5 +1,5 @@
 import React, { useState, useContext, useEffect } from 'react';
-import { View, StyleSheet, Text, Alert } from 'react-native';
+import { View, StyleSheet, Text, Alert, ScrollView } from 'react-native';
 import { Button, TextInput, IconButton, Modal, Portal, Card, Provider, ActivityIndicator } from 'react-native-paper';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { FontAwesome } from '@expo/vector-icons';
@@ -200,57 +200,59 @@ const VerPerfilResp = ({ navigation }) => {
                         <Text>Voltar</Text>
                     </Button>
                 </View>
-                <KeyboardAwareScrollView
-                    contentContainerStyle={styles.container}
-                    enableOnAndroid={true}
-                    extraScrollHeight={20}
-                    keyboardShouldPersistTaps="handled"
-                >
-                    <View style={styles.content2}>
-                        <View style={styles.iconContainer}>
-                            <FontAwesome name="user" size={40} color="#000" />
+                <ScrollView>
+                    <KeyboardAwareScrollView
+                        contentContainerStyle={styles.container}
+                        enableOnAndroid={true}
+                        extraScrollHeight={20}
+                        keyboardShouldPersistTaps="handled"
+                    >
+                        <View style={styles.content2}>
+                            <View style={styles.iconContainer}>
+                                <FontAwesome name="user" size={40} color="#000" />
+                            </View>
                         </View>
-                    </View>
-                    <View style={styles.content}>
-                        <Card style={styles.addressCard}>
-                            <Card.Title
-                                title="Dados Pessoais"
-                                titleStyle={styles.cardTitle}
-                                right={(props) => <IconButton {...props} icon="pencil" onPress={handleOpenModalUser} />}
-                            />
-                            <Card.Content>
-                                <Text style={styles.cardText}>Nome: {name}</Text>
-                                <Text style={styles.cardText}>Email: {email}</Text>
-                                <Text style={styles.cardText}>CPF: {cpf}</Text>
-                                {
-                                    rg && <Text style={styles.cardText}>RG: {rg}</Text>
-                                }
-                            </Card.Content>
-                        </Card>
-
-                        {
-                            pointId && <Card style={styles.addressCard}>
+                        <View style={styles.content}>
+                            <Card style={styles.addressCard}>
                                 <Card.Title
-                                    title="Meu Endereço"
+                                    title="Dados Pessoais"
                                     titleStyle={styles.cardTitle}
-                                    right={(props) => <IconButton {...props} icon="pencil" onPress={handleOpenModalPoint} />}
+                                    right={(props) => <IconButton {...props} icon="pencil" onPress={handleOpenModalUser} />}
                                 />
                                 <Card.Content>
-                                    <Text style={styles.cardText}>Endereço: {address}, {number}</Text>
-                                    <Text style={styles.cardText}>Bairro: {neighborhood}</Text>
-                                    <Text style={styles.cardText}>Estado: {state}</Text>
-                                    <Text style={styles.cardText}>Cidade: {city}</Text>
+                                    <Text style={styles.cardText}>Nome: {name}</Text>
+                                    <Text style={styles.cardText}>Email: {email}</Text>
+                                    <Text style={styles.cardText}>CPF: {cpf}</Text>
+                                    {
+                                        rg && <Text style={styles.cardText}>RG: {rg}</Text>
+                                    }
                                 </Card.Content>
                             </Card>
-                        }
-                    </View>
 
-                    {isLoading && (
-                            <View style={styles.loadingOverlay}>
-                                <ActivityIndicator size="large" color="#C36005" />
-                            </View>
-                        )}
-                </KeyboardAwareScrollView>
+                            {
+                                pointId && <Card style={styles.addressCard}>
+                                    <Card.Title
+                                        title="Meu Endereço"
+                                        titleStyle={styles.cardTitle}
+                                        right={(props) => <IconButton {...props} icon="pencil" onPress={handleOpenModalPoint} />}
+                                    />
+                                    <Card.Content>
+                                        <Text style={styles.cardText}>Endereço: {address}, {number}</Text>
+                                        <Text style={styles.cardText}>Bairro: {neighborhood}</Text>
+                                        <Text style={styles.cardText}>Estado: {state}</Text>
+                                        <Text style={styles.cardText}>Cidade: {city}</Text>
+                                    </Card.Content>
+                                </Card>
+                            }
+                        </View>
+
+                        {isLoading && (
+                                <View style={styles.loadingOverlay}>
+                                    <ActivityIndicator size="large" color="#C36005" />
+                                </View>
+                            )}
+                    </KeyboardAwareScrollView>
+                </ScrollView>
                 <Portal>
                     <Modal visible={isModalVisibleUser} onDismiss={handleOpenModalUser} contentContainerStyle={styles.modalContainer}>
                         <Text style={styles.modalTitle}>Editar Usuário</Text>

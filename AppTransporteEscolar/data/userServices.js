@@ -46,7 +46,6 @@ export const getUserByEmail = async(email) => {
 export const getUserById = async(id) => {
     const _endpoint = `/by-id/${id}`;
 
-    console.log(_controller + _endpoint)
     try{
         const response  = await axios.get(_controller + _endpoint);
 

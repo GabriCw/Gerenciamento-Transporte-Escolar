@@ -24,8 +24,8 @@ const PerfilMoto = ({navigation}) => {
                     <View style={styles.perfilBox}>
                         <FontAwesome name="user" size={40} color="#000" style={{marginLeft:10, marginRight:25}} />
                         <View>
-                            <Text style={[styles.text, {marginLeft:5}]}>{userData.name}</Text>
-                            <Text style={[styles.subtext, {marginLeft:5}]}>{userData.email}</Text>
+                            <Text style={[styles.text, {marginLeft:5}]}>{userData?.name}</Text>
+                            <Text style={[styles.subtext, {marginLeft:5}]}>{userData?.email}</Text>
                         </View>
                     </View>
                 </View>
