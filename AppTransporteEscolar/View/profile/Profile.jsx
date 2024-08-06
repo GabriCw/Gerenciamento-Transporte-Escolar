@@ -221,10 +221,8 @@ const Profile = ({ navigation }) => {
                             )}
                     </KeyboardAwareScrollView>
                 </ScrollView>
-                <Portal>
-                    <ModalEditUser data={user} open={isModalVisibleUser} onClose={handleOpenModalUser} handleConfirm={handleUpdateUser}/>
-                    <ModalEditPoint data={point} open={isModalVisible} address={address} onClose={handleOpenModalPoint} handleConfirm={handleUpdatePoint}/>
-                </Portal>
+                <ModalEditUser data={user} open={isModalVisibleUser} onClose={handleOpenModalUser} handleConfirm={handleUpdateUser}/>
+                <ModalEditPoint data={point} open={isModalVisible} address={address} onClose={handleOpenModalPoint} handleConfirm={handleUpdatePoint}/>
             </View>
         </Provider>
     );
