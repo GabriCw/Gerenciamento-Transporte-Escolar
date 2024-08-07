@@ -24,11 +24,9 @@ const TelaHome = ({ navigation }) => {
   }, [navigation]);
 
   useEffect(() => {
-    console.log(hasStudent);
     setTimeout(() => {     
-      console.log(hasStudent); 
       if(!hasStudent){
-        navigation.navigate("StudentMandatory");
+        navigation.navigate("Students");
       }
     }, 1500);
   }, [navigation, hasStudent]);
