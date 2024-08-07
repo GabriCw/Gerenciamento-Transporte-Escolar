@@ -1,6 +1,7 @@
 import { StyleSheet, View } from "react-native";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
-import { Button } from "react-native-paper";
+import ButtonDefault from "./ButtonDefault";
+import { FontAwesome } from "@expo/vector-icons";
 
 const DriverButtons = ({navigation}) => {
     const handleToVehiclePage = () => {
@@ -18,20 +19,18 @@ const DriverButtons = ({navigation}) => {
         keyboardShouldPersistTaps="handled"
         >
         <View style={styles.content}>
-            <Button
-                onPress={handleToProfilePage}
-                style={styles.button}
-                labelStyle={styles.buttonLabel}
-                >
-                Ver Perfil
-            </Button>
-            <Button 
-                onPress={handleToVehiclePage}
-                style={styles.button}
-                labelStyle={styles.buttonLabel}
-                >
-                Ver Veiculo
-            </Button>
+            <View style={styles.buttonsContent}>
+                <ButtonDefault
+                    icon={<FontAwesome name="user" size={"30%"} color="#fff"  />}
+                    title={"Ver Perfil"}
+                    onClick={handleToProfilePage}
+                />
+                <ButtonDefault
+                    icon={<FontAwesome name="bus" size={"30%"} color="#fff"/>}
+                    title={"Ver Veículo"}
+                    onClick={handleToVehiclePage}
+                />
+            </View>
         </View>
     </KeyboardAwareScrollView>
 };
@@ -54,6 +53,15 @@ const styles = StyleSheet.create({
         marginTop: '5%',
         alignItems: 'center',
     },
+    buttonsContent: {
+        width: "80%",
+        display: "flex",
+        height: "90%",
+        rowGap: "10%",
+        columnGap: "10%",
+        flexDirection: "row",
+        flexWrap: "wrap",
+    },  
     perfilBox:{
         flexDirection: 'row',
         alignItems: 'center',
