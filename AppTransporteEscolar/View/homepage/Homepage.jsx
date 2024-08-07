@@ -1,13 +1,12 @@
 import React, { useContext, useEffect } from 'react';
 import { View, StyleSheet, Text } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
-import Toast from 'react-native-toast-message';
 import { auth } from "../../firebase/firebase";
 import { onAuthStateChanged, signOut } from 'firebase/auth';
 import { Button } from 'react-native-paper';
 import { AuthContext } from '../../providers/AuthProvider';
 
-const TelaHome = ({ navigation }) => {
+const Homepage = ({ navigation }) => {
 
   const {hasStudent} = useContext(AuthContext);
 
@@ -127,4 +126,4 @@ const styles = StyleSheet.create({
   }
 });
 
-export default TelaHome;
+export default Homepage;

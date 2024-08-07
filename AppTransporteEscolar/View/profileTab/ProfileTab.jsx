@@ -3,19 +3,30 @@ import { View, StyleSheet, Text, Image } from 'react-native';
 import { Button } from 'react-native-paper';
 import { AuthContext } from '../../providers/AuthProvider';
 import { FontAwesome } from '@expo/vector-icons';
-import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
+import { userTypeEnum } from '../../utils/userTypeEnum';
+import DriverButtons from './components/DriverButtons';
+import ResponsibleButtons from './components/ResponsibleButtons';
 
-const PerfilMoto = ({navigation}) => {
+const ProfileTab = ({navigation}) => {
 
     const {userData} = useContext(AuthContext);
 
-    const cadastrarVeiculo = () => {
-        navigation.navigate('Veiculo');
-    }
+    const userTypeConfig = {
+        [userTypeEnum.ADMINISTRADOR]: {
+            subtitle: "Administrador",
+            buttons: null
+        },
+        [userTypeEnum.MOTORISTA]: {
+            subtitle: "Motorista",
+            buttons: <DriverButtons navigation={navigation}/>
+        },
+        [userTypeEnum.RESPONSAVEL]: {
+            subtitle: "Responsável",
+            buttons: <ResponsibleButtons navigation={navigation}/>
+        }
+    };
 
-    const verPerfil = () => {
-        navigation.navigate('VerPerfilMoto');
-    }
+    const currentUserConfig = userTypeConfig[userData.user_type_id] || {};
 
     return (
         <View style={styles.view}>
@@ -24,34 +35,12 @@ const PerfilMoto = ({navigation}) => {
                     <View style={styles.perfilBox}>
                         <FontAwesome name="user" size={40} color="#000" style={{marginLeft:10, marginRight:25}} />
                         <View>
-                            <Text style={[styles.text, {marginLeft:5}]}>{userData?.name}</Text>
-                            <Text style={[styles.subtext, {marginLeft:5}]}>{userData?.email}</Text>
+                            <Text style={[styles.text, {marginLeft:5}]}>{userData.name}</Text>
+                            <Text style={[styles.subtext, {marginLeft:5}]}>{currentUserConfig?.subtitle}</Text>
                         </View>
                     </View>
                 </View>
-                <KeyboardAwareScrollView
-                contentContainerStyle={styles.container}
-                enableOnAndroid={true}
-                extraScrollHeight={20}
-                keyboardShouldPersistTaps="handled"
-                >
-                    <View style={styles.content}>
-                        <Button 
-                            onPress={verPerfil}
-                            style={styles.button}
-                            labelStyle={styles.buttonLabel}
-                            >
-                            Ver Perfil
-                        </Button>
-                        <Button 
-                            onPress={cadastrarVeiculo}
-                            style={styles.button}
-                            labelStyle={styles.buttonLabel}
-                            >
-                            Ver Veiculo
-                        </Button>
-                    </View>
-                </KeyboardAwareScrollView>
+                {currentUserConfig?.buttons}
             </View>
         </View>
     );
@@ -107,4 +96,4 @@ const styles = StyleSheet.create({
     },
 })
 
-export default PerfilMoto;
+export default ProfileTab;

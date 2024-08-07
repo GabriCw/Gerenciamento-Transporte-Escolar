@@ -25,7 +25,7 @@ const App = () => {
             <Stack.Screen name="ConfirmEmail" component={ConfirmEmailScreen} options={{ headerShown: false }}/>
             <Stack.Screen name="Register" component={RegisterResponsavelScreen} options={{ headerShown: false }}/>
             <Stack.Screen name="Students" component={Students} options={{ headerShown: false }}/>
-            <Stack.Screen name="TelaHome" component={Tabs} options={{ headerShown: false }}/>
+            <Stack.Screen name="Homepage" component={Tabs} options={{ headerShown: false }}/>
           </Stack.Navigator>
           <Toast ref={(ref) => Toast.setRef(ref)} />
         </NavigationContainer>

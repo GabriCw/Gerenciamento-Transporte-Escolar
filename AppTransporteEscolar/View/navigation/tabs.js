@@ -1,24 +1,23 @@
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import React, { useContext } from 'react';
 import { createStackNavigator } from '@react-navigation/stack';
-import TelaHome from '../homepage/TelaHome';
 import MapaMotorista from '../homepage/MapaMotorista';
 import MapaResponsavel from '../homepage/MapaResponsavel';
-import PerfilResp from '../homepage/PerfilResp';
-import PerfilMoto from '../homepage/PerfilMoto';
 import { AuthContext } from '../../providers/AuthProvider';
 import { userTypeEnum } from '../../utils/userTypeEnum';
 import { FontAwesome } from '@expo/vector-icons';
 import Students from '../students/Students';
 import Vehicle from '../vehicle/Vehicle';
 import Profile from '../profile/Profile';
+import Homepage from '../homepage/Homepage';
+import ProfileTab from '../profileTab/ProfileTab';
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
 
 const HomeStack = () => (
-  <Stack.Navigator initialRouteName="HomeTela">
-    <Stack.Screen name="HomeTela" component={TelaHome} options={{ headerShown: false }} />
+  <Stack.Navigator initialRouteName="Homepage">
+    <Stack.Screen name="Homepage" component={Homepage} options={{ headerShown: false }} />
     <Stack.Screen name="MapaMotorista" component={MapaMotorista} options={{ headerShown: false }} />
     <Stack.Screen name="MapaResponsavel" component={MapaResponsavel} options={{ headerShown: false }} />
   </Stack.Navigator>
@@ -26,7 +25,7 @@ const HomeStack = () => (
 
 const PerfilRespStack = () => {
   return <Stack.Navigator initialRouteName={'Perfil'}>
-    <Stack.Screen name="Perfil" component={PerfilResp} options={{ headerShown: false }} />
+    <Stack.Screen name="Perfil" component={ProfileTab} options={{ headerShown: false }} />
     <Stack.Screen name="Alunos" component={Students} options={{ headerShown: false }} />
     <Stack.Screen name="VerPerfilResp" component={Profile} options={{ headerShown: false }} />
   </Stack.Navigator>
@@ -34,7 +33,7 @@ const PerfilRespStack = () => {
 
 const PerfilMotoStack = () => (
   <Stack.Navigator initialRouteName='Perfil'>
-    <Stack.Screen name="Perfil" component={PerfilMoto} options={{ headerShown: false }} />
+    <Stack.Screen name="Perfil" component={ProfileTab} options={{ headerShown: false }} />
     <Stack.Screen name="Veiculo" component={Vehicle} options={{ headerShown: false }} />
     <Stack.Screen name="VerPerfilMoto" component={Profile} options={{ headerShown: false }} />
   </Stack.Navigator>

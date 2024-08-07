@@ -1,8 +1,8 @@
-import { createContext, useEffect, useState } from "react";
+import { createContext, useState } from "react";
 import { auth } from "../firebase/firebase";
 import { userTypeEnum } from "../utils/userTypeEnum";
 import { getStudentByResponsible } from "../data/studentServices";
-import { getUserByEmail, getUserDetails } from "../data/userServices";
+import { getUserDetails } from "../data/userServices";
 
 const defaultAuthProvider = {
     userData: null,
