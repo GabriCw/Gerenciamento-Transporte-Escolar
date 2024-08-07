@@ -6,7 +6,7 @@ import axios from 'axios';
 import polyline from '@mapbox/polyline';
 import { getPinImage } from '../../utils/getPinImage';
 import { getDistance } from 'geolib';
-import { styles } from './Style/mapaResponsavelStyle';
+import { styles } from './Style/mapaMotoristaStyle';
 import { Button } from 'react-native-paper';
 import { formatTime, formatDistance } from '../../utils/formatUtils';
 
@@ -205,6 +205,17 @@ const MapaMotorista = ({ navigation }) => {
 
         setWaypointProximity(false);
     }
+
+    // ---------- Envio do pacote de informações ao Backend ----------
+
+    useEffect(() => {
+        const intervalId = setInterval(() => {
+            console.log(userLocation)
+            }, 60000);
+
+            // Cleanup function para limpar o intervalo quando o componente for desmontado
+            return () => clearInterval(intervalId);
+    },[])
 
     return (
         <View style={styles.view}>
