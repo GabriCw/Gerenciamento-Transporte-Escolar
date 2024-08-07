@@ -27,7 +27,7 @@ export function AuthProvider({children}) {
 
     const handleGetUserDetails = async(id) => {
         const response = await getUserDetails(id);
-        console.log(response.data)
+
         if(response.status === 200){
             setUserData(response.data.user);
             setPointsData(response.data.points);
@@ -52,6 +52,10 @@ export function AuthProvider({children}) {
                 setHasStudent(false);
                 return false;
             }
+        }
+        else{
+            setHasStudent(true);
+            return true;
         }
     };
 
