@@ -1,11 +1,11 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { View, StyleSheet, Text, Image } from 'react-native';
-import { Button } from 'react-native-paper';
 import { AuthContext } from '../../providers/AuthProvider';
 import { FontAwesome } from '@expo/vector-icons';
 import { userTypeEnum } from '../../utils/userTypeEnum';
 import DriverButtons from './components/DriverButtons';
 import ResponsibleButtons from './components/ResponsibleButtons';
+import AdminButtons from './components/AdminButtons';
 
 const ProfileTab = ({navigation}) => {
 
@@ -14,7 +14,7 @@ const ProfileTab = ({navigation}) => {
     const userTypeConfig = {
         [userTypeEnum.ADMINISTRADOR]: {
             subtitle: "Administrador",
-            buttons: null
+            buttons: <AdminButtons navigation={navigation}/>
         },
         [userTypeEnum.MOTORISTA]: {
             subtitle: "Motorista",
