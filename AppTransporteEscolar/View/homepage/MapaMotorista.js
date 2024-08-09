@@ -13,6 +13,13 @@ import { formatTime, formatDistance } from '../../utils/formatUtils';
 
 
 const MapaMotorista = ({ navigation }) => {
+    const [waypoints, setWaypoints] = useState(
+    [
+        { name: 'Mauá', latitude: -23.647438, longitude: -46.575321 }, 
+        { name: 'Sacramento', latitude: -23.653268, longitude: -46.574290 },
+        { name: 'Shopping', latitude: -23.626883, longitude: -46.580122 },
+    ]
+    )
     const [region, setRegion] = useState(null);
     const [heading, setHeading] = useState(0);
     const [userLocation, setUserLocation] = useState(null);
@@ -53,7 +60,7 @@ const MapaMotorista = ({ navigation }) => {
                         longitudeDelta: 0.005,
                     });
                     setHeading(heading || 0);
-                    calculateRoute({ latitude, longitude });
+                    calculateRoute(waypoints,{ latitude, longitude });
                 } else {
                     console.log('Could not get current location');
                 }
@@ -89,7 +96,7 @@ const MapaMotorista = ({ navigation }) => {
                         const distanceToRoute = calculateDistanceToRoute(latitude, longitude);
                         console.log(distanceToRoute)
                         if (distanceToRoute > recalculateThreshold) {
-                            calculateRoute({ latitude, longitude });
+                            calculateRoute(waypoints,{ latitude, longitude });
                         }
                     }
                 }
@@ -105,14 +112,8 @@ const MapaMotorista = ({ navigation }) => {
         };
     }, [isUserInteracting, routePoints]);
 
-    const calculateRoute = async (currentLocation) => {
-        const waypoints = [
-            { name: 'Felipe Matos Silvieri', latitude: currentLocation.latitude, longitude: currentLocation.longitude }, // Localização atual como primeiro ponto
-            { name: 'Mauá', latitude: -23.647438, longitude: -46.575321 }, 
-            { name: 'Sacramento', latitude: -23.653268, longitude: -46.574290 },
-            { name: 'Shopping', latitude: -23.626883, longitude: -46.580122 },
-        ];
-
+    const calculateRoute = async (stateWaypoints, currentLocation) => {
+        const waypoints = [{ name: 'Felipe Matos Silvieri', latitude: currentLocation.latitude, longitude: currentLocation.longitude },...stateWaypoints] 
         const origin = `${currentLocation.latitude},${currentLocation.longitude}`;
         const destination = `${waypoints[waypoints.length - 1].latitude},${waypoints[waypoints.length - 1].longitude}`;
         const waypointsString = waypoints
@@ -125,6 +126,7 @@ const MapaMotorista = ({ navigation }) => {
         try {
             const response = await axios.get(url);
             if (response.data.routes && response.data.routes.length) {
+                console.log(response)
                 const route = response.data.routes[0];
                 const decodedPolyline = polyline.decode(route.overview_polyline.points).map(point => ({
                     latitude: point[0],
