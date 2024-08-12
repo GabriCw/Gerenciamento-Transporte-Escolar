@@ -9,6 +9,10 @@ import { getDistance } from 'geolib';
 import { styles } from './Style/mapaMotoristaStyle';
 import { Button } from 'react-native-paper';
 import { formatTime, formatDistance } from '../../utils/formatUtils';
+import * as FileSystem from 'expo-file-system';
+
+
+
 
 
 
@@ -147,6 +151,7 @@ const MapaMotorista = ({ navigation }) => {
                     setNextWaypointDistance(nextLeg.distance.value); // distância em metros
                     setNextWaypointDuration(nextLeg.duration.value); // duração em segundos
                 }
+                saveRouteToFile(route);
             } else {
                 console.log('No routes found');
             }
@@ -195,6 +200,7 @@ const MapaMotorista = ({ navigation }) => {
     const handleNavigate = () => {
         navigation.navigate('Home');
     }
+
 
     // ---------- Gerencia a entrega do aluno ----------
     const handleEntrega = (bool) => {

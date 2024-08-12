@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { StyleSheet, View, Image, Text } from 'react-native';
-import MapView, { Marker, Polyline } from 'react-native-maps';
+import MapView, { Marker, Polyline, AnimatedRegion, Animated } from 'react-native-maps';
 import * as Location from 'expo-location';
 import axios from 'axios';
 import polyline from '@mapbox/polyline';
@@ -22,9 +22,13 @@ const MapaResponsavel = ({ navigation }) => {
         { name: 'Mauá', latitude: -23.647438, longitude: -46.575321 }
     )
     
-    const [region, setRegion] = useState(null);
     const [heading, setHeading] = useState(0);
     const [motoristaLoc, setMotoristaLoc] = useState(null);
+
+    const [nextWaypointDuration, setNextWaypointDuration] = useState(300);
+    const [nextWaypointDistance, setNextWaypointDistance] = useState(500);
+
+    const mapRef = useRef(null);
 
     useEffect(() => {
         const initializeLocation = async () => {
@@ -94,7 +98,7 @@ const MapaResponsavel = ({ navigation }) => {
         const minLongitude = Math.min(...longitudes);
         const maxLongitude = Math.max(...longitudes);
     
-        let latitudeDelta = (maxLatitude - minLatitude) + 0.25*(maxLatitude - minLatitude); // margem extra
+        let latitudeDelta = (maxLatitude - minLatitude) + 0.60*(maxLatitude - minLatitude); // margem extra
         let longitudeDelta = (maxLongitude - minLongitude) + 0.25*(maxLongitude - minLongitude); // margem extra
     
         // Define um valor mínimo para o delta de latitude e longitude
@@ -109,21 +113,26 @@ const MapaResponsavel = ({ navigation }) => {
             longitudeDelta = MIN_LON_DELTA;
         }
     
-        setRegion({
-            latitude: (maxLatitude + minLatitude) / 2,
+        const newRegion = {
+            latitude: (maxLatitude + minLatitude) / 2 - (latitudeDelta * 0.08),
             longitude: (maxLongitude + minLongitude) / 2,
             latitudeDelta,
             longitudeDelta,
-        });
+        };
+
+        // Verifica se a referência do mapa está definida e então anima para a nova região
+        if (mapRef.current) {
+            mapRef.current.animateToRegion(newRegion, 1000); // 1000ms para uma animação mais suave
+        }
     };
 
     return (
         <View style={styles.view}>
             <View style={styles.content}>
-                {region && (
+                {mapRef && (
                     <MapView
+                        ref={mapRef}
                         style={styles.map}
-                        region={region}
                         showsUserLocation={false}
                         showsMyLocationButton={false}
                         showsCompass={false}
@@ -168,6 +177,25 @@ const MapaResponsavel = ({ navigation }) => {
                         )}
                     </MapView>
                 )}
+            </View>
+            <View style={styles.footer}>
+                <View style={styles.infoCard}>
+                    <View style={styles.infoCardNextStop}>
+                        <Text style={styles.infoCardTitle}>
+                            Chegará ao destino
+                        </Text>
+                        {nextWaypointDistance && nextWaypointDuration && (
+                            <View style={styles.infoCardNextStopTexts}>
+                                <Text style={styles.infoCardText}>
+                                    {formatDistance(nextWaypointDistance)}
+                                </Text>
+                                <Text style={styles.infoCardText}>
+                                    {formatTime(nextWaypointDuration)}
+                                </Text>
+                            </View>
+                        )}
+                    </View>
+                </View>
             </View>
         </View>
     );

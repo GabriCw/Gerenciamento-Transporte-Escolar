@@ -45,7 +45,7 @@ export const styles = StyleSheet.create({
     },
     footer: {
         position: 'absolute',
-        bottom: 70,
+        bottom: 50,
         height: '15%',
         width: '100%',
         alignItems: 'center',
