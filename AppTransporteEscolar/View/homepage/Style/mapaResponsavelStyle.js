@@ -4,6 +4,7 @@ import { shadow } from 'react-native-paper';
 export const styles = StyleSheet.create({
     view: {
         flex: 1,
+        backgroundColor: '#090833',
     },
     header: {
         position: 'absolute',
@@ -86,44 +87,5 @@ export const styles = StyleSheet.create({
         fontWeight: 'bold',
         fontSize: 30
     },
-    deliveredCardPosition: {
-        position: 'absolute',
-        top: '13%',
-        height: '8%',
-        width: '100%',
-        alignItems: 'center'
-    },
-    deliveredCardContent: {
-        flex: 1,
-        flexDirection: 'row',
-        backgroundColor: '#FFFFFFBB',
-        width: '95%',
-        height: '50%',
-        borderRadius: 15,
-        alignItems: 'center',
-    },
-    deliveredCardText:{
-        flex: 1,
-        fontWeight: 'bold',
-        fontSize: 12,
-        marginHorizontal: 10
-    },
-    deliveredCardButtons: {
-        flex: 1,
-        flexDirection: 'row',
-        height: 40,
-        right: 0
-    },
-    deliveredCardButtonYes: {
-        backgroundColor: 'green',
-        width: 80,
-        padding: 0,
-        marginRight: 10
-    },
-    deliveredCardButtonNo: {
-        backgroundColor: 'red',
-        width: 80,
-        padding: 0
-    }
 
 });

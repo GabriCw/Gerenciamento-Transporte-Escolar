@@ -331,15 +331,6 @@ const MapaMotorista = ({ navigation }) => {
                 </View>
             )}
             
-            {/* ---------- BOTÃO SAIR ---------- */}
-            <View style={styles.header}>
-                <Button
-                    mode="contained"
-                    onPress={handleNavigate}
-                >
-                    Sair
-                </Button>
-            </View>
         </View>
     );
 }
