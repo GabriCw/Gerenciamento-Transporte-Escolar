@@ -6,13 +6,24 @@ import axios from 'axios';
 import polyline from '@mapbox/polyline';
 import { getPinImage } from '../../utils/getPinImage';
 import { getDistance } from 'geolib';
-import { styles } from './Style/mapaResponsavelStyle';
+import { styles } from './Style/mapaMotoristaStyle';
 import { Button } from 'react-native-paper';
 import { formatTime, formatDistance } from '../../utils/formatUtils';
+import * as FileSystem from 'expo-file-system';
+
+
+
 
 
 
 const MapaMotorista = ({ navigation }) => {
+    const [waypoints, setWaypoints] = useState(
+    [
+        { name: 'Mauá', latitude: -23.647438, longitude: -46.575321 }, 
+        { name: 'Sacramento', latitude: -23.653268, longitude: -46.574290 },
+        { name: 'Shopping', latitude: -23.626883, longitude: -46.580122 },
+    ]
+    )
     const [region, setRegion] = useState(null);
     const [heading, setHeading] = useState(0);
     const [userLocation, setUserLocation] = useState(null);
@@ -53,7 +64,7 @@ const MapaMotorista = ({ navigation }) => {
                         longitudeDelta: 0.005,
                     });
                     setHeading(heading || 0);
-                    calculateRoute({ latitude, longitude });
+                    calculateRoute(waypoints,{ latitude, longitude });
                 } else {
                     console.log('Could not get current location');
                 }
@@ -89,7 +100,7 @@ const MapaMotorista = ({ navigation }) => {
                         const distanceToRoute = calculateDistanceToRoute(latitude, longitude);
                         console.log(distanceToRoute)
                         if (distanceToRoute > recalculateThreshold) {
-                            calculateRoute({ latitude, longitude });
+                            calculateRoute(waypoints,{ latitude, longitude });
                         }
                     }
                 }
@@ -105,14 +116,8 @@ const MapaMotorista = ({ navigation }) => {
         };
     }, [isUserInteracting, routePoints]);
 
-    const calculateRoute = async (currentLocation) => {
-        const waypoints = [
-            { name: 'Felipe Matos Silvieri', latitude: currentLocation.latitude, longitude: currentLocation.longitude }, // Localização atual como primeiro ponto
-            { name: 'Mauá', latitude: -23.647438, longitude: -46.575321 }, 
-            { name: 'Sacramento', latitude: -23.653268, longitude: -46.574290 },
-            { name: 'Shopping', latitude: -23.626883, longitude: -46.580122 },
-        ];
-
+    const calculateRoute = async (stateWaypoints, currentLocation) => {
+        const waypoints = [{ name: 'Felipe Matos Silvieri', latitude: currentLocation.latitude, longitude: currentLocation.longitude },...stateWaypoints] 
         const origin = `${currentLocation.latitude},${currentLocation.longitude}`;
         const destination = `${waypoints[waypoints.length - 1].latitude},${waypoints[waypoints.length - 1].longitude}`;
         const waypointsString = waypoints
@@ -125,6 +130,7 @@ const MapaMotorista = ({ navigation }) => {
         try {
             const response = await axios.get(url);
             if (response.data.routes && response.data.routes.length) {
+                console.log(response)
                 const route = response.data.routes[0];
                 const decodedPolyline = polyline.decode(route.overview_polyline.points).map(point => ({
                     latitude: point[0],
@@ -145,6 +151,7 @@ const MapaMotorista = ({ navigation }) => {
                     setNextWaypointDistance(nextLeg.distance.value); // distância em metros
                     setNextWaypointDuration(nextLeg.duration.value); // duração em segundos
                 }
+                saveRouteToFile(route);
             } else {
                 console.log('No routes found');
             }
@@ -194,6 +201,7 @@ const MapaMotorista = ({ navigation }) => {
         navigation.navigate('Home');
     }
 
+
     // ---------- Gerencia a entrega do aluno ----------
     const handleEntrega = (bool) => {
         if (bool){
@@ -205,6 +213,17 @@ const MapaMotorista = ({ navigation }) => {
 
         setWaypointProximity(false);
     }
+
+    // ---------- Envio do pacote de informações ao Backend ----------
+
+    useEffect(() => {
+        const intervalId = setInterval(() => {
+            console.log(userLocation)
+            }, 60000);
+
+            // Cleanup function para limpar o intervalo quando o componente for desmontado
+            return () => clearInterval(intervalId);
+    },[])
 
     return (
         <View style={styles.view}>
@@ -318,15 +337,6 @@ const MapaMotorista = ({ navigation }) => {
                 </View>
             )}
             
-            {/* ---------- BOTÃO SAIR ---------- */}
-            <View style={styles.header}>
-                <Button
-                    mode="contained"
-                    onPress={handleNavigate}
-                >
-                    Sair
-                </Button>
-            </View>
         </View>
     );
 }
