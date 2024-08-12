@@ -2,18 +2,20 @@ import React, { useContext, useEffect, useState } from 'react';
 import { View, StyleSheet, Text, ScrollView, Alert } from 'react-native';
 import { Button, Card, Portal, TextInput, Provider, IconButton, ActivityIndicator } from 'react-native-paper';
 import { FontAwesome } from '@expo/vector-icons'; // Importa o FontAwesome
-import { createStudentList, deleteStudent, getStudentByResponsible, updateStudent } from '../../data/studentServices';
+import { createStudentList, deleteStudent, getStudentByCode, getStudentByResponsible, updateStudent } from '../../data/studentServices';
 import { AuthContext } from '../../providers/AuthProvider';
 import Toast from 'react-native-toast-message';
 import ModalDefault from '../../components/modalDefault/ModalDefault';
 import ModalRegister from './components/ModalRegister';
 import ModalEdit from './components/ModalEdit';
+import ModalAssociation from './components/ModalAssociation';
 
 const Students = ({ navigation }) => {
     const { userData } = useContext(AuthContext);
 
     const [modalVisible, setModalVisible] = useState(false);
     const [editModalVisible, setEditModalVisible] = useState(false);
+    const [associationModalVisible, setAssociationModalVisible] = useState(false);
     const [alunos, setAlunos] = useState([]);
     const [tempAluno, setTempAluno] = useState({ name: '', year: '' });
     const [selectedAluno, setSelectedAluno] = useState(null);
@@ -27,9 +29,10 @@ const Students = ({ navigation }) => {
             const studentFormat = response.data.map(item => ({
                 id: item.id,
                 name: item.name,
-                year: item.year
+                year: item.year,
+                code: item.code
             }));
-
+            
             setAlunos(studentFormat);
         }
         else{
@@ -56,6 +59,10 @@ const Students = ({ navigation }) => {
 
     const handleModalToggle = () => {
         setModalVisible(!modalVisible);
+    };
+
+    const handleAssociationModalToggle = () => {
+        setAssociationModalVisible(!associationModalVisible);
     };
 
     const handleEditModalToggle = () => {
@@ -190,6 +197,22 @@ const Students = ({ navigation }) => {
         );
     };
 
+    const handleVerifyStudentByCode = async(studentCode) => {
+        const student = await getStudentByCode(studentCode);
+
+        if(student.status === 200){
+            navigation.navigate("StudentAssociation", {studentData: student.data});
+        }
+        else{
+            Toast.show({
+                type: 'error',
+                text1: 'Erro',
+                text2: student.data.detail,
+                visibilityTime: 3000,
+            });
+        }
+    };
+
     return (
         <Provider>
             <Portal.Host>
@@ -214,8 +237,9 @@ const Students = ({ navigation }) => {
                                                 <FontAwesome name="child" size={45} color="black" style={styles.icon} />
                                             </View>
                                             <View style={styles.cardDetails}>
-                                                <Text style={[styles.cardText, {marginTop:1}]}>Nome: {aluno.name}</Text>
-                                                <Text style={styles.cardText}>Idade: {aluno.year}</Text>
+                                                <Text style={[styles.cardText, {marginTop:1, fontWeight: "bold"}]}>{aluno.name}</Text>
+                                                <Text style={styles.cardText}>{aluno.year} anos</Text>
+                                                {aluno.code && <Text style={styles.codeText}>{aluno.code}</Text>}
                                             </View>
                                             <IconButton  icon="pencil" size={20} onPress={() => handleEdit(aluno)}>
                                             </IconButton>
@@ -233,6 +257,13 @@ const Students = ({ navigation }) => {
                                 style={styles.addButton}
                             >
                                 Cadastrar Aluno
+                            </Button>
+                            <Button
+                                mode="contained"
+                                onPress={handleAssociationModalToggle}
+                                style={styles.addButton}
+                            >
+                                Associar Aluno
                             </Button>
                             {
                                 alunos?.length > 0 &&
@@ -263,6 +294,12 @@ const Students = ({ navigation }) => {
                         open={editModalVisible}
                         onClose={handleEditModalToggle}
                         handleConfirm={handleUpdate}
+                    />
+
+                    <ModalAssociation
+                        open={associationModalVisible}
+                        onClose={handleAssociationModalToggle}
+                        handleConfirm={handleVerifyStudentByCode}
                     />
                 </View>
             </Portal.Host>
@@ -327,12 +364,19 @@ const styles = StyleSheet.create({
     },
     addButton: {
         backgroundColor: '#C36005',
-        margin: 40,
     },
     cardText: {
         color: '#000',
         fontSize: 18,
         marginBottom: 5,
+    },
+    codeText: {
+        color: '#fff',
+        fontSize: 16,
+        marginBottom: 5,
+        backgroundColor: "#090833",
+        textAlign: "center",
+        width: "70%"
     },
     cardTitle: {
         color: '#000',
@@ -378,6 +422,11 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     buttonContainer: {
+        marginTop: 10,
+        width: "100%",
+        flexWrap: "wrap",
+        justifyContent: "center",
+        gap: 10,
         display: "flex",
         flexDirection: "row"
     },

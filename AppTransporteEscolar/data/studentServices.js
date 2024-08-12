@@ -55,3 +55,29 @@ export const updateStudent = async(body) => {
         return error.response;
     }
 };
+
+export const getStudentByCode = async(studentCode) => {
+    const _endpoint = `/get-by-code?student_code=${studentCode}`;
+
+    try{
+        const response  = await axios.get(_controller + _endpoint);
+
+        return response;
+    }
+    catch(error){
+        return error.response;
+    }
+};
+
+export const associationStudent = async(body) => {
+    const _endpoint = `/association`;
+
+    try{
+        const response  = await axios.post(_controller + _endpoint, body);
+
+        return response;
+    }
+    catch(error){
+        return error.response;
+    }
+};
