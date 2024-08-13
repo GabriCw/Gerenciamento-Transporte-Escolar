@@ -44,10 +44,38 @@ export const getAllSchoolList = async() => {
 };
 
 export const associateDriverToSchool = async(body) => {
-    const _endpoint = `/associate-driver`;
+    const _endpoint = `/school-driver-association`;
 
     try{
         const response  = await axios.post(_controller + _endpoint, body);
+
+        return response;
+    }
+    catch(error){
+        return error.response;
+    }
+};
+
+export const disassociateDriverToSchool = async(body) => {
+    const _endpoint = `/school-driver-disassociation`;
+
+    try{
+        const response  = await axios.delete(_controller + _endpoint, {
+            data: body
+        });
+
+        return response;
+    }
+    catch(error){
+        return error.response;
+    }
+};
+
+export const getSchoolByUser = async(userId) => {
+    const _endpoint = `/get-school-by-user?user_id=${userId}`;
+
+    try{
+        const response  = await axios.get(_controller + _endpoint);
 
         return response;
     }
