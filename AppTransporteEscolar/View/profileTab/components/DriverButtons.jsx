@@ -1,9 +1,13 @@
 import { StyleSheet, View } from "react-native";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 import ButtonDefault from "./ButtonDefault";
-import { FontAwesome } from "@expo/vector-icons";
+import { FontAwesome, FontAwesome5 } from "@expo/vector-icons";
 
 const DriverButtons = ({navigation}) => {
+    const handleToDriverSchoolPage = () => {
+        navigation.navigate('DriverSchools');
+    }
+
     const handleToVehiclePage = () => {
         navigation.navigate('Veiculo');
     }
@@ -29,6 +33,11 @@ const DriverButtons = ({navigation}) => {
                     icon={<FontAwesome name="bus" size={"30%"} color="#fff"/>}
                     title={"Ver Veículo"}
                     onClick={handleToVehiclePage}
+                />
+                <ButtonDefault
+                    icon={<FontAwesome5 name="school" size={"30%"} color="#fff"/>}
+                    title={"Minha Escola"}
+                    onClick={handleToDriverSchoolPage}
                 />
             </View>
         </View>

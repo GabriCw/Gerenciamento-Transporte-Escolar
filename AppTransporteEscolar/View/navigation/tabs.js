@@ -12,6 +12,8 @@ import Profile from '../profile/Profile';
 import Homepage from '../homepage/Homepage';
 import ProfileTab from '../profileTab/ProfileTab';
 import ConfirmStudentAssociation from '../students/components/ConfirmStudentAssociation';
+import Schools from '../schools/DriverSchools';
+import DriverSchools from '../schools/DriverSchools';
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -38,6 +40,7 @@ const PerfilMotoStack = () => (
     <Stack.Screen name="Perfil" component={ProfileTab} options={{ headerShown: false }} />
     <Stack.Screen name="Veiculo" component={Vehicle} options={{ headerShown: false }} />
     <Stack.Screen name="VerPerfilMoto" component={Profile} options={{ headerShown: false }} />
+    <Stack.Screen name="DriverSchools" component={DriverSchools} options={{ headerShown: false }} />
   </Stack.Navigator>
 );
 
@@ -48,6 +51,7 @@ const PerfilAdminStack = () => (
     <Stack.Screen name="Alunos" component={Students} options={{ headerShown: false }} />
     <Stack.Screen name="VerPerfilMoto" component={Profile} options={{ headerShown: false }} />
     <Stack.Screen name="StudentAssociation" component={ConfirmStudentAssociation} options={{ headerShown: false }} />
+    <Stack.Screen name="DriverSchools" component={DriverSchools} options={{ headerShown: false }} />
   </Stack.Navigator>
 );
 
