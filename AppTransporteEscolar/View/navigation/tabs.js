@@ -31,7 +31,7 @@ const PerfilRespStack = () => {
   return <Stack.Navigator initialRouteName={'Perfil'}>
     <Stack.Screen name="Perfil" component={ProfileTab} options={{ headerShown: false }} />
     <Stack.Screen name="Alunos" component={Students} options={{ headerShown: false }} />
-    <Stack.Screen name="VerPerfilResp" component={Profile} options={{ headerShown: false }} />
+    <Stack.Screen name="VerPerfilMoto" component={Profile} options={{ headerShown: false }} />
     <Stack.Screen name="StudentAssociation" component={ConfirmStudentAssociation} options={{ headerShown: false }} />
   </Stack.Navigator>
 };
@@ -61,6 +61,8 @@ const PerfilAdminStack = () => (
 const Tabs = () => {
   const {userData} = useContext(AuthContext);
 
+  console.log(userData.user_type_id)
+
   return (
     <Tab.Navigator
       tabBarOptions={{
@@ -80,7 +82,7 @@ const Tabs = () => {
         userData?.user_type_id === userTypeEnum.RESPONSAVEL ?
         <>
           <Tab.Screen name="Home" component={HomeStack} options={{ headerShown: false, tabBarIcon: ({focused}) =>(<FontAwesome name="home" size={24} color= {focused? '#C36005' : 'black'}/>)}} />
-          <Tab.Screen name="Mapa" component={MapaMotorista} options={{ headerShown: false, tabBarIcon: ({focused}) =>(<FontAwesome name="map" size={20} color= {focused? '#C36005' : 'black'}/>)}} />
+          <Tab.Screen name="Mapa" component={MapaResponsavel} options={{ headerShown: false, tabBarIcon: ({focused}) =>(<FontAwesome name="map" size={20} color= {focused? '#C36005' : 'black'}/>)}} />
           <Tab.Screen name="Perfil" component={PerfilRespStack} options={{ headerShown: false, tabBarIcon: ({focused}) =>(<FontAwesome name="user" size={24} color= {focused? '#C36005' : 'black'}/>)}} />        
         </>
         :
