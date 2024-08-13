@@ -1,41 +1,62 @@
-import { useEffect, useState } from "react";
+import { FontAwesome5 } from "@expo/vector-icons";
+import { useCallback, useContext, useState } from "react";
+import { Linking } from "react-native";
 import { ScrollView, StyleSheet, Text, View } from "react-native";
-import { ActivityIndicator, Button, Card, IconButton } from "react-native-paper";
-import { getAllSchoolList } from "../../data/pointServices";
-import { FontAwesome, FontAwesome5 } from "@expo/vector-icons";
+import { ActivityIndicator, Button, Card } from "react-native-paper";
+import { associateDriverToSchool } from "../../../data/pointServices";
+import { AuthContext } from "../../../providers/AuthProvider";
+import Toast from "react-native-toast-message";
 
-const DriverSchools = ({navigation}) => {
-
+const ConfirmDriverSchool = ({navigation, route}) => {
     const [isLoading, setIsLoading] = useState(false);
-    const [schoolList, setSchoolList] = useState([]);
 
-    useEffect(() => {
-        const requestData = async() => {
-            setIsLoading(true);
+    const {schoolData} = route.params;
+    const {userData} = useContext(AuthContext);
 
-            const schoolList = await getAllSchoolList();
+    const handleAssociateDriverToSchool = async() => {
+        setIsLoading(true);
 
-            if(schoolList.status === 200){
-                setSchoolList(schoolList.data);
-            }
-            else{
-                Toast.show({
-                    type: 'error',
-                    text1: 'Erro',
-                    text2: 'Erro ao listar escolas',
-                    visibilityTime: 3000,
-                });
-                navigation.goBack();
-            }
-
-            setIsLoading(false);
+        const body = {
+            user_id: userData.id,
+            point_id: schoolData.id
         };
 
-        requestData();
-    }, []);
+        const associate = await associateDriverToSchool(body)
 
-    const handleSchoolSelected = (schoolInfos) => {
-        navigation.navigate("ConfirmDriverSchool", {schoolData: schoolInfos});
+        if(associate.status === 201){
+            Toast.show({
+                type: 'success',
+                text1: 'Sucesso',
+                text2: 'Escola associada com sucesso!',
+                visibilityTime: 3000,
+            });
+
+            navigation.navigate("Perfil")
+        }
+        else{   
+            Toast.show({
+                type: 'error',
+                text1: 'Erro',
+                text2: 'Erro ao associar à escola',
+                visibilityTime: 3000,
+            });
+        }
+
+        setIsLoading(false);
+    };
+
+    const OpenURLButton = ({url, children}) => {
+        const handlePress = useCallback(async () => {
+          const supported = await Linking.canOpenURL(url);
+      
+          if (supported) {
+            await Linking.openURL(url);
+          } else {
+            Alert.alert(`Don't know how to open this URL: ${url}`);
+          }
+        }, [url]);
+      
+        return <Button onPress={handlePress}>{children}</Button>;
     };
 
     return <View style={styles.view}>
@@ -49,24 +70,24 @@ const DriverSchools = ({navigation}) => {
             </Button>
         </View>
         <View style={styles.content}>
-            <Text style={styles.text}>Selecione sua escola</Text>
+            <Text style={styles.text}>Detalhes da escola</Text>
             <View style={styles.scrollContainer}>
                 <ScrollView contentContainerStyle={styles.scrollContent}>
-                    {schoolList.map((school, index) => (
-                        <Card key={index} style={styles.card} onPress={() => handleSchoolSelected(school)}>
-                            <Card.Content style={styles.cardContent}>
-                                <View style={styles.iconContainer}>
-                                    <FontAwesome5 name="school" size={45} color="black" style={styles.icon} />
-                                </View>
-                                <View style={styles.cardDetails}>
-                                    <Text style={[styles.cardText, {marginTop:1, fontWeight: "bold"}]}>{school.name}</Text>
-                                    <Text style={styles.cardText}>{school.address}</Text>
-                                    <Text style={styles.codeText}>{school.city}</Text>
-                                </View>
-                            </Card.Content>
-                        </Card>
-                    ))}
+                    <Text style={styles.cardTitle}>{schoolData.name}</Text>
+                    <Text style={styles.cardText}>{schoolData.address}</Text>
+                    <Text style={styles.cardText}>{schoolData.neighborhood}</Text>
+                    <Text style={styles.codeText}>{schoolData.city} / {schoolData.state}</Text>
+                    <OpenURLButton url={`https://www.google.com/maps?q=${schoolData.lat},${schoolData.lng}`}>Veja no Google Maps</OpenURLButton>
                 </ScrollView>
+            </View>
+            <View style={styles.buttonContainer}>
+                    <Button
+                        mode="contained"
+                        onPress={handleAssociateDriverToSchool}
+                        style={styles.addButton}
+                    >
+                        Associar
+                    </Button>
             </View>
         </View>
         {isLoading && (
@@ -97,7 +118,7 @@ const styles = StyleSheet.create({
     },
     scrollContainer: {
         width: '90%',
-        height: "50%",
+        height: "inherit",
         maxHeight: 400,
         backgroundColor: '#f0f0f0',
         borderColor: '#d0d0d0',
@@ -192,7 +213,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     buttonContainer: {
-        marginTop: 10,
+        marginTop: 20,
         width: "100%",
         flexWrap: "wrap",
         justifyContent: "center",
@@ -208,4 +229,4 @@ const styles = StyleSheet.create({
     },
 });
 
-export default DriverSchools;
+export default ConfirmDriverSchool;

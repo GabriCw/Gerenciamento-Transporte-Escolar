@@ -214,96 +214,92 @@ const Students = ({ navigation }) => {
     };
 
     return (
-        <Provider>
-            <Portal.Host>
-                <View style={styles.view}>
-                    <View style={styles.header}>
-                        <Button
-                            onPress={() => navigation.goBack()}
-                            style={styles.buttonBack}
-                            labelStyle={styles.buttonLabel}
-                        >
-                            <Text>Voltar</Text>
-                        </Button>
-                    </View>
-                    <View style={styles.content}>
-                        <Text style={styles.text}>Seus Alunos</Text>
-                        <View style={styles.scrollContainer}>
-                            <ScrollView contentContainerStyle={styles.scrollContent}>
-                                {alunos.map((aluno, index) => (
-                                    <Card key={index} style={styles.card}>
-                                        <Card.Content style={styles.cardContent}>
-                                            <View style={styles.iconContainer}>
-                                                <FontAwesome name="child" size={45} color="black" style={styles.icon} />
-                                            </View>
-                                            <View style={styles.cardDetails}>
-                                                <Text style={[styles.cardText, {marginTop:1, fontWeight: "bold"}]}>{aluno.name}</Text>
-                                                <Text style={styles.cardText}>{aluno.year} anos</Text>
-                                                {aluno.code && <Text style={styles.codeText}>{aluno.code}</Text>}
-                                            </View>
-                                            <IconButton  icon="pencil" size={20} onPress={() => handleEdit(aluno)}>
-                                            </IconButton>
-                                            <IconButton icon="trash-can" size={20} onPress={() => handleDelete(aluno)}>
-                                            </IconButton>
-                                        </Card.Content>
-                                    </Card>
-                                ))}
-                            </ScrollView>
-                        </View>
-                        <View style={styles.buttonContainer}>
-                            <Button
-                                mode="contained"
-                                onPress={handleModalToggle}
-                                style={styles.addButton}
-                            >
-                                Cadastrar Aluno
-                            </Button>
-                            <Button
-                                mode="contained"
-                                onPress={handleAssociationModalToggle}
-                                style={styles.addButton}
-                            >
-                                Associar Aluno
-                            </Button>
-                            {
-                                alunos?.length > 0 &&
-                                <Button
-                                    mode="contained"
-                                    onPress={handleAddStudent}
-                                    style={styles.addButton}
-                                >
-                                    Salvar
-                                </Button>
-                            }
-                        </View>
-                        {isLoading && (
-                            <View style={styles.loadingOverlay}>
-                                <ActivityIndicator size="large" color="#C36005" />
-                            </View>
-                        )}
-                    </View>
-                    
-                    <ModalRegister
-                        open={modalVisible}
-                        onClose={handleModalToggle}
-                        handleConfirm={handleSave}
-                    />
-
-                    <ModalEdit
-                        data={tempAluno}
-                        open={editModalVisible}
-                        onClose={handleEditModalToggle}
-                        handleConfirm={handleUpdate}
-                    />
-
-                    <ModalAssociation
-                        open={associationModalVisible}
-                        onClose={handleAssociationModalToggle}
-                        handleConfirm={handleVerifyStudentByCode}
-                    />
+        <View style={styles.view}>
+            <View style={styles.header}>
+                <Button
+                    onPress={() => navigation.goBack()}
+                    style={styles.buttonBack}
+                    labelStyle={styles.buttonLabel}
+                >
+                    <Text>Voltar</Text>
+                </Button>
+            </View>
+            <View style={styles.content}>
+                <Text style={styles.text}>Seus Alunos</Text>
+                <View style={styles.scrollContainer}>
+                    <ScrollView contentContainerStyle={styles.scrollContent}>
+                        {alunos.map((aluno, index) => (
+                            <Card key={index} style={styles.card}>
+                                <Card.Content style={styles.cardContent}>
+                                    <View style={styles.iconContainer}>
+                                        <FontAwesome name="child" size={45} color="black" style={styles.icon} />
+                                    </View>
+                                    <View style={styles.cardDetails}>
+                                        <Text style={[styles.cardText, {marginTop:1, fontWeight: "bold"}]}>{aluno.name}</Text>
+                                        <Text style={styles.cardText}>{aluno.year} anos</Text>
+                                        {aluno.code && <Text style={styles.codeText}>{aluno.code}</Text>}
+                                    </View>
+                                    <IconButton  icon="pencil" size={20} onPress={() => handleEdit(aluno)}>
+                                    </IconButton>
+                                    <IconButton icon="trash-can" size={20} onPress={() => handleDelete(aluno)}>
+                                    </IconButton>
+                                </Card.Content>
+                            </Card>
+                        ))}
+                    </ScrollView>
                 </View>
-            </Portal.Host>
-        </Provider>
+                <View style={styles.buttonContainer}>
+                    <Button
+                        mode="contained"
+                        onPress={handleModalToggle}
+                        style={styles.addButton}
+                    >
+                        Cadastrar Aluno
+                    </Button>
+                    <Button
+                        mode="contained"
+                        onPress={handleAssociationModalToggle}
+                        style={styles.addButton}
+                    >
+                        Associar Aluno
+                    </Button>
+                    {
+                        alunos?.length > 0 &&
+                        <Button
+                            mode="contained"
+                            onPress={handleAddStudent}
+                            style={styles.addButton}
+                        >
+                            Salvar
+                        </Button>
+                    }
+                </View>
+                {isLoading && (
+                    <View style={styles.loadingOverlay}>
+                        <ActivityIndicator size="large" color="#C36005" />
+                    </View>
+                )}
+            </View>
+            
+            <ModalRegister
+                open={modalVisible}
+                onClose={handleModalToggle}
+                handleConfirm={handleSave}
+            />
+
+            <ModalEdit
+                data={tempAluno}
+                open={editModalVisible}
+                onClose={handleEditModalToggle}
+                handleConfirm={handleUpdate}
+            />
+
+            <ModalAssociation
+                open={associationModalVisible}
+                onClose={handleAssociationModalToggle}
+                handleConfirm={handleVerifyStudentByCode}
+            />
+        </View>
     );
 };
 

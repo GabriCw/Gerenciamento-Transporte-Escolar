@@ -29,3 +29,29 @@ export const updatePoint = async(body) => {
         return error.response;
     }
 };
+
+export const getAllSchoolList = async() => {
+    const _endpoint = `/get-all-schools-list`;
+
+    try{
+        const response  = await axios.get(_controller + _endpoint);
+
+        return response;
+    }
+    catch(error){
+        return error.response;
+    }
+};
+
+export const associateDriverToSchool = async(body) => {
+    const _endpoint = `/associate-driver`;
+
+    try{
+        const response  = await axios.post(_controller + _endpoint, body);
+
+        return response;
+    }
+    catch(error){
+        return error.response;
+    }
+};
