@@ -17,7 +17,7 @@ const ProfileTab = ({navigation}) => {
             buttons: <AdminButtons navigation={navigation}/>
         },
         [userTypeEnum.MOTORISTA]: {
-            subtitle: "Motorista",
+            subtitle: userData.code ? `Cód. ${userData.code}` : "Motorista",
             buttons: <DriverButtons navigation={navigation}/>
         },
         [userTypeEnum.RESPONSAVEL]: {
@@ -59,6 +59,13 @@ const styles = StyleSheet.create({
     subtext: {
         fontSize: 15,
         color: '#000',
+        borderColor: "#C36005",
+        borderWidth: 1,
+        color: "#C36005",
+        textAlign: "center",
+        borderRadius: 5,
+        padding: 2,
+        marginTop: 5
     },
     content: {
         flex: 1,

@@ -1,9 +1,9 @@
 import { FontAwesome } from "@expo/vector-icons";
 import { useContext, useState } from "react";
 import { ScrollView, StyleSheet, Text, View } from "react-native";
-import { ActivityIndicator, Button, Card, IconButton, Portal, Provider } from "react-native-paper";
+import { ActivityIndicator, Button, Card, Portal, Provider } from "react-native-paper";
 import { associationStudent } from "../../../data/studentServices";
-import { AuthContext, AuthProvider } from "../../../providers/AuthProvider";
+import { AuthContext } from "../../../providers/AuthProvider";
 import Toast from "react-native-toast-message";
 
 const ConfirmStudentAssociation = ({route, navigation}) => {
