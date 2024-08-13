@@ -16,7 +16,7 @@ import { FontAwesome5 } from '@expo/vector-icons';
 const MapaResponsavel = ({ navigation }) => {
 
     const [residenciaAtiva, setResidenciaAtiva] = useState(
-        { name: 'Sacramento', latitude: -23.653268, longitude: -46.574290 }
+        { name: 'Sacramento', latitude: -23.6579, longitude: -46.5744 }
     )
     const [escola, setEscola] = useState(
         { name: 'Mauá', latitude: -23.647438, longitude: -46.575321 }
