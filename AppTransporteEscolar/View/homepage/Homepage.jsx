@@ -1,15 +1,14 @@
 import React, { useContext, useEffect } from 'react';
 import { View, StyleSheet, Text } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
-import Toast from 'react-native-toast-message';
 import { auth } from "../../firebase/firebase";
 import { onAuthStateChanged, signOut } from 'firebase/auth';
 import { Button } from 'react-native-paper';
 import { AuthContext } from '../../providers/AuthProvider';
 
-const TelaHome = ({ navigation }) => {
+const Homepage = ({ navigation }) => {
 
-  const {userData} = useContext(AuthContext);
+  const {hasStudent} = useContext(AuthContext);
 
   useEffect(() => {
     const monitorAuthState = () => {
@@ -23,6 +22,14 @@ const TelaHome = ({ navigation }) => {
     monitorAuthState();
   }, [navigation]);
 
+  useEffect(() => {
+    setTimeout(() => {     
+      if(!hasStudent){
+        navigation.navigate("Students");
+      }
+    }, 1500);
+  }, [navigation, hasStudent]);
+  
   const handleLogout = async () => {
     await signOut(auth);
   };
@@ -119,4 +126,4 @@ const styles = StyleSheet.create({
   }
 });
 
-export default TelaHome;
+export default Homepage;

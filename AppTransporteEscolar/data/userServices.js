@@ -42,3 +42,42 @@ export const getUserByEmail = async(email) => {
         return error.response;
     }
 };
+
+export const getUserById = async(id) => {
+    const _endpoint = `/by-id/${id}`;
+
+    try{
+        const response  = await axios.get(_controller + _endpoint);
+
+        return response;
+    }
+    catch(error){
+        return error.response;
+    }
+};
+
+export const getUserDetails = async(id) => {
+    const _endpoint = `/details?user_id=${id}`;
+
+    try{
+        const response  = await axios.get(_controller + _endpoint);
+
+        return response;
+    }
+    catch(error){
+        return error.response;
+    }
+};
+
+export const updateUser = async(body) => {
+    const _endpoint = '/update';
+
+    try{
+        const response  = await axios.put(_controller + _endpoint, body);
+
+        return response;
+    }
+    catch(error){
+        return error.response;
+    }
+};
