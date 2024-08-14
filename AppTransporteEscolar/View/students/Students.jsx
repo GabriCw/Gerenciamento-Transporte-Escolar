@@ -1,7 +1,7 @@
 import React, { useContext, useEffect, useState } from 'react';
-import { View, StyleSheet, Text, ScrollView, Alert } from 'react-native';
+import { View, StyleSheet, Text, ScrollView, Alert, Pressable } from 'react-native';
 import { Button, Card, Portal, TextInput, Provider, IconButton, ActivityIndicator } from 'react-native-paper';
-import { FontAwesome } from '@expo/vector-icons'; // Importa o FontAwesome
+import { FontAwesome, Ionicons } from '@expo/vector-icons'; // Importa o FontAwesome
 import { createStudentList, deleteStudent, getStudentByCode, getStudentByResponsible, updateStudent } from '../../data/studentServices';
 import { AuthContext } from '../../providers/AuthProvider';
 import Toast from 'react-native-toast-message';
@@ -9,6 +9,7 @@ import ModalDefault from '../../components/modalDefault/ModalDefault';
 import ModalRegister from './components/ModalRegister';
 import ModalEdit from './components/ModalEdit';
 import ModalAssociation from './components/ModalAssociation';
+import Header from '../../components/header/Header';
 
 const Students = ({ navigation }) => {
     const { userData } = useContext(AuthContext);
@@ -215,17 +216,8 @@ const Students = ({ navigation }) => {
 
     return (
         <View style={styles.view}>
-            <View style={styles.header}>
-                <Button
-                    onPress={() => navigation.goBack()}
-                    style={styles.buttonBack}
-                    labelStyle={styles.buttonLabel}
-                >
-                    <Text>Voltar</Text>
-                </Button>
-            </View>
+            <Header title="Meus Alunos" navigation={navigation}/>
             <View style={styles.content}>
-                <Text style={styles.text}>Seus Alunos</Text>
                 <View style={styles.scrollContainer}>
                     <ScrollView contentContainerStyle={styles.scrollContent}>
                         {alunos.map((aluno, index) => (
@@ -308,22 +300,16 @@ const styles = StyleSheet.create({
         flex: 1,
         backgroundColor: '#090833',
     },
-    text: {
-        fontSize: 25,
-        color: '#FFF',
-        margin: 20,
-        marginBottom: 40,
-        textAlign: 'center',
-        fontWeight: 'bold',
-    },
     content: {
         flex: 1,
-        marginTop: 30,
         alignItems: 'center',
+        zIndex: 1,
+        position: "relative"
     },
     scrollContainer: {
         width: '90%',
-        height: "50%",
+        marginTop: 10,
+        flex: 3,
         maxHeight: 400,
         backgroundColor: '#f0f0f0',
         borderColor: '#d0d0d0',
@@ -380,16 +366,14 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
     },
     header: {
-        alignSelf: 'stretch',
-        alignItems: 'flex-start',
+        position: "absolute",
         marginLeft: 20,
-        marginTop: 50,
         backgroundColor: '#090833',
+        top: 50
     },
     buttonBack: {
-        width: 90,
         backgroundColor: '#C36005',
-        marginVertical: 10,
+        zIndex: 2
     },
     buttonLabel: {
         color: 'white',
@@ -420,6 +404,7 @@ const styles = StyleSheet.create({
     buttonContainer: {
         marginTop: 10,
         width: "100%",
+        flex: 1,
         flexWrap: "wrap",
         justifyContent: "center",
         gap: 10,
