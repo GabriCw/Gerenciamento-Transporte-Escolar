@@ -40,6 +40,8 @@ const MapaMotorista = ({ navigation }) => {
     const [currentLeg, setCurrentLeg] = useState(1)
     const recalculateThreshold = 50; // Distância em metros para recalcular a rota
     const [waypointProximity, setWaypointProximity] = useState(true)
+    const [startButton, setStartButton] = useState(true);
+
 
     useEffect(() => {
         const initializeLocation = async () => {
@@ -64,7 +66,7 @@ const MapaMotorista = ({ navigation }) => {
                         longitudeDelta: 0.005,
                     });
                     setHeading(heading || 0);
-                    calculateRoute(waypoints,{ latitude, longitude });
+                    
                 } else {
                     console.log('Could not get current location');
                 }
@@ -98,7 +100,7 @@ const MapaMotorista = ({ navigation }) => {
                     setHeading(heading || 0);
                     if ( routePoints.length > 0) {
                         const distanceToRoute = calculateDistanceToRoute(latitude, longitude);
-                        console.log(distanceToRoute)
+                        // console.log(distanceToRoute)
                         if (distanceToRoute > recalculateThreshold) {
                             calculateRoute(waypoints,{ latitude, longitude });
                         }
@@ -130,7 +132,7 @@ const MapaMotorista = ({ navigation }) => {
         try {
             const response = await axios.get(url);
             if (response.data.routes && response.data.routes.length) {
-                console.log(response)
+                // console.log(response)
                 const route = response.data.routes[0];
                 const decodedPolyline = polyline.decode(route.overview_polyline.points).map(point => ({
                     latitude: point[0],
@@ -160,6 +162,38 @@ const MapaMotorista = ({ navigation }) => {
         }
         console.log('Chegou Final')
     };
+
+    const startRoute = (schedule) => {
+        if (schedule === 0){
+            // Chamada API ida
+            calculateRoute(waypoints, userLocation); // os waypoints vem da API (backend)
+            setStartButton(false);
+            console.log('Rota de ida iniciada!')
+        }
+        else if (schedule === 1){
+            // Chamada API volta
+            calculateRoute(waypoints, userLocation); // os waypoints vem da API (backend)
+            setStartButton(false)
+            console.log('Rota de volta iniciada!')
+        }
+        else {
+            console.log('Erro no tipo da schedule.')
+        }
+    }
+
+    const endRoute = (schedule) => {
+        if (schedule === 0){
+            // Enviar info de fim de viagem pra API
+            setStartButton(true);
+        }
+        else if (schedule === 1){
+            // Enviar info de fim de viagem pra API
+            setStartButton(true)
+        }
+        else {
+            console.log('Erro no tipo da schedule.')
+        }       
+    }
 
     const calculateDistanceToRoute = (latitude, longitude) => {
         if (routePoints.length === 0) return 0;
@@ -206,6 +240,7 @@ const MapaMotorista = ({ navigation }) => {
     const handleEntrega = (bool) => {
         if (bool){
             setCurrentLeg(currentLeg+1);
+            // calculateRoute()
         }
         else{
             console.log('Criança não entregue!')
@@ -216,9 +251,12 @@ const MapaMotorista = ({ navigation }) => {
 
     // ---------- Envio do pacote de informações ao Backend ----------
 
+    // O que tem que ser enviado:
+    // UserId do motorista, que vem do user 
     useEffect(() => {
         const intervalId = setInterval(() => {
-            console.log(userLocation)
+            // console.log(userLocation)
+            // Enviar só a coordenada
             }, 60000);
 
             // Cleanup function para limpar o intervalo quando o componente for desmontado
@@ -288,37 +326,58 @@ const MapaMotorista = ({ navigation }) => {
                     </MapView>
                 )}
             </View>
-            {/* ---------- CARD INFO ROTA ---------- */}
-            <View style={styles.footer}>
-                <View style={styles.infoCard}>
-                    <View style={styles.infoCardNextStop}>
-                        <Text style={styles.infoCardTitle}>
-                            Próxima Parada
-                        </Text>
-                        {nextWaypointDistance && nextWaypointDuration && (
-                            <View style={styles.infoCardNextStopTexts}>
-                                <Text style={styles.infoCardText}>
-                                    {formatDistance(nextWaypointDistance)}
-                                </Text>
-                                <Text style={styles.infoCardText}>
-                                    {formatTime(nextWaypointDuration)}
-                                </Text>
-                            </View>
-                        )}
+            {startButton && (
+                <View style={styles.startButtonPos}>
+                    <View style={styles.startButton}>
+                        <Button style = {styles.startRouteButton}
+                            onPress={() => startRoute(0)}
+                        >
+                            <Text style={{color:'white', fontSize: 15, fontWeight: 'bold'}}>IDA ESCOLA</Text>
+                        </Button>
 
-                        {(totalDistance && totalDuration && typeof speed !== 'undefined' && typeof heading !== 'undefined') && (
-                            <View style={styles.infoCardFullRouteTexts}>
-                                <Text>
-                                    {formatDistance(totalDistance)}
-                                </Text>
-                                <Text>
-                                    {formatTime(totalDuration)}{'\n'}
-                                </Text>
-                            </View>
-                        )}
+                        <Button style = {styles.startRouteButton}
+                            onPress={() => startRoute(1)}
+                        >
+                            <Text style={{color:'white', fontSize: 15, fontWeight: 'bold'}}>VOLTA ESCOLA</Text>
+                        </Button>
                     </View>
                 </View>
-            </View>
+            )}
+
+            {/* ---------- CARD INFO ROTA ---------- */}
+            {!startButton &&(
+                <View style={styles.footer}>
+                    <View style={styles.infoCard}>
+                        <View style={styles.infoCardNextStop}>
+                            <Text style={styles.infoCardTitle}>
+                                Próxima Parada
+                            </Text>
+                            {nextWaypointDistance && nextWaypointDuration && (
+                                <View style={styles.infoCardNextStopTexts}>
+                                    <Text style={styles.infoCardText}>
+                                        {formatDistance(nextWaypointDistance)}
+                                    </Text>
+                                    <Text style={styles.infoCardText}>
+                                        {formatTime(nextWaypointDuration)}
+                                    </Text>
+                                </View>
+                            )}
+
+                            {(totalDistance && totalDuration && typeof speed !== 'undefined' && typeof heading !== 'undefined') && (
+                                <View style={styles.infoCardFullRouteTexts}>
+                                    <Text>
+                                        {formatDistance(totalDistance)}
+                                    </Text>
+                                    <Text>
+                                        {formatTime(totalDuration)}{'\n'}
+                                    </Text>
+                                </View>
+                            )}
+                        </View>
+                    </View>
+                </View>
+            )
+            }
             
             {/* ---------- CARD ALUNO ENTREGUE ---------- */}
             {waypointProximity && (

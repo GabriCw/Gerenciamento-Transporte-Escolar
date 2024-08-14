@@ -45,8 +45,8 @@ const MapaResponsavel = ({ navigation }) => {
 
                 if (location) {
                     const { latitude, longitude, heading } = location.coords;
+                    updateRegion({ latitude, longitude }, residenciaAtiva, 50);
                     setMotoristaLoc({ latitude, longitude });
-                    updateRegion({ latitude, longitude }, residenciaAtiva);
                     setHeading(heading);
                 } else {
                     console.log('Could not get current location');
@@ -71,8 +71,8 @@ const MapaResponsavel = ({ navigation }) => {
                 },
                 (location) => {
                     const { latitude, longitude, heading } = location.coords;
+                    updateRegion({ latitude, longitude }, residenciaAtiva, 1000);
                     setMotoristaLoc({ latitude, longitude });
-                    updateRegion({ latitude, longitude }, residenciaAtiva);
                     setHeading(heading);
                 }
             );
@@ -87,7 +87,7 @@ const MapaResponsavel = ({ navigation }) => {
         };
     }, [residenciaAtiva]);
 
-    const updateRegion = (motoristaLoc, residenciaAtiva) => {
+    const updateRegion = (motoristaLoc, residenciaAtiva, time) => {
         if (!motoristaLoc || !residenciaAtiva) return;
     
         const latitudes = [motoristaLoc.latitude, residenciaAtiva.latitude];
@@ -122,7 +122,7 @@ const MapaResponsavel = ({ navigation }) => {
 
         // Verifica se a referência do mapa está definida e então anima para a nova região
         if (mapRef.current) {
-            mapRef.current.animateToRegion(newRegion, 1000); // 1000ms para uma animação mais suave
+            mapRef.current.animateToRegion(newRegion, time); // 1000ms para uma animação mais suave
         }
     };
 

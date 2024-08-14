@@ -129,6 +129,33 @@ export const styles = StyleSheet.create({
         backgroundColor: 'red',
         width: 80,
         padding: 0
+    },
+    startButtonPos: {
+        position: 'absolute',
+        flex: 1,
+        bottom: 30,
+        width: '100%',
+        justifyContent: 'center',
+        alignItems: 'center'
+    },
+    startButton: {
+        flex: 1,
+        flexDirection: 'row',
+        backgroundColor: '#999999DD',
+        width: '90%',
+        height: 200,
+        justifyContent: 'space-around',
+        alignItems: 'center',
+        borderRadius: 50,
+        paddingHorizontal: 30
+    },
+    startRouteButton: {
+        width: 150,
+        backgroundColor: '#C36005',
+        text: '#FFFFFF',
+        height: 80,
+        justifyContent: 'center',
+        flexDirection: 'column'
     }
 
 });
