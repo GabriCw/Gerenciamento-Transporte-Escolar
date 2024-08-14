@@ -61,8 +61,6 @@ const PerfilAdminStack = () => (
 const Tabs = () => {
   const {userData} = useContext(AuthContext);
 
-  console.log(userData.user_type_id)
-
   return (
     <Tab.Navigator
       tabBarOptions={{
