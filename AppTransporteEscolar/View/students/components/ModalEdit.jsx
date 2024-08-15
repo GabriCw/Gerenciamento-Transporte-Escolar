@@ -10,6 +10,7 @@ const ModalEdit = ({data, open, onClose, handleConfirm}) => {
             name: data?.name,
             year: data?.year
         });
+
     }, [data]);
 
     const [student, setStudent] = useState(null);
@@ -27,7 +28,7 @@ const ModalEdit = ({data, open, onClose, handleConfirm}) => {
         />
         <TextInput
             label="Idade"
-            value={student?.year}
+            value={`${student?.year}`}
             mode="outlined"
             activeOutlineColor="#C36005"
             keyboardAppearance="dark"

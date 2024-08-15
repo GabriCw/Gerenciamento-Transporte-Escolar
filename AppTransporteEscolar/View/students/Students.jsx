@@ -1,7 +1,7 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { View, StyleSheet, Text, ScrollView, Alert, Pressable } from 'react-native';
 import { Button, Card, Portal, TextInput, Provider, IconButton, ActivityIndicator } from 'react-native-paper';
-import { FontAwesome, Ionicons } from '@expo/vector-icons'; // Importa o FontAwesome
+import { AntDesign, FontAwesome, Ionicons } from '@expo/vector-icons'; // Importa o FontAwesome
 import { createStudentList, deleteStudent, getStudentByCode, getStudentByResponsible, updateStudent } from '../../data/studentServices';
 import { AuthContext } from '../../providers/AuthProvider';
 import Toast from 'react-native-toast-message';
@@ -48,7 +48,7 @@ const Students = ({ navigation }) => {
         setIsLoading(true);
         
         requestData();
-    }, []);
+    }, [userData]);
 
     useEffect(() => {
         if(reload){
@@ -214,6 +214,10 @@ const Students = ({ navigation }) => {
         }
     };
 
+    const handleSelectStudent = (studentInfos) => {
+        navigation.navigate("StudentDetail", {studentData: studentInfos});
+    };
+
     return (
         <View style={styles.view}>
             <Header title="Meus Alunos" navigation={navigation}/>
@@ -221,7 +225,7 @@ const Students = ({ navigation }) => {
                 <View style={styles.scrollContainer}>
                     <ScrollView contentContainerStyle={styles.scrollContent}>
                         {alunos.map((aluno, index) => (
-                            <Card key={index} style={styles.card}>
+                            <Card key={index} style={styles.card} onPress={() => handleSelectStudent(aluno)}>
                                 <Card.Content style={styles.cardContent}>
                                     <View style={styles.iconContainer}>
                                         <FontAwesome name="child" size={45} color="black" style={styles.icon} />
@@ -231,10 +235,11 @@ const Students = ({ navigation }) => {
                                         <Text style={styles.cardText}>{aluno.year} anos</Text>
                                         {aluno.code && <Text style={styles.codeText}>{aluno.code}</Text>}
                                     </View>
-                                    <IconButton  icon="pencil" size={20} onPress={() => handleEdit(aluno)}>
+                                    <AntDesign name="rightcircle" size={24} color="black"/>
+                                    {/* <IconButton  icon="pencil" size={20} onPress={() => handleEdit(aluno)}>
                                     </IconButton>
                                     <IconButton icon="trash-can" size={20} onPress={() => handleDelete(aluno)}>
-                                    </IconButton>
+                                    </IconButton> */}
                                 </Card.Content>
                             </Card>
                         ))}

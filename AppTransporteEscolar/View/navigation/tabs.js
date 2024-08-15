@@ -15,6 +15,7 @@ import ConfirmStudentAssociation from '../students/components/ConfirmStudentAsso
 import Schools from '../schools/DriverSchools';
 import DriverSchools from '../schools/DriverSchools';
 import ConfirmDriverSchool from '../schools/components/ConfirmDriverSchool';
+import StudentDetail from '../students/components/StudentDetail';
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -31,6 +32,7 @@ const PerfilRespStack = () => {
   return <Stack.Navigator initialRouteName={'Perfil'}>
     <Stack.Screen name="Perfil" component={ProfileTab} options={{ headerShown: false }} />
     <Stack.Screen name="Alunos" component={Students} options={{ headerShown: false }} />
+    <Stack.Screen name="StudentDetail" component={StudentDetail} options={{ headerShown: false }} />
     <Stack.Screen name="VerPerfilMoto" component={Profile} options={{ headerShown: false }} />
     <Stack.Screen name="StudentAssociation" component={ConfirmStudentAssociation} options={{ headerShown: false }} />
   </Stack.Navigator>
@@ -51,6 +53,7 @@ const PerfilAdminStack = () => (
     <Stack.Screen name="Perfil" component={ProfileTab} options={{ headerShown: false }} />
     <Stack.Screen name="Veiculo" component={Vehicle} options={{ headerShown: false }} />
     <Stack.Screen name="Alunos" component={Students} options={{ headerShown: false }} />
+    <Stack.Screen name="StudentDetail" component={StudentDetail} options={{ headerShown: false }} />
     <Stack.Screen name="VerPerfilMoto" component={Profile} options={{ headerShown: false }} />
     <Stack.Screen name="StudentAssociation" component={ConfirmStudentAssociation} options={{ headerShown: false }} />
     <Stack.Screen name="DriverSchools" component={DriverSchools} options={{ headerShown: false }} />
