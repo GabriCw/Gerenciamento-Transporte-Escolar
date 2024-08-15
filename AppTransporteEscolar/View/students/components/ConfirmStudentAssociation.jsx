@@ -5,6 +5,7 @@ import { ActivityIndicator, Button, Card, Portal, Provider } from "react-native-
 import { associationStudent } from "../../../data/studentServices";
 import { AuthContext } from "../../../providers/AuthProvider";
 import Toast from "react-native-toast-message";
+import Header from "../../../components/header/Header";
 
 const ConfirmStudentAssociation = ({route, navigation}) => {
     const [isLoading, setIsLoading] = useState(false);
@@ -51,18 +52,9 @@ const ConfirmStudentAssociation = ({route, navigation}) => {
     return <Provider>
     <Portal.Host>
         <View style={styles.view}>
-            <View style={styles.header}>
-                <Button
-                    onPress={() => navigation.goBack()}
-                    style={styles.buttonBack}
-                    labelStyle={styles.buttonLabel}
-                >
-                    <Text>Voltar</Text>
-                </Button>
-            </View>
+            <Header title="Aluno identificado!" navigation={navigation}/>
             <View style={styles.content}>
-                <Text style={styles.text}>Aluno identificado!</Text>
-                <Text style={styles.subtext}>Caso queira se associar, confirme abaixo</Text>
+                <Text style={styles.subtext}>Para se associar, confirme abaixo</Text>
                 <View style={styles.scrollContainer}>
                     <ScrollView contentContainerStyle={styles.scrollContent}>
                         <Card style={styles.card}>

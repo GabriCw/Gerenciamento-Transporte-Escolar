@@ -199,12 +199,17 @@ const Students = ({ navigation }) => {
     };
 
     const handleVerifyStudentByCode = async(studentCode) => {
+        setIsLoading(true);
+        setAssociationModalVisible(false);
+
         const student = await getStudentByCode(studentCode);
 
         if(student.status === 200){
             navigation.navigate("StudentAssociation", {studentData: student.data});
         }
         else{
+            setAssociationModalVisible(true);
+
             Toast.show({
                 type: 'error',
                 text1: 'Erro',
@@ -212,6 +217,8 @@ const Students = ({ navigation }) => {
                 visibilityTime: 3000,
             });
         }
+
+        setIsLoading(false);
     };
 
     const handleSelectStudent = (studentInfos) => {
@@ -233,13 +240,8 @@ const Students = ({ navigation }) => {
                                     <View style={styles.cardDetails}>
                                         <Text style={[styles.cardText, {marginTop:1, fontWeight: "bold"}]}>{aluno.name}</Text>
                                         <Text style={styles.cardText}>{aluno.year} anos</Text>
-                                        {aluno.code && <Text style={styles.codeText}>{aluno.code}</Text>}
                                     </View>
                                     <AntDesign name="rightcircle" size={24} color="black"/>
-                                    {/* <IconButton  icon="pencil" size={20} onPress={() => handleEdit(aluno)}>
-                                    </IconButton>
-                                    <IconButton icon="trash-can" size={20} onPress={() => handleDelete(aluno)}>
-                                    </IconButton> */}
                                 </Card.Content>
                             </Card>
                         ))}
@@ -251,26 +253,13 @@ const Students = ({ navigation }) => {
                         onPress={handleModalToggle}
                         style={styles.addButton}
                     >
-                        Cadastrar Aluno
+                        Criar Aluno
                     </Button>
-                    <Button
-                        mode="contained"
-                        onPress={handleAssociationModalToggle}
-                        style={styles.addButton}
-                    >
-                        Associar Aluno
-                    </Button>
-                    {
-                        alunos?.length > 0 &&
-                        <Button
-                            mode="contained"
-                            onPress={handleAddStudent}
-                            style={styles.addButton}
-                        >
-                            Salvar
-                        </Button>
-                    }
                 </View>
+                <Pressable hitSlop={20} style={{position: "absolute", bottom: "5%"}} onPress={() => handleAssociationModalToggle()}>
+                    <Text style={styles.textAssociation}>Já existe aluno criado? Clique aqui!</Text>
+                </Pressable>
+
                 {isLoading && (
                     <View style={styles.loadingOverlay}>
                         <ActivityIndicator size="large" color="#C36005" />
@@ -415,6 +404,12 @@ const styles = StyleSheet.create({
         gap: 10,
         display: "flex",
         flexDirection: "row"
+    },
+    textAssociation: {
+        color: "#C36005",
+        fontWeight: "bold",
+        fontSize: 14,
+        textDecorationLine: "underline"
     },
     loadingOverlay: {
         ...StyleSheet.absoluteFillObject,
