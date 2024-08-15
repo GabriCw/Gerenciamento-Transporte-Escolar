@@ -1,50 +1,44 @@
-import {  StyleSheet, Text, View } from "react-native";
+import { StyleSheet, Text, View } from "react-native";
 import Header from "../../../components/header/Header";
-import { FontAwesome } from "@expo/vector-icons";
+import { useContext, useState } from "react";
 import { ActivityIndicator, Button } from "react-native-paper";
-import { useState } from "react";
-import ModalEdit from "./ModalEdit";
-import { updateStudent } from "../../../data/studentServices";
+import { FontAwesome } from "@expo/vector-icons";
+import { AuthContext } from "../../../providers/AuthProvider";
+import { createStudent } from "../../../data/studentServices";
 import Toast from "react-native-toast-message";
 
-const StudentDetail = ({navigation, route}) => {
-
+const ConfirmDriverAndSchool = ({navigation, route}) => {
     const {studentData} = route.params;
-
-    const [openEditModal, setOpenEditModal] = useState(false);
+    const {userData} = useContext(AuthContext);
+    
     const [loading, setLoading] = useState(false);
 
-    const handleOpenEditModal = () => {
-        setOpenEditModal(!openEditModal);
-    };
-
-    const handleUpdate = async(student) => {
-        if(!(student.name && student.year)){
-            alert('Por favor, preencha todos os campos');
-        }
-
+    const handleCreateStudent = async() => {
         setLoading(true);
-        setOpenEditModal(false);
 
-        const response = await updateStudent(student);
+        const body = {
+            name: studentData.name,
+            year: studentData.year,
+            responsible_id: userData.id
+        };
 
-        if(response.status === 200){
+        const response = await createStudent(body);
+
+        if(response.status === 201){
             Toast.show({
                 type: 'success',
                 text1: 'Sucesso',
-                text2: 'Edição realizada com sucesso!',
+                text2: 'Cadastro realizado com sucesso!',
                 visibilityTime: 3000,
             });
 
-            navigation.navigate("Perfil");
+            navigation.goBack();
         }
         else{
-            setOpenEditModal(true);
-
             Toast.show({
                 type: 'error',
                 text1: 'Erro',
-                text2: 'Erro ao editar',
+                text2: 'Erro ao cadastrar',
                 visibilityTime: 3000,
             });
         }
@@ -52,20 +46,8 @@ const StudentDetail = ({navigation, route}) => {
         setLoading(false);
     };
 
-    const handleDisassociation = async() => {
-        setLoading(true);
-
-        // colocar endpoint para desassociação, considerar se o usuário em questão
-        // é o principal, ou seja, é o primeiro que aparece no database ou que é
-        // creation_user (mas este que está incoerente)
-
-        setTimeout(() => {
-            setLoading(false);
-        }, 1000);
-    };
-
     return <View style={styles.view}>
-        <Header navigation={navigation} title="Detalhes do Aluno"/>
+        <Header navigation={navigation} title="Criar Aluno"/>
         <View style={styles.viewContainter}>
             <View style={styles.cardContainer}>
                 <View style={styles.mainInfosContainer}>
@@ -75,12 +57,8 @@ const StudentDetail = ({navigation, route}) => {
                     <View style={styles.content}>
                         <View style={styles.nameYearContent}>
                             <Text style={styles.title}>{studentData.name}</Text>
-                            <Text style={styles.text}>{studentData.year} anos</Text>
                         </View>
-                        <View style={styles.codeContent}>
-                            <Text style={styles.codeText}>Código:</Text>
-                            <Text style={styles.colorBox}>GVpe8zNC</Text>
-                        </View>
+                        <Text style={styles.text}>{studentData.year} anos</Text>
                     </View>
                 </View>
 
@@ -118,27 +96,13 @@ const StudentDetail = ({navigation, route}) => {
             <View style={styles.buttonContainer}>
                 <Button
                     mode="contained"
-                    onPress={handleOpenEditModal}
+                    onPress={handleCreateStudent}
                     style={styles.button}
                 >
-                    Editar
-                </Button>
-                <Button
-                    mode="contained"
-                    onPress={handleDisassociation}
-                    style={styles.button}
-                >
-                    Desassociar
+                    Confirmar
                 </Button>
             </View>
         </View>
-
-        <ModalEdit
-            open={openEditModal}
-            onClose={handleOpenEditModal}
-            handleConfirm={handleUpdate}
-            data={studentData}
-        />
 
         {
             loading && <View style={styles.loadingOverlay}>
@@ -265,7 +229,7 @@ const styles = StyleSheet.create({
     buttonContainer: {
         display : "flex",
         flexDirection: "row",
-        justifyContent: "space-between",
+        justifyContent: "center",
         width: "100%"
     },
     button: {
@@ -281,4 +245,4 @@ const styles = StyleSheet.create({
     },
 });
 
-export default StudentDetail;
+export default ConfirmDriverAndSchool;

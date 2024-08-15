@@ -8,7 +8,8 @@ const ModalEdit = ({data, open, onClose, handleConfirm}) => {
         setStudent({
             id: data?.id,
             name: data?.name,
-            year: data?.year
+            year: data?.year,
+            driverCode: data?.driverCode
         });
 
     }, [data]);
@@ -34,6 +35,16 @@ const ModalEdit = ({data, open, onClose, handleConfirm}) => {
             keyboardAppearance="dark"
             keyboardType="numeric"
             onChangeText={(text) => setStudent({ ...student, year: text })}
+            style={styles.input}
+        />
+        <TextInput
+            label="Código Motorista"
+            value={student?.driverCode}
+            mode="outlined"
+            activeOutlineColor="#C36005"
+            keyboardAppearance="dark"
+            keyboardType="numeric"
+            onChangeText={(text) => setStudent({ ...student, driverCode: text })}
             style={styles.input}
         />
         <Button mode="contained" onPress={() => handleConfirm(student)} style={styles.saveButton}>

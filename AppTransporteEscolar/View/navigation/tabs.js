@@ -16,6 +16,8 @@ import Schools from '../schools/DriverSchools';
 import DriverSchools from '../schools/DriverSchools';
 import ConfirmDriverSchool from '../schools/components/ConfirmDriverSchool';
 import StudentDetail from '../students/components/StudentDetail';
+import CreateStudent from '../students/components/CreateStudent';
+import ConfirmDriverAndSchool from '../students/components/ConfirmDriverAndSchool';
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -33,6 +35,8 @@ const PerfilRespStack = () => {
     <Stack.Screen name="Perfil" component={ProfileTab} options={{ headerShown: false }} />
     <Stack.Screen name="Alunos" component={Students} options={{ headerShown: false }} />
     <Stack.Screen name="StudentDetail" component={StudentDetail} options={{ headerShown: false }} />
+    <Stack.Screen name="CreateStudent" component={CreateStudent} options={{ headerShown: false }} />
+    <Stack.Screen name="ConfirmDriverAndSchool" component={ConfirmDriverAndSchool} options={{ headerShown: false }} />
     <Stack.Screen name="VerPerfilMoto" component={Profile} options={{ headerShown: false }} />
     <Stack.Screen name="StudentAssociation" component={ConfirmStudentAssociation} options={{ headerShown: false }} />
   </Stack.Navigator>
@@ -56,6 +60,8 @@ const PerfilAdminStack = () => (
     <Stack.Screen name="StudentDetail" component={StudentDetail} options={{ headerShown: false }} />
     <Stack.Screen name="VerPerfilMoto" component={Profile} options={{ headerShown: false }} />
     <Stack.Screen name="StudentAssociation" component={ConfirmStudentAssociation} options={{ headerShown: false }} />
+    <Stack.Screen name="ConfirmDriverAndSchool" component={ConfirmDriverAndSchool} options={{ headerShown: false }} />
+    <Stack.Screen name="CreateStudent" component={CreateStudent} options={{ headerShown: false }} />
     <Stack.Screen name="DriverSchools" component={DriverSchools} options={{ headerShown: false }} />
     <Stack.Screen name="ConfirmDriverSchool" component={ConfirmDriverSchool} options={{ headerShown: false }} />
   </Stack.Navigator>
