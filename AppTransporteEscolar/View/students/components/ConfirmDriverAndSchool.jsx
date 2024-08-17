@@ -8,7 +8,7 @@ import { createStudent } from "../../../data/studentServices";
 import Toast from "react-native-toast-message";
 
 const ConfirmDriverAndSchool = ({navigation, route}) => {
-    const {studentData} = route.params;
+    const {studentData, driverData} = route.params;
     const {userData} = useContext(AuthContext);
     
     const [loading, setLoading] = useState(false);
@@ -19,7 +19,8 @@ const ConfirmDriverAndSchool = ({navigation, route}) => {
         const body = {
             name: studentData.name,
             year: studentData.year,
-            responsible_id: userData.id
+            responsible_id: userData.id,
+            driver_code: studentData.driverCode
         };
 
         const response = await createStudent(body);
@@ -32,7 +33,7 @@ const ConfirmDriverAndSchool = ({navigation, route}) => {
                 visibilityTime: 3000,
             });
 
-            navigation.goBack();
+            navigation.navigate("Perfil");
         }
         else{
             Toast.show({
@@ -67,11 +68,11 @@ const ConfirmDriverAndSchool = ({navigation, route}) => {
                 <View style={styles.schoolContainer}>
                     <View style={styles.schoolContent}>
                         <Text style={styles.colorBox}>Escola</Text>
-                        <Text style={styles.text}>Jean Piaget</Text>
+                        <Text style={styles.text}>{driverData?.school?.name}</Text>
                     </View>
                     <View>
-                        <Text style={styles.text}>Avenida Presidente Wilson, 64</Text>
-                        <Text style={styles.text}>Gonzaga - Santos/SP</Text>
+                        <Text style={styles.text}>{driverData?.school?.address}</Text>
+                        <Text style={styles.text}>{driverData?.school?.neighborhood} - {driverData?.school?.city}/{driverData?.school?.state}</Text>
                     </View>
                 </View>
 
@@ -80,15 +81,19 @@ const ConfirmDriverAndSchool = ({navigation, route}) => {
                 <View style={styles.driverContainer}>
                     <View style={styles.driverContent}>
                         <Text style={styles.colorBox}>Motorista</Text>
-                        <Text style={styles.text}>Carlos</Text>
+                        <Text style={styles.text}>{driverData?.user?.name}</Text>
                     </View>
                     <View>
-                        <View style={styles.driverContent}>
-                            <FontAwesome name="phone" size={24} color="black" />
-                            <Text style={styles.text}>(13) 98119-3075</Text>
-                        </View>
+                        {
+                            driverData?.phone?.map(item => {
+                                return <View style={styles.driverContent}>
+                                <FontAwesome name="phone" size={24} color="black" />
+                                <Text style={styles.text}>{item.phone}</Text>
+                            </View>
+                            })
+                        }
                         <View>
-                            <Text>Código: asjsjkhas</Text>
+                            <Text>Código: {driverData?.user?.code}</Text>
                         </View>
                     </View>
                 </View>

@@ -94,3 +94,16 @@ export const associationStudent = async(body) => {
         return error.response;
     }
 };
+
+export const getStudentDetails = async(student_id) => {
+    const _endpoint = `/details?student_id=${student_id}`;
+
+    try{
+        const response  = await axios.get(_controller + _endpoint);
+
+        return response;
+    }
+    catch(error){
+        return error.response;
+    }
+};

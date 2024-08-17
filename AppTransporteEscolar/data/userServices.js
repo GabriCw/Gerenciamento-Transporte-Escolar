@@ -81,3 +81,16 @@ export const updateUser = async(body) => {
         return error.response;
     }
 };
+
+export const getDriverDetailsByCode = async(code) => {
+    const _endpoint = `/driver-details-by-code?code=${code}`;
+
+    try{
+        const response  = await axios.get(_controller + _endpoint);
+
+        return response;
+    }
+    catch(error){
+        return error.response;
+    }
+};

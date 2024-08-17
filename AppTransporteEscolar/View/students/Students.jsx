@@ -2,7 +2,7 @@ import React, { useContext, useEffect, useState } from 'react';
 import { View, StyleSheet, Text, ScrollView, Pressable } from 'react-native';
 import { Button, Card, ActivityIndicator } from 'react-native-paper';
 import { AntDesign, FontAwesome } from '@expo/vector-icons';
-import { getStudentByCode, getStudentByResponsible } from '../../data/studentServices';
+import { getStudentByCode, getStudentByResponsible, getStudentDetails } from '../../data/studentServices';
 import { AuthContext } from '../../providers/AuthProvider';
 import Toast from 'react-native-toast-message';
 import ModalAssociation from './components/ModalAssociation';
@@ -72,8 +72,25 @@ const Students = ({ navigation }) => {
         navigation.navigate("CreateStudent");
     };
 
-    const handleSelectStudent = (studentInfos) => {
-        navigation.navigate("StudentDetail", {studentData: studentInfos});
+    const handleSelectStudent = async(studentInfos) => {
+        setLoading(true);
+
+        const studentDetails = await getStudentDetails(studentInfos.id);
+
+        if(studentDetails.status === 200){
+            navigation.navigate("StudentDetail", {studentData: studentDetails.data});
+        }
+        else{
+            Toast.show({
+                type: 'error',
+                text1: 'Erro',
+                text2:"Erro ao trazer detalhes do aluno",
+                visibilityTime: 3000,
+            });
+        }
+
+        
+        setLoading(false);
     };
 
     return (

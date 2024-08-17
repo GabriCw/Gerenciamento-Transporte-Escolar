@@ -2,14 +2,16 @@ import {  StyleSheet, Text, View } from "react-native";
 import Header from "../../../components/header/Header";
 import { FontAwesome } from "@expo/vector-icons";
 import { ActivityIndicator, Button } from "react-native-paper";
-import { useState } from "react";
+import { useContext, useState } from "react";
 import ModalEdit from "./ModalEdit";
 import { updateStudent } from "../../../data/studentServices";
 import Toast from "react-native-toast-message";
+import { AuthContext } from "../../../providers/AuthProvider";
 
 const StudentDetail = ({navigation, route}) => {
 
     const {studentData} = route.params;
+    const {userData} = useContext(AuthContext);
 
     const [openEditModal, setOpenEditModal] = useState(false);
     const [loading, setLoading] = useState(false);
@@ -64,6 +66,19 @@ const StudentDetail = ({navigation, route}) => {
         }, 1000);
     };
 
+    const handleRemove = async() => {
+        setLoading(true);
+
+        // colocar endpoint para desassociação, considerar se o usuário em questão
+        // é o principal, ou seja, é o primeiro que aparece no database ou que é
+        // creation_user (mas este que está incoerente)
+
+        setTimeout(() => {
+            setLoading(false);
+        }, 1000);
+    };
+
+
     return <View style={styles.view}>
         <Header navigation={navigation} title="Detalhes do Aluno"/>
         <View style={styles.viewContainter}>
@@ -74,12 +89,12 @@ const StudentDetail = ({navigation, route}) => {
                     </View>
                     <View style={styles.content}>
                         <View style={styles.nameYearContent}>
-                            <Text style={styles.title}>{studentData.name}</Text>
-                            <Text style={styles.text}>{studentData.year} anos</Text>
+                            <Text style={styles.title}>{studentData?.student?.name}</Text>
+                            <Text style={styles.text}>{studentData?.student?.year} anos</Text>
                         </View>
                         <View style={styles.codeContent}>
                             <Text style={styles.codeText}>Código:</Text>
-                            <Text style={styles.colorBox}>GVpe8zNC</Text>
+                            <Text style={styles.colorBox}>{studentData?.student?.code}</Text>
                         </View>
                     </View>
                 </View>
@@ -89,11 +104,11 @@ const StudentDetail = ({navigation, route}) => {
                 <View style={styles.schoolContainer}>
                     <View style={styles.schoolContent}>
                         <Text style={styles.colorBox}>Escola</Text>
-                        <Text style={styles.text}>Jean Piaget</Text>
+                        <Text style={styles.text}>{studentData?.school?.name}</Text>
                     </View>
                     <View>
-                        <Text style={styles.text}>Avenida Presidente Wilson, 64</Text>
-                        <Text style={styles.text}>Gonzaga - Santos/SP</Text>
+                        <Text style={styles.text}>{studentData?.school?.name}</Text>
+                        <Text style={styles.text}>{studentData?.school?.neighborhood} - {studentData?.school?.city}/{studentData?.school?.state}</Text>
                     </View>
                 </View>
 
@@ -102,7 +117,7 @@ const StudentDetail = ({navigation, route}) => {
                 <View style={styles.driverContainer}>
                     <View style={styles.driverContent}>
                         <Text style={styles.colorBox}>Motorista</Text>
-                        <Text style={styles.text}>Carlos</Text>
+                        <Text style={styles.text}>{studentData?.driver?.name}</Text>
                     </View>
                     <View>
                         <View style={styles.driverContent}>
@@ -110,7 +125,7 @@ const StudentDetail = ({navigation, route}) => {
                             <Text style={styles.text}>(13) 98119-3075</Text>
                         </View>
                         <View>
-                            <Text>Código: asjsjkhas</Text>
+                            <Text>Código: {studentData?.driver?.code}</Text>
                         </View>
                     </View>
                 </View>
@@ -123,13 +138,24 @@ const StudentDetail = ({navigation, route}) => {
                 >
                     Editar
                 </Button>
-                <Button
-                    mode="contained"
-                    onPress={handleDisassociation}
-                    style={styles.button}
-                >
-                    Desassociar
-                </Button>
+                {
+                    studentData?.student?.creation_user !== userData?.id ?
+                        <Button
+                            mode="contained"
+                            onPress={handleDisassociation}
+                            style={styles.button}
+                        >
+                            Desassociar
+                        </Button>
+                    :
+                    <Button
+                        mode="contained"
+                        onPress={handleRemove}
+                        style={styles.button}
+                    >
+                    Excluir
+                    </Button>
+                }
             </View>
         </View>
 

@@ -3,28 +3,42 @@ import { StyleSheet, View } from "react-native";
 import { ActivityIndicator, Button, TextInput } from "react-native-paper";
 import Header from "../../../components/header/Header";
 import Toast from "react-native-toast-message";
+import { getDriverDetailsByCode } from "../../../data/userServices";
 
 const CreateStudent = ({navigation}) => {
     const [student, setStudent] = useState(null);
     const [loading, setLoading] = useState(false);
 
     const handleVerifyDriverCode = async() => {
-        if(!(student?.name && student?.year && student?.driverCode)){
+        console.log(student)
+        if(!(student?.name !== null && student?.year !== null && student?.driverCode !== null)){
             Toast.show({
                 type: 'error',
                 text1: 'Erro',
                 text2: 'Preencha todos os campos',
                 visibilityTime: 3000,
             });
+
             return;
         }
 
         setLoading(true);
 
-        setTimeout(() => {
-            setLoading(false);
-            navigation.navigate("ConfirmDriverAndSchool", {studentData: student});
-        }, 1000);
+        const verifyCode = await getDriverDetailsByCode(student?.driverCode);
+
+        if(verifyCode.status === 200){
+            navigation.navigate("ConfirmDriverAndSchool", {studentData: student, driverData: verifyCode.data});
+        }
+        else{
+            Toast.show({
+                type: 'error',
+                text1: 'Erro',
+                text2: 'Preencha todos os campos',
+                visibilityTime: 3000,
+            });
+        }
+
+        setLoading(false);
     };
 
     return <View style={styles.view}>

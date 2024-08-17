@@ -17,7 +17,7 @@ const ProfileTab = ({navigation}) => {
             buttons: <AdminButtons navigation={navigation}/>
         },
         [userTypeEnum.MOTORISTA]: {
-            subtitle: userData.code ? `Cód. ${userData.code}` : "Motorista",
+            subtitle: userData?.code ? `Cód. ${userData?.code}` : "Motorista",
             buttons: <DriverButtons navigation={navigation}/>
         },
         [userTypeEnum.RESPONSAVEL]: {
