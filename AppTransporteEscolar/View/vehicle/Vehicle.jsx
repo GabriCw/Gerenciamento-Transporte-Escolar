@@ -7,6 +7,7 @@ import { getVehicleByUser, updateVehicle } from '../../data/vehicleServices';
 import { AuthContext } from '../../providers/AuthProvider';
 import Toast from 'react-native-toast-message';
 import { FontAwesome } from '@expo/vector-icons';
+import Header from "../../components/header/Header";
 
 const Vehicle = ({ navigation }) => {
     const { userData } = useContext(AuthContext);
@@ -94,18 +95,9 @@ const Vehicle = ({ navigation }) => {
     };
 
     return <View style={styles.view}>
-        <View style={styles.header}>
-            <Button
-                onPress={() => navigation.goBack()}
-                style={styles.buttonBack}
-                labelStyle={styles.buttonLabel}
-            >
-                <Text>Voltar</Text>
-            </Button>
-        </View>
+        <Header title="Meu veículo" navigation={navigation}/>
         <KeyboardAwareScrollView>
             <View style={styles.content}>
-                <Text style={styles.text}>Seu Veículo Registrado</Text>
                 <View style={styles.card}>
                     <View style={styles.iconEdit}>
                         <IconButton 
@@ -155,6 +147,7 @@ const styles = StyleSheet.create({
     content: {
         flex: 1,
         justifyContent: 'center',
+        marginTop: 20,
         alignItems: 'center',
     },
     card: {

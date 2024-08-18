@@ -30,22 +30,22 @@ const AdminButtons = ({navigation}) => {
             <View style={styles.buttonsContent}>
                 <ButtonDefault
                     icon={<FontAwesome name="user" size={"30%"} color="#fff"  />}
-                    title={"Ver Perfil"}
+                    title={"Perfil"}
                     onClick={handleToProfilePage}
                 />
                 <ButtonDefault
                     icon={<FontAwesome name="bus" size={"30%"} color="#fff"/>}
-                    title={"Ver Veículo"}
+                    title={"Veículo"}
                     onClick={handleToVehiclePage}
                 />
                 <ButtonDefault
                     icon={<FontAwesome name="child" size={"30%"} color="#fff"/>}
-                    title={"Ver Alunos"}
+                    title={"Alunos"}
                     onClick={handleToStudentPage}
                 />
                 <ButtonDefault
                     icon={<FontAwesome5 name="school" size={"30%"} color="#fff"/>}
-                    title={"Minha Escola"}
+                    title={"Escola"}
                     onClick={handleToDriverSchoolPage}
                 />
             </View>

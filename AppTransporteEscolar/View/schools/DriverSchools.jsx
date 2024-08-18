@@ -5,6 +5,7 @@ import { disassociateDriverToSchool, getAllSchoolList, getSchoolByUser } from ".
 import { FontAwesome, FontAwesome5 } from "@expo/vector-icons";
 import { AuthContext } from "../../providers/AuthProvider";
 import Toast from "react-native-toast-message";
+import Header from "../../components/header/Header";
 
 const DriverSchools = ({navigation}) => {
 
@@ -110,20 +111,11 @@ const DriverSchools = ({navigation}) => {
     };
 
     return <View style={styles.view}>
-        <View style={styles.header}>
-            <Button
-                onPress={() => navigation.goBack()}
-                style={styles.buttonBack}
-                labelStyle={styles.buttonLabel}
-            >
-                <Text>Voltar</Text>
-            </Button>
-        </View>
+        <Header title="Escola associada" navigation={navigation}/>
         <View style={styles.content}>
             {
                 actualSchool !== null ?
                 <>
-                    <Text style={styles.text}>Sua escola associada</Text>
                     <View style={[styles.scrollContainer, {height: "inherit"}]}>
                         <ScrollView contentContainerStyle={styles.scrollContent}>
                             <Text style={styles.cardTitle}>{actualSchool.name}</Text>
@@ -192,6 +184,7 @@ const styles = StyleSheet.create({
         flex: 1,
         marginTop: 30,
         alignItems: 'center',
+        justifyContent: "center"
     },
     scrollContainer: {
         width: '90%',

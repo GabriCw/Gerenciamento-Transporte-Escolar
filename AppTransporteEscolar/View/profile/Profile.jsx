@@ -11,6 +11,7 @@ import { getPointByUser, updatePoint } from '../../data/pointServices';
 import { pointTypeEnum } from '../../utils/pointTypeEnum';
 import ModalEditUser from './components/ModalEditUser';
 import ModalEditPoint from './components/ModalEditPoint';
+import Header from '../../components/header/Header';
 
 const Profile = ({ navigation }) => {
     const { userData } = useContext(AuthContext);
@@ -154,15 +155,7 @@ const Profile = ({ navigation }) => {
     return (
         <Provider>
             <View style={styles.view}>
-                <View style={styles.header}>
-                    <Button
-                        onPress={() => navigation.goBack()}
-                        style={styles.buttonBack}
-                        labelStyle={styles.buttonLabel}
-                    >
-                        <Text>Voltar</Text>
-                    </Button>
-                </View>
+                <Header title="Perfil" navigation={navigation}/>
                 <ScrollView>
                     <KeyboardAwareScrollView
                         contentContainerStyle={styles.container}
