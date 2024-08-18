@@ -8,6 +8,7 @@ import { AuthContext } from '../../providers/AuthProvider';
 import Toast from 'react-native-toast-message';
 import { FontAwesome } from '@expo/vector-icons';
 import Header from "../../components/header/Header";
+import PageDefault from '../../components/pageDefault/PageDefault';
 
 const Vehicle = ({ navigation }) => {
     const { userData } = useContext(AuthContext);
@@ -94,36 +95,28 @@ const Vehicle = ({ navigation }) => {
         setModalVisible(!modalVisible);
     };
 
-    return <View style={styles.view}>
-        <Header title="Meu veículo" navigation={navigation}/>
-        <KeyboardAwareScrollView>
-            <View style={styles.content}>
-                <View style={styles.card}>
-                    <View style={styles.iconEdit}>
-                        <IconButton 
-                            icon="pencil" 
-                            onPress={handleOpenModalEdit} 
-                        />
+    return  <PageDefault headerTitle="Meu Veículo" navigation={navigation} loading={isLoading}>
+        <View style={styles.content}>
+            <View style={styles.card}>
+                <View style={styles.iconEdit}>
+                    <IconButton 
+                        icon="pencil" 
+                        onPress={handleOpenModalEdit} 
+                    />
+                </View>
+                <View style={styles.cardContent}>
+                    <View style={styles.iconContent}>
+                        <FontAwesome name="bus" size={"40%"} color="black"/>
                     </View>
-                    <View style={styles.cardContent}>
-                        <View style={styles.iconContent}>
-                            <FontAwesome name="bus" size={"40%"} color="black"/>
-                        </View>
-                        <View style={styles.textContent}>
-                            <Text style={styles.cardText}>Placa: {vehicle?.plate.toUpperCase()}</Text>
-                            <Text style={styles.cardText}>Modelo: {vehicle?.model ?? "Não informado"}</Text>
-                        </View>
+                    <View style={styles.textContent}>
+                        <Text style={styles.cardText}>Placa: {vehicle?.plate.toUpperCase()}</Text>
+                        <Text style={styles.cardText}>Modelo: {vehicle?.model ?? "Não informado"}</Text>
                     </View>
                 </View>
             </View>
-        </KeyboardAwareScrollView>
+        </View>
         <ModalEdit data={vehicle} open={modalVisible} onClose={handleOpenModalEdit} handleConfirm={handleUpdate}/>
-        {isLoading && (
-            <View style={styles.loadingOverlay}>
-                <ActivityIndicator size="large" color="#C36005" />
-            </View>
-        )}
-    </View>  
+    </PageDefault> 
 };
 
 const styles = StyleSheet.create({
@@ -148,6 +141,7 @@ const styles = StyleSheet.create({
         flex: 1,
         justifyContent: 'center',
         marginTop: 20,
+        width: "100%",
         alignItems: 'center',
     },
     card: {

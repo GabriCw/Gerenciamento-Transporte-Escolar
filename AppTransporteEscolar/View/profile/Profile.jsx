@@ -12,6 +12,7 @@ import { pointTypeEnum } from '../../utils/pointTypeEnum';
 import ModalEditUser from './components/ModalEditUser';
 import ModalEditPoint from './components/ModalEditPoint';
 import Header from '../../components/header/Header';
+import PageDefault from '../../components/pageDefault/PageDefault';
 
 const Profile = ({ navigation }) => {
     const { userData } = useContext(AuthContext);
@@ -153,10 +154,8 @@ const Profile = ({ navigation }) => {
     };
 
     return (
-        <Provider>
-            <View style={styles.view}>
-                <Header title="Perfil" navigation={navigation}/>
-                <ScrollView>
+        <PageDefault headerTitle="Perfil" navigation={navigation} loading={isLoading}>
+            <ScrollView>
                     <KeyboardAwareScrollView
                         contentContainerStyle={styles.container}
                         enableOnAndroid={true}
@@ -206,18 +205,11 @@ const Profile = ({ navigation }) => {
                                 </Card>
                             }
                         </View>
-
-                        {isLoading && (
-                                <View style={styles.loadingOverlay}>
-                                    <ActivityIndicator size="large" color="#C36005" />
-                                </View>
-                            )}
                     </KeyboardAwareScrollView>
                 </ScrollView>
                 <ModalEditUser data={user} open={isModalVisibleUser} onClose={handleOpenModalUser} handleConfirm={handleUpdateUser}/>
                 <ModalEditPoint data={point} open={isModalVisible} address={address} onClose={handleOpenModalPoint} handleConfirm={handleUpdatePoint}/>
-            </View>
-        </Provider>
+        </PageDefault>
     );
 };
 
