@@ -111,7 +111,7 @@ const DriverSchools = ({navigation}) => {
     };
 
     return <View style={styles.view}>
-        <Header title="Escola associada" navigation={navigation}/>
+        <Header title={actualSchool !== null ? "Minha Escola" : "Selecione sua escola"} navigation={navigation}/>
         <View style={styles.content}>
             {
                 actualSchool !== null ?
@@ -137,19 +137,16 @@ const DriverSchools = ({navigation}) => {
                 </>
                 :
                 <>    
-                    <Text style={styles.text}>Selecione sua escola</Text>
                     <View style={styles.scrollContainer}>
                         <ScrollView contentContainerStyle={styles.scrollContent}>
                             {schoolList.map((school, index) => (
                                 <Card key={index} style={styles.card} onPress={() => handleSchoolSelected(school)}>
                                     <Card.Content style={styles.cardContent}>
-                                        <View style={styles.iconContainer}>
-                                            <FontAwesome5 name="school" size={45} color="black" style={styles.icon} />
-                                        </View>
-                                        <View style={styles.cardDetails}>
+                                        <View style={styles.cardDetails}>                                            
                                             <Text style={[styles.cardText, {marginTop:1, fontWeight: "bold"}]}>{school.name}</Text>
                                             <Text style={styles.cardText}>{school.address}</Text>
-                                            <Text style={styles.codeText}>{school.city}</Text>
+                                            <Text style={styles.cardText}>{school.neighborhood}</Text>
+                                            <Text style={styles.codeText}>{school.city} / {school.state}</Text>
                                         </View>
                                     </Card.Content>
                                 </Card>
@@ -182,14 +179,13 @@ const styles = StyleSheet.create({
     },
     content: {
         flex: 1,
-        marginTop: 30,
+        height: "100%",
         alignItems: 'center',
-        justifyContent: "center"
+        justifyContent: "center",
     },
     scrollContainer: {
         width: '90%',
-        height: "50%",
-        maxHeight: 400,
+        height: "90%",
         backgroundColor: '#f0f0f0',
         borderColor: '#d0d0d0',
         borderWidth: 4,

@@ -6,6 +6,7 @@ import { ActivityIndicator, Button, Card } from "react-native-paper";
 import { associateDriverToSchool } from "../../../data/pointServices";
 import { AuthContext } from "../../../providers/AuthProvider";
 import Toast from "react-native-toast-message";
+import Header from "../../../components/header/Header";
 
 const ConfirmDriverSchool = ({navigation, route}) => {
     const [isLoading, setIsLoading] = useState(false);
@@ -60,17 +61,8 @@ const ConfirmDriverSchool = ({navigation, route}) => {
     };
 
     return <View style={styles.view}>
-        <View style={styles.header}>
-            <Button
-                onPress={() => navigation.goBack()}
-                style={styles.buttonBack}
-                labelStyle={styles.buttonLabel}
-            >
-                <Text>Voltar</Text>
-            </Button>
-        </View>
+        <Header title="Detalhes da escola" navigation={navigation}/>
         <View style={styles.content}>
-            <Text style={styles.text}>Detalhes da escola</Text>
             <View style={styles.scrollContainer}>
                 <ScrollView contentContainerStyle={styles.scrollContent}>
                     <Text style={styles.cardTitle}>{schoolData.name}</Text>
@@ -113,13 +105,12 @@ const styles = StyleSheet.create({
     },
     content: {
         flex: 1,
-        marginTop: 30,
         alignItems: 'center',
+        justifyContent: "center"
     },
     scrollContainer: {
         width: '90%',
         height: "inherit",
-        maxHeight: 400,
         backgroundColor: '#f0f0f0',
         borderColor: '#d0d0d0',
         borderWidth: 4,

@@ -30,10 +30,6 @@ const Homepage = ({ navigation }) => {
       navigation.navigate("Perfil");
     }
   }, [navigation, hasStudent]);
-  
-  const handleLogout = async () => {
-    await signOut(auth);
-  };
 
   const handleMapaMotorista = () => {
     navigation.navigate("MapaMotorista");
@@ -45,16 +41,6 @@ const Homepage = ({ navigation }) => {
 
   return (
     <View style={styles.view}>
-      <View style={styles.header}>
-        <Button 
-          mode="contained" 
-          onPress={handleLogout}
-          style={styles.buttonBack}
-          labelStyle={styles.buttonLabel}
-        >
-          Sair
-        </Button>
-      </View>
       <KeyboardAwareScrollView
         contentContainerStyle={styles.container}
         enableOnAndroid={true}
