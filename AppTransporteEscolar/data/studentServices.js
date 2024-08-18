@@ -95,6 +95,19 @@ export const associationStudent = async(body) => {
     }
 };
 
+export const disassociationStudent = async(body) => {
+    const _endpoint = `/disassociation`;
+
+    try{
+        const response  = await axios.post(_controller + _endpoint, body);
+
+        return response;
+    }
+    catch(error){
+        return error.response;
+    }
+};
+
 export const getStudentDetails = async(student_id) => {
     const _endpoint = `/details?student_id=${student_id}`;
 

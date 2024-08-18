@@ -10,7 +10,6 @@ const CreateStudent = ({navigation}) => {
     const [loading, setLoading] = useState(false);
 
     const handleVerifyDriverCode = async() => {
-        console.log(student)
         if(!(student?.name !== null && student?.year !== null && student?.driverCode !== null)){
             Toast.show({
                 type: 'error',
@@ -33,7 +32,7 @@ const CreateStudent = ({navigation}) => {
             Toast.show({
                 type: 'error',
                 text1: 'Erro',
-                text2: 'Preencha todos os campos',
+                text2: verifyCode.data,
                 visibilityTime: 3000,
             });
         }

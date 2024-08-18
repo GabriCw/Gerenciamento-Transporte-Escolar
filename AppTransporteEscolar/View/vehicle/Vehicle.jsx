@@ -74,7 +74,6 @@ const Vehicle = ({ navigation }) => {
                 setModalVisible(false);
             }
             else{
-                console.log(response.data)
                 Toast.show({
                     type: 'error',
                     text1: 'Erro',

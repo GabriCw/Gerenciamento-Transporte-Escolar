@@ -4,7 +4,7 @@ import { FontAwesome } from "@expo/vector-icons";
 import { ActivityIndicator, Button } from "react-native-paper";
 import { useContext, useState } from "react";
 import ModalEdit from "./ModalEdit";
-import { updateStudent } from "../../../data/studentServices";
+import { disassociationStudent, updateStudent } from "../../../data/studentServices";
 import Toast from "react-native-toast-message";
 import { AuthContext } from "../../../providers/AuthProvider";
 
@@ -57,13 +57,34 @@ const StudentDetail = ({navigation, route}) => {
     const handleDisassociation = async() => {
         setLoading(true);
 
-        // colocar endpoint para desassociação, considerar se o usuário em questão
-        // é o principal, ou seja, é o primeiro que aparece no database ou que é
-        // creation_user (mas este que está incoerente)
+        const body = {
+            responsible_id: userData.id,
+            student_id: studentData?.student?.id
+        };
 
-        setTimeout(() => {
-            setLoading(false);
-        }, 1000);
+        const disassociation = await disassociationStudent(body);
+
+        if(disassociation.status === 200){
+            Toast.show({
+                type: 'success',
+                text1: 'Sucesso',
+                text2: 'Sucesso ao desassociar!',
+                visibilityTime: 3000, 
+            });
+
+            navigation.navigate("Perfil");
+        }
+        else{
+            Toast.show({
+                type: 'error',
+                text1: 'Erro',
+                text2: 'Erro ao desassociar',
+                visibilityTime: 3000,
+            });
+
+        }
+
+        setLoading(false);
     };
 
     const handleRemove = async() => {
