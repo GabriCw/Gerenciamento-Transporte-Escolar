@@ -11,7 +11,7 @@ const ConfirmStudentAssociation = ({route, navigation}) => {
     const [isLoading, setIsLoading] = useState(false);
 
     const {studentData} = route.params;
-    const {userData} = useContext(AuthContext);
+    const {userData, handleVerifyStudent} = useContext(AuthContext);
     
     const handleCancel = () => {
         navigation.goBack();
@@ -35,6 +35,7 @@ const ConfirmStudentAssociation = ({route, navigation}) => {
                 visibilityTime: 3000,
             });
 
+            await handleVerifyStudent();
             navigation.navigate("Perfil");
         }
         else{
@@ -92,14 +93,17 @@ const ConfirmStudentAssociation = ({route, navigation}) => {
                                 <Text style={styles.colorBox}>Motorista</Text>
                                 <Text style={styles.text}>{studentData?.driver?.name}</Text>
                             </View>
-                            <View>
-                                <View style={styles.driverContent}>
-                                    <FontAwesome name="phone" size={24} color="black" />
-                                    <Text style={styles.text}>(13) 98119-3075</Text>
-                                </View>
-                                <View>
-                                    <Text>Código: {studentData?.driver?.code}</Text>
-                                </View>
+                            {
+                                studentData?.driver?.phones?.map(item => {
+                                    return <View style={styles.driverContent} key={item.id}>
+                                        <FontAwesome name="phone" size={24} color="black" />
+                                        <Text style={styles.text}>{item.phone}</Text>
+                                    </View>
+                                })
+                            }
+                            <View style={styles.codeContent}>
+                                <Text style={styles.codeText}>Código:</Text>
+                                <Text style={styles.colorBox}>{studentData?.driver?.code}</Text>
                             </View>
                         </View>
                     </View>
@@ -227,6 +231,7 @@ const styles = StyleSheet.create({
     },
     schoolContainer:{
         paddingVertical: 10,
+        rowGap: 3,
         display: "flex",
     },
     schoolContent: {
@@ -236,7 +241,9 @@ const styles = StyleSheet.create({
         columnGap: 10
     },
     driverContainer:{
-        paddingVertical: 10,
+        paddingTop: 10,
+        paddingBottom: 5,
+        rowGap: 3,
         display: "flex",
     },
     driverContent: {

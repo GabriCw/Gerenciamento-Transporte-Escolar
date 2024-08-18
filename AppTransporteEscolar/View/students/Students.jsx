@@ -9,7 +9,7 @@ import ModalAssociation from './components/ModalAssociation';
 import Header from '../../components/header/Header';
 
 const Students = ({ navigation }) => {
-    const { userData } = useContext(AuthContext);
+    const { userData, hasStudent } = useContext(AuthContext);
 
     const [associationModalVisible, setAssociationModalVisible] = useState(false);
     const [students, setStudents] = useState([]);
@@ -39,7 +39,7 @@ const Students = ({ navigation }) => {
         setLoading(true);
         
         requestData();
-    }, [userData]);
+    }, [userData, hasStudent]);
     
     const handleVerifyStudentByCode = async(studentCode) => {
         setLoading(true);
@@ -89,51 +89,77 @@ const Students = ({ navigation }) => {
             });
         }
 
-        
         setLoading(false);
     };
 
     return (
         <View style={styles.view}>
-            <Header title="Meus Alunos" navigation={navigation}/>
-            <View style={styles.content}>
-                <View style={styles.scrollContainer}>
-                    <ScrollView contentContainerStyle={styles.scrollContent}>
-                        {students.map((student, index) => (
-                            <Card key={index} style={styles.card} onPress={() => handleSelectStudent(student)}>
-                                <Card.Content style={styles.cardContent}>
-                                    <View style={styles.iconContainer}>
-                                        <FontAwesome name="child" size={45} color="black" style={styles.icon} />
-                                    </View>
-                                    <View style={styles.cardDetails}>
-                                        <Text style={[styles.cardText, {marginTop:1, fontWeight: "bold"}]}>{student.name}</Text>
-                                        <Text style={styles.cardText}>{student.year} anos</Text>
-                                    </View>
-                                    <AntDesign name="rightcircle" size={24} color="black"/>
-                                </Card.Content>
-                            </Card>
-                        ))}
-                    </ScrollView>
-                </View>
-                <View style={styles.buttonContainer}>
-                    <Button
-                        mode="contained"
-                        onPress={handleToCreateStudentPage}
-                        style={styles.addButton}
-                    >
-                        Criar Aluno
-                    </Button>
-                </View>
-                <Pressable hitSlop={20} style={{position: "absolute", bottom: "5%"}} onPress={() => handleAssociationModalToggle()}>
-                    <Text style={styles.textAssociation}>Já existe aluno criado? Clique aqui!</Text>
-                </Pressable>
+            <Header title={students.length > 0 ? "Meus Alunos" : "Primeira Etapa!"} navigation={navigation}/>
+                {
+                    students.length > 0 ?
+                    <>
+                        <View style={styles.content}>
+                            <View style={styles.scrollContainer}>
+                                <ScrollView contentContainerStyle={styles.scrollContent}>
+                                    {students.map((student, index) => (
+                                        <Card key={index} style={styles.card} onPress={() => handleSelectStudent(student)}>
+                                            <Card.Content style={styles.cardContent}>
+                                                <View style={styles.iconContainer}>
+                                                    <FontAwesome name="child" size={45} color="black" style={styles.icon} />
+                                                </View>
+                                                <View style={styles.cardDetails}>
+                                                    <Text style={[styles.cardText, {marginTop:1, fontWeight: "bold"}]}>{student.name}</Text>
+                                                    <Text style={styles.cardText}>{student.year} anos</Text>
+                                                </View>
+                                                <AntDesign name="rightcircle" size={24} color="black"/>
+                                            </Card.Content>
+                                        </Card>
+                                    ))}
+                                </ScrollView>
+                            </View>
+                            <View style={styles.buttonContainer}>
+                                <Button
+                                    mode="contained"
+                                    onPress={handleToCreateStudentPage}
+                                    style={styles.addButton}
+                                >
+                                    Criar Aluno
+                                </Button>
+                            </View>
+                            <Pressable hitSlop={20} style={{position: "absolute", bottom: "5%"}} onPress={() => handleAssociationModalToggle()}>
+                                <Text style={styles.textAssociation}>Já existe aluno criado? Clique aqui!</Text>
+                            </Pressable>
+                        </View>
+                    </>
+                    :
+                    <>
+                        <View style={styles.withoutStudent}>
+                            <Text style={styles.withoutStudentTitle}>Crie ou se associe a um aluno já existente</Text>
+                            <View style={styles.initialButtonContainer}>
+                                <Button
+                                    mode="contained"
+                                    onPress={handleAssociationModalToggle}
+                                    style={styles.addButton}
+                                >
+                                    Associar Aluno
+                                </Button>
+                                <Button
+                                    mode="contained"
+                                    onPress={handleToCreateStudentPage}
+                                    style={styles.addButton}
+                                >
+                                    Criar Aluno
+                                </Button>
+                            </View>
+                        </View>
+                    </>
+                }
 
                 {loading && (
                     <View style={styles.loadingOverlay}>
                         <ActivityIndicator size="large" color="#C36005" />
                     </View>
                 )}
-            </View>
 
             <ModalAssociation
                 open={associationModalVisible}
@@ -149,6 +175,28 @@ const styles = StyleSheet.create({
         flex: 1,
         backgroundColor: '#090833',
     },
+    withoutStudent: {
+        textAlign: "center",
+        flex: 1,
+        justifyContent: "center",
+        alignItems: "center",
+        rowGap: 25,
+        width: "100%"
+    },
+    withoutStudentTitle: {
+        color: "#fff",
+        fontSize: 20,
+        width: "80%",
+        textAlign: "center",
+        fontWeight: "bold"
+    },
+    initialButtonContainer: {
+        display: "flex",
+        flexDirection: "row",
+        justifyContent: "center",
+        columnGap: 15,
+        width: "100%"
+    },  
     content: {
         flex: 1,
         alignItems: 'center',
@@ -271,6 +319,7 @@ const styles = StyleSheet.create({
         backgroundColor: '#090833',
         justifyContent: 'center',
         alignItems: 'center',
+        zIndex: 5
     },
 });
 

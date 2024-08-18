@@ -9,7 +9,7 @@ import Toast from "react-native-toast-message";
 
 const ConfirmDriverAndSchool = ({navigation, route}) => {
     const {studentData, driverData} = route.params;
-    const {userData} = useContext(AuthContext);
+    const {userData, handleVerifyStudent} = useContext(AuthContext);
     
     const [loading, setLoading] = useState(false);
 
@@ -32,6 +32,8 @@ const ConfirmDriverAndSchool = ({navigation, route}) => {
                 text2: 'Cadastro realizado com sucesso!',
                 visibilityTime: 3000,
             });
+
+            await handleVerifyStudent();
 
             navigation.navigate("Perfil");
         }
@@ -92,9 +94,10 @@ const ConfirmDriverAndSchool = ({navigation, route}) => {
                             </View>
                             })
                         }
-                        <View>
-                            <Text>Código: {driverData?.user?.code}</Text>
-                        </View>
+                    </View>
+                    <View style={styles.codeContent}>
+                        <Text style={styles.codeText}>Código:</Text>
+                        <Text style={styles.colorBox}>{driverData?.user?.code}</Text>
                     </View>
                 </View>
             </View>
@@ -213,6 +216,7 @@ const styles = StyleSheet.create({
     },
     schoolContainer:{
         paddingVertical: 10,
+        rowGap: 3,
         display: "flex",
     },
     schoolContent: {
@@ -222,7 +226,9 @@ const styles = StyleSheet.create({
         columnGap: 10
     },
     driverContainer:{
-        paddingVertical: 10,
+        paddingTop: 10,
+        paddingBottom: 5,
+        rowGap: 3,
         display: "flex",
     },
     driverContent: {

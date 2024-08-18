@@ -26,7 +26,7 @@ const TelaLogin = ({ navigation }) => {
                 await Promise.all([signInWithEmailAndPassword(auth, email, senha), handleGenerateToken(), 
                     handleGetUserDetails(validEmail?.data?.id), handleVerifyStudent(validEmail?.data)]);
 
-                navigation.navigate('Homepage');
+                    navigation.navigate('Homepage');
                 }
             catch (error) {
                 Toast.show({
