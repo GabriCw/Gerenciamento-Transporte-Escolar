@@ -5,13 +5,15 @@ import { StyleSheet } from "react-native";
 
 const ModalEdit = ({data, open, onClose, handleConfirm}) => {
     useEffect(() => {
-        setStudent({
-            id: data?.id,
-            name: data?.name,
-            year: data?.year,
-            driverCode: data?.driverCode
-        });
+        const studentData = data?.student;
+        const driverData = data?.driver;
 
+        setStudent({
+            id: studentData?.id,
+            name: studentData?.name,
+            year: studentData?.year,
+            driverCode: driverData?.code
+        });
     }, [data]);
 
     const [student, setStudent] = useState(null);
