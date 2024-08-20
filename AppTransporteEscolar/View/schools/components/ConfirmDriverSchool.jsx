@@ -7,6 +7,7 @@ import { associateDriverToSchool } from "../../../data/pointServices";
 import { AuthContext } from "../../../providers/AuthProvider";
 import Toast from "react-native-toast-message";
 import Header from "../../../components/header/Header";
+import PageDefault from "../../../components/pageDefault/PageDefault";
 
 const ConfirmDriverSchool = ({navigation, route}) => {
     const [isLoading, setIsLoading] = useState(false);
@@ -60,8 +61,7 @@ const ConfirmDriverSchool = ({navigation, route}) => {
         return <Button onPress={handlePress}>{children}</Button>;
     };
 
-    return <View style={styles.view}>
-        <Header title="Detalhes da escola" navigation={navigation}/>
+    return <PageDefault headerTitle="Detalhes da escola" loading={isLoading} navigation={navigation}>
         <View style={styles.content}>
             <View style={styles.scrollContainer}>
                 <ScrollView contentContainerStyle={styles.scrollContent}>
@@ -82,12 +82,7 @@ const ConfirmDriverSchool = ({navigation, route}) => {
                     </Button>
             </View>
         </View>
-        {isLoading && (
-            <View style={styles.loadingOverlay}>
-                <ActivityIndicator size="large" color="#C36005" />
-            </View>
-        )}
-    </View>
+    </PageDefault>
 };
 
 const styles = StyleSheet.create({
@@ -106,6 +101,7 @@ const styles = StyleSheet.create({
     content: {
         flex: 1,
         alignItems: 'center',
+        width: "100%",
         justifyContent: "center"
     },
     scrollContainer: {

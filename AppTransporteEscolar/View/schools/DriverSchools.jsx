@@ -6,6 +6,7 @@ import { FontAwesome, FontAwesome5 } from "@expo/vector-icons";
 import { AuthContext } from "../../providers/AuthProvider";
 import Toast from "react-native-toast-message";
 import Header from "../../components/header/Header";
+import PageDefault from "../../components/pageDefault/PageDefault";
 
 const DriverSchools = ({navigation}) => {
 
@@ -110,8 +111,7 @@ const DriverSchools = ({navigation}) => {
         return <Button onPress={handlePress}>{children}</Button>;
     };
 
-    return <View style={styles.view}>
-        <Header title={actualSchool !== null ? "Minha Escola" : "Selecione sua escola"} navigation={navigation}/>
+    return <PageDefault headerTitle={actualSchool !== null ? "Minha Escola" : "Selecione sua escola"} loading={isLoading} navigation={navigation}>
         <View style={styles.content}>
             {
                 actualSchool !== null ?
@@ -156,12 +156,7 @@ const DriverSchools = ({navigation}) => {
                 </>
             }
         </View>
-        {isLoading && (
-            <View style={styles.loadingOverlay}>
-                <ActivityIndicator size="large" color="#C36005" />
-            </View>
-        )}
-    </View>
+    </PageDefault>
 };
 
 const styles = StyleSheet.create({
@@ -180,6 +175,7 @@ const styles = StyleSheet.create({
     content: {
         flex: 1,
         height: "100%",
+        width: "100%",
         alignItems: 'center',
         justifyContent: "center",
     },
