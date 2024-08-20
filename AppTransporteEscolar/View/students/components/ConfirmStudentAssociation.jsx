@@ -6,6 +6,7 @@ import { associationStudent } from "../../../data/studentServices";
 import { AuthContext } from "../../../providers/AuthProvider";
 import Toast from "react-native-toast-message";
 import Header from "../../../components/header/Header";
+import PageDefault from "../../../components/pageDefault/PageDefault";
 
 const ConfirmStudentAssociation = ({route, navigation}) => {
     const [isLoading, setIsLoading] = useState(false);
@@ -42,7 +43,7 @@ const ConfirmStudentAssociation = ({route, navigation}) => {
             Toast.show({
                 type: 'error',
                 text1: 'Erro',
-                text2: association.data,
+                text2: association.data.detail,
                 visibilityTime: 3000,
             });
         }
@@ -50,10 +51,7 @@ const ConfirmStudentAssociation = ({route, navigation}) => {
         setIsLoading(false);
     };
 
-    return <Provider>
-    <Portal.Host>
-        <View style={styles.view}>
-            <Header title="Aluno identificado!" navigation={navigation}/>
+    return <PageDefault headerTitle="Aluno identificado!" loading={isLoading} navigation={navigation}>
             <View style={styles.content}>
                 <View style={styles.viewContainter}>
                     <View style={styles.cardContainer}>
@@ -108,31 +106,24 @@ const ConfirmStudentAssociation = ({route, navigation}) => {
                         </View>
                     </View>
                     <View style={styles.buttonContainer}>
-                            <Button
-                                mode="contained"
-                                onPress={handleCancel}
-                                style={styles.button}
-                            >
-                                Cancelar
-                            </Button>
-                            <Button
-                                mode="contained"
-                                onPress={handleConfirmAssociation}
-                                style={styles.button}
-                            >
-                                Associar
-                            </Button>
-                        </View>
-                        {isLoading && (
-                            <View style={styles.loadingOverlay}>
-                                <ActivityIndicator size="large" color="#C36005" />
-                            </View>
-                        )}
+                        <Button
+                            mode="contained"
+                            onPress={handleCancel}
+                            style={styles.button}
+                        >
+                            Cancelar
+                        </Button>
+                        <Button
+                            mode="contained"
+                            onPress={handleConfirmAssociation}
+                            style={styles.button}
+                        >
+                            Associar
+                        </Button>
+                    </View>
                 </View> 
             </View>
-        </View>
-    </Portal.Host>
-</Provider>
+        </PageDefault>
 };
 
 const styles = StyleSheet.create({
@@ -182,6 +173,7 @@ const styles = StyleSheet.create({
     content: {
         flex: 1,
         paddingHorizontal: 5,
+        width: "100%",
         display: "flex",
         rowGap: 5
     },

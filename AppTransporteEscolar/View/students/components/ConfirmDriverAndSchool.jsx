@@ -6,6 +6,7 @@ import { FontAwesome } from "@expo/vector-icons";
 import { AuthContext } from "../../../providers/AuthProvider";
 import { createStudent } from "../../../data/studentServices";
 import Toast from "react-native-toast-message";
+import PageDefault from "../../../components/pageDefault/PageDefault";
 
 const ConfirmDriverAndSchool = ({navigation, route}) => {
     const {studentData, driverData} = route.params;
@@ -49,8 +50,7 @@ const ConfirmDriverAndSchool = ({navigation, route}) => {
         setLoading(false);
     };
 
-    return <View style={styles.view}>
-        <Header navigation={navigation} title="Criar Aluno"/>
+    return <PageDefault headerTitle="Criar Aluno" loading={loading} navigation={navigation}>
         <View style={styles.viewContainter}>
             <View style={styles.cardContainer}>
                 <View style={styles.mainInfosContainer}>
@@ -88,7 +88,7 @@ const ConfirmDriverAndSchool = ({navigation, route}) => {
                     <View>
                         {
                             driverData?.phone?.map(item => {
-                                return <View style={styles.driverContent}>
+                                return <View style={styles.driverContent} key={item.id}>
                                 <FontAwesome name="phone" size={24} color="black" />
                                 <Text style={styles.text}>{item.phone}</Text>
                             </View>
@@ -111,13 +111,7 @@ const ConfirmDriverAndSchool = ({navigation, route}) => {
                 </Button>
             </View>
         </View>
-
-        {
-            loading && <View style={styles.loadingOverlay}>
-                <ActivityIndicator size="large" color="#C36005" />
-            </View>
-        }
-    </View>
+    </PageDefault>
 };
 
 const styles = StyleSheet.create({
@@ -130,6 +124,7 @@ const styles = StyleSheet.create({
         display: "flex",
         justifyContent: "center",
         marginBottom: "12%",
+        width: "100%",
         alignItems: "center",
         rowGap: 20,
         padding: "5%"

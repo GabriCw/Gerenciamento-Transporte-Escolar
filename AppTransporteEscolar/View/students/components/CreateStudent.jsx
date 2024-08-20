@@ -4,6 +4,7 @@ import { ActivityIndicator, Button, TextInput } from "react-native-paper";
 import Header from "../../../components/header/Header";
 import Toast from "react-native-toast-message";
 import { getDriverDetailsByCode } from "../../../data/userServices";
+import PageDefault from "../../../components/pageDefault/PageDefault";
 
 const CreateStudent = ({navigation}) => {
     const [student, setStudent] = useState(null);
@@ -40,8 +41,7 @@ const CreateStudent = ({navigation}) => {
         setLoading(false);
     };
 
-    return <View style={styles.view}>
-        <Header title="Criar Aluno" navigation={navigation}/>
+    return <PageDefault headerTitle="Criar Aluno" loading={loading} navigation={navigation}>
         <View style={styles.container}>
             <TextInput
                 label="Nome"
@@ -82,12 +82,7 @@ const CreateStudent = ({navigation}) => {
                 </Button>
             </View>
         </View>
-        {
-            loading && <View style={styles.loadingOverlay}>
-                <ActivityIndicator size="large" color="#C36005" />
-            </View>
-        }
-    </View>
+    </PageDefault>
 };
 
 const styles = StyleSheet.create({
@@ -98,6 +93,7 @@ const styles = StyleSheet.create({
     container: {
         paddingVertical: 10,
         paddingHorizontal: 20,
+        width: "100%",
         display: "flex",
         flex: 1,
         justifyContent: "center"

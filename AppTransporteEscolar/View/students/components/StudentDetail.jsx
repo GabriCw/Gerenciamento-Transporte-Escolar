@@ -7,6 +7,7 @@ import ModalEdit from "./ModalEdit";
 import { deleteStudent, disassociationStudent, updateStudent } from "../../../data/studentServices";
 import Toast from "react-native-toast-message";
 import { AuthContext } from "../../../providers/AuthProvider";
+import PageDefault from "../../../components/pageDefault/PageDefault";
 
 const StudentDetail = ({navigation, route}) => {
 
@@ -134,8 +135,7 @@ const StudentDetail = ({navigation, route}) => {
         setLoading(false);
     };
 
-    return <View style={styles.view}>
-        <Header navigation={navigation} title="Detalhes do Aluno"/>
+    return <PageDefault headerTitle="Detalhes do Aluno" loading={loading} navigation={navigation}>
         <View style={styles.viewContainter}>
             <View style={styles.cardContainer}>
                 <View style={styles.mainInfosContainer}>
@@ -223,13 +223,7 @@ const StudentDetail = ({navigation, route}) => {
             handleConfirm={handleUpdate}
             data={studentData}
         />
-
-        {
-            loading && <View style={styles.loadingOverlay}>
-                <ActivityIndicator size="large" color="#C36005" />
-            </View>
-        }
-    </View>
+    </PageDefault>
 };
 
 const styles = StyleSheet.create({
@@ -242,6 +236,7 @@ const styles = StyleSheet.create({
         display: "flex",
         justifyContent: "center",
         marginBottom: "12%",
+        width: "100%",
         alignItems: "center",
         rowGap: 20,
         padding: "5%"
