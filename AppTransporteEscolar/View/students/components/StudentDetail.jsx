@@ -1,4 +1,4 @@
-import {  StyleSheet, Text, View } from "react-native";
+import {  Alert, StyleSheet, Text, View } from "react-native";
 import Header from "../../../components/header/Header";
 import { FontAwesome } from "@expo/vector-icons";
 import { ActivityIndicator, Button } from "react-native-paper";
@@ -54,6 +54,16 @@ const StudentDetail = ({navigation, route}) => {
         setLoading(false);
     };
 
+    const hhandleDisassociationModal = () => {
+        Alert.alert('Desassociar Aluno', 'Confirma a desassociação deste aluno?', [
+            {
+              text: 'Cancelar',
+              style: 'cancel',
+            },
+            {text: 'Confirmar', onPress: () => handleDisassociation()},
+        ]);
+    };
+
     const handleDisassociation = async() => {
         setLoading(true);
 
@@ -85,6 +95,16 @@ const StudentDetail = ({navigation, route}) => {
         }
 
         setLoading(false);
+    };
+    
+    const handleRemoveModal = () => {
+        Alert.alert('Excluir Aluno', 'Confirma a exclusão deste aluno?', [
+            {
+              text: 'Cancelar',
+              style: 'cancel',
+            },
+            {text: 'Confirmar', onPress: () => handleRemove()},
+        ]);
     };
 
     const handleRemove = async() => {
@@ -180,7 +200,7 @@ const StudentDetail = ({navigation, route}) => {
                     studentData?.student?.creation_user !== userData?.id ?
                         <Button
                             mode="contained"
-                            onPress={handleDisassociation}
+                            onPress={hhandleDisassociationModal}
                             style={styles.button}
                         >
                             Desassociar
@@ -188,7 +208,7 @@ const StudentDetail = ({navigation, route}) => {
                     :
                     <Button
                         mode="contained"
-                        onPress={handleRemove}
+                        onPress={handleRemoveModal}
                         style={styles.button}
                     >
                     Excluir
