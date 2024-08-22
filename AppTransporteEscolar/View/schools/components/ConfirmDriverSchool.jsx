@@ -8,28 +8,31 @@ import { AuthContext } from "../../../providers/AuthProvider";
 import Toast from "react-native-toast-message";
 import Header from "../../../components/header/Header";
 import PageDefault from "../../../components/pageDefault/PageDefault";
+import { associateVehicleToPoint } from "../../../data/vehicleServices";
 
 const ConfirmDriverSchool = ({navigation, route}) => {
     const [isLoading, setIsLoading] = useState(false);
 
-    const {schoolData} = route.params;
+    const {school, vehicle} = route.params;
     const {userData} = useContext(AuthContext);
 
-    const handleAssociateDriverToSchool = async() => {
+    const handleAssociateVehicleToSchool = async() => {
         setIsLoading(true);
 
         const body = {
-            user_id: userData.id,
-            point_id: schoolData.id
+            vehicle_id: vehicle.id,
+            point_id: school.id
         };
 
-        const associate = await associateDriverToSchool(body)
+        const associate = await associateVehicleToPoint(body);
 
-        if(associate.status === 201){
+        console.log(associate.data)
+
+        if(associate.status === 200){
             Toast.show({
                 type: 'success',
                 text1: 'Sucesso',
-                text2: 'Escola associada com sucesso!',
+                text2: 'Escola e veículo associados com sucesso!',
                 visibilityTime: 3000,
             });
 
@@ -39,7 +42,7 @@ const ConfirmDriverSchool = ({navigation, route}) => {
             Toast.show({
                 type: 'error',
                 text1: 'Erro',
-                text2: 'Erro ao associar à escola',
+                text2: 'Erro ao associar veículo à escola',
                 visibilityTime: 3000,
             });
         }
@@ -64,18 +67,30 @@ const ConfirmDriverSchool = ({navigation, route}) => {
     return <PageDefault headerTitle="Detalhes da escola" loading={isLoading} navigation={navigation}>
         <View style={styles.content}>
             <View style={styles.scrollContainer}>
+                <Card style={styles.card}>
+                    <Card.Content style={styles.cardContent}>
+                        <View style={styles.cardDetails}>                                            
+                            <Text style={[styles.cardText, {marginTop:1, fontWeight: "bold"}]}>{vehicle.plate}</Text>
+                            <Text style={styles.cardText}>{vehicle.model} - {vehicle.color}</Text>
+                            <Text style={styles.cardText}>{vehicle.year}</Text>
+                            {
+                                vehicle.code !== "" && <Text style={styles.codeText}>{vehicle.code}</Text>
+                            }
+                        </View>
+                    </Card.Content>
+                </Card>
                 <ScrollView contentContainerStyle={styles.scrollContent}>
-                    <Text style={styles.cardTitle}>{schoolData.name}</Text>
-                    <Text style={styles.cardText}>{schoolData.address}</Text>
-                    <Text style={styles.cardText}>{schoolData.neighborhood}</Text>
-                    <Text style={styles.codeText}>{schoolData.city} / {schoolData.state}</Text>
-                    <OpenURLButton url={`https://www.google.com/maps?q=${schoolData.lat},${schoolData.lng}`}>Veja no Google Maps</OpenURLButton>
+                    <Text style={styles.cardTitle}>{school.name}</Text>
+                    <Text style={styles.cardText}>{school.address}</Text>
+                    <Text style={styles.cardText}>{school.neighborhood}</Text>
+                    <Text style={styles.codeText}>{school.city} / {school.state}</Text>
+                    <OpenURLButton url={`https://www.google.com/maps?q=${school.lat},${school.lng}`}>Veja no Google Maps</OpenURLButton>
                 </ScrollView>
             </View>
             <View style={styles.buttonContainer}>
                     <Button
                         mode="contained"
-                        onPress={handleAssociateDriverToSchool}
+                        onPress={handleAssociateVehicleToSchool}
                         style={styles.addButton}
                     >
                         Associar

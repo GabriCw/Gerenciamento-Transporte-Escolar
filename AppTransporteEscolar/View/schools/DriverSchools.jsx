@@ -1,33 +1,33 @@
 import { useCallback, useContext, useEffect, useState } from "react";
 import { Linking, ScrollView, StyleSheet, Text, View } from "react-native";
 import { ActivityIndicator, Button, Card, IconButton } from "react-native-paper";
-import { disassociateDriverToSchool, getAllSchoolList, getSchoolByUser } from "../../data/pointServices";
+import { disassociateDriverToSchool, getAllSchoolList, getSchoolByDriver, getSchoolByUser } from "../../data/pointServices";
 import { FontAwesome, FontAwesome5 } from "@expo/vector-icons";
 import { AuthContext } from "../../providers/AuthProvider";
 import Toast from "react-native-toast-message";
 import Header from "../../components/header/Header";
 import PageDefault from "../../components/pageDefault/PageDefault";
+import { getVehicleListByUser } from "../../data/vehicleServices";
 
 const DriverSchools = ({navigation}) => {
 
     const [isLoading, setIsLoading] = useState(false);
-    const [schoolList, setSchoolList] = useState([]);
     const [actualSchool, setActualSchool] = useState(null);
     const {userData} = useContext(AuthContext);
 
-    const handleListAllSchools = async() => {
+    const handleListVehicles = async() => {
         setIsLoading(true);
 
-        const schoolList = await getAllSchoolList();
+        const vehicles = await getVehicleListByUser(userData.id);
 
-        if(schoolList.status === 200){
-            setSchoolList(schoolList.data);
+        if(vehicles.status === 200){
+            navigation.navigate("VehiclesList", {vehicleList: vehicles.data})
         }
         else{
             Toast.show({
                 type: 'error',
                 text1: 'Erro',
-                text2: 'Erro ao listar escolas',
+                text2: 'Erro ao listar veículos',
                 visibilityTime: 3000,
             });
             navigation.goBack();
@@ -47,8 +47,7 @@ const DriverSchools = ({navigation}) => {
         const disassociate = await disassociateDriverToSchool(body)
 
         if(disassociate.status === 200){
-            setActualSchool(null);
-            await handleListAllSchools();
+            await handleListVehicles();
 
             Toast.show({
                 type: 'success',
@@ -73,18 +72,18 @@ const DriverSchools = ({navigation}) => {
         const requestData = async() => {
             setIsLoading(true);
 
-            const hasSchool = await getSchoolByUser(userData.id);
+            const hasSchool = await getSchoolByDriver(userData.id);
 
             if(hasSchool.status === 200){
                 if(hasSchool.data !== null){
                     setActualSchool(hasSchool.data);
                 }
                 else{
-                    await handleListAllSchools();
+                    await handleListVehicles();
                 }
             }
             else{
-                await handleListAllSchools();
+                await handleListVehicles();
             }
 
             setIsLoading(false);
@@ -92,10 +91,6 @@ const DriverSchools = ({navigation}) => {
 
         requestData();
     }, []);
-
-    const handleSchoolSelected = (schoolInfos) => {
-        navigation.navigate("ConfirmDriverSchool", {schoolData: schoolInfos});
-    };
 
     const OpenURLButton = ({url, children}) => {
         const handlePress = useCallback(async () => {
@@ -113,48 +108,24 @@ const DriverSchools = ({navigation}) => {
 
     return <PageDefault headerTitle={actualSchool !== null ? "Minha Escola" : "Selecione sua escola"} loading={isLoading} navigation={navigation}>
         <View style={styles.content}>
-            {
-                actualSchool !== null ?
-                <>
-                    <View style={[styles.scrollContainer, {height: "inherit"}]}>
-                        <ScrollView contentContainerStyle={styles.scrollContent}>
-                            <Text style={styles.cardTitle}>{actualSchool.name}</Text>
-                            <Text style={styles.cardText}>{actualSchool.address}</Text>
-                            <Text style={styles.cardText}>{actualSchool.neighborhood}</Text>
-                            <Text style={styles.codeText}>{actualSchool.city} / {actualSchool.state}</Text>
-                            <OpenURLButton url={`https://www.google.com/maps?q=${actualSchool.lat},${actualSchool.lng}`}>Veja no Google Maps</OpenURLButton>
-                        </ScrollView>
-                    </View>
-                    <View style={styles.buttonContainer}>
-                        <Button
-                            mode="contained"
-                            onPress={handleDisassociate}
-                            style={styles.addButton}
-                        >
-                            Desassociar
-                        </Button>
-                    </View>
-                </>
-                :
-                <>    
-                    <View style={styles.scrollContainer}>
-                        <ScrollView contentContainerStyle={styles.scrollContent}>
-                            {schoolList.map((school, index) => (
-                                <Card key={index} style={styles.card} onPress={() => handleSchoolSelected(school)}>
-                                    <Card.Content style={styles.cardContent}>
-                                        <View style={styles.cardDetails}>                                            
-                                            <Text style={[styles.cardText, {marginTop:1, fontWeight: "bold"}]}>{school.name}</Text>
-                                            <Text style={styles.cardText}>{school.address}</Text>
-                                            <Text style={styles.cardText}>{school.neighborhood}</Text>
-                                            <Text style={styles.codeText}>{school.city} / {school.state}</Text>
-                                        </View>
-                                    </Card.Content>
-                                </Card>
-                            ))}
-                        </ScrollView>
-                    </View>
-                </>
-            }
+            <View style={[styles.scrollContainer, {height: "inherit"}]}>
+                <ScrollView contentContainerStyle={styles.scrollContent}>
+                    <Text style={styles.cardTitle}>{actualSchool?.name}</Text>
+                    <Text style={styles.cardText}>{actualSchool?.address}</Text>
+                    <Text style={styles.cardText}>{actualSchool?.neighborhood}</Text>
+                    <Text style={styles.codeText}>{actualSchool?.city} / {actualSchool?.state}</Text>
+                    <OpenURLButton url={`https://www.google.com/maps?q=${actualSchool?.lat},${actualSchool?.lng}`}>Veja no Google Maps</OpenURLButton>
+                </ScrollView>
+            </View>
+            <View style={styles.buttonContainer}>
+                <Button
+                    mode="contained"
+                    onPress={handleDisassociate}
+                    style={styles.addButton}
+                >
+                    Desassociar
+                </Button>
+            </View>
         </View>
     </PageDefault>
 };
