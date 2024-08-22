@@ -140,7 +140,6 @@ const styles = StyleSheet.create({
     content: {
         flex: 1,
         justifyContent: 'center',
-        marginTop: 20,
         width: "100%",
         alignItems: 'center',
     },
