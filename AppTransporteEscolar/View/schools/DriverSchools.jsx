@@ -1,13 +1,11 @@
-import { useCallback, useContext, useEffect, useState } from "react";
-import { Linking, ScrollView, StyleSheet, Text, View } from "react-native";
-import { ActivityIndicator, Button, Card, IconButton } from "react-native-paper";
-import { disassociateDriverToSchool, getAllSchoolList, getSchoolByDriver, getSchoolByUser } from "../../data/pointServices";
-import { FontAwesome, FontAwesome5 } from "@expo/vector-icons";
+import { useContext, useEffect, useState } from "react";
+import { StyleSheet} from "react-native";
+import { disassociateDriverToSchool, getSchoolByDriver } from "../../data/pointServices";
 import { AuthContext } from "../../providers/AuthProvider";
 import Toast from "react-native-toast-message";
-import Header from "../../components/header/Header";
 import PageDefault from "../../components/pageDefault/PageDefault";
 import { getVehicleListByUser } from "../../data/vehicleServices";
+import SchoolVehicleList from "./components/SchoolVehicleList";
 
 const DriverSchools = ({navigation}) => {
 
@@ -92,41 +90,12 @@ const DriverSchools = ({navigation}) => {
         requestData();
     }, []);
 
-    const OpenURLButton = ({url, children}) => {
-        const handlePress = useCallback(async () => {
-          const supported = await Linking.canOpenURL(url);
-      
-          if (supported) {
-            await Linking.openURL(url);
-          } else {
-            Alert.alert(`Don't know how to open this URL: ${url}`);
-          }
-        }, [url]);
-      
-        return <Button onPress={handlePress}>{children}</Button>;
-    };
-
-    return <PageDefault headerTitle={actualSchool !== null ? "Minha Escola" : "Selecione sua escola"} loading={isLoading} navigation={navigation}>
-        <View style={styles.content}>
-            <View style={[styles.scrollContainer, {height: "inherit"}]}>
-                <ScrollView contentContainerStyle={styles.scrollContent}>
-                    <Text style={styles.cardTitle}>{actualSchool?.name}</Text>
-                    <Text style={styles.cardText}>{actualSchool?.address}</Text>
-                    <Text style={styles.cardText}>{actualSchool?.neighborhood}</Text>
-                    <Text style={styles.codeText}>{actualSchool?.city} / {actualSchool?.state}</Text>
-                    <OpenURLButton url={`https://www.google.com/maps?q=${actualSchool?.lat},${actualSchool?.lng}`}>Veja no Google Maps</OpenURLButton>
-                </ScrollView>
-            </View>
-            <View style={styles.buttonContainer}>
-                <Button
-                    mode="contained"
-                    onPress={handleDisassociate}
-                    style={styles.addButton}
-                >
-                    Desassociar
-                </Button>
-            </View>
-        </View>
+    return <PageDefault headerTitle="Minha Escola" loading={isLoading} navigation={navigation}>
+        <SchoolVehicleList
+            list={actualSchool}
+            loading={isLoading}
+            navigation={navigation}
+        />
     </PageDefault>
 };
 
