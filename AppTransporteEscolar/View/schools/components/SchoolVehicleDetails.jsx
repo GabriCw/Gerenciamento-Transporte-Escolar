@@ -23,17 +23,36 @@ const SchoolVehicleDetails = ({navigation, route}) => {
     };
 
     return <PageDefault headerTitle="Detalhes" navigation={navigation}>
-        <View style={styles.scrollContainer}>
-            <View style={styles.viewContainter}>
-                <View style={styles.cardContainer}>
-                    <View style={styles.mainInfosContainer}>
-                        <View style={styles.iconContent}>
-                        <FontAwesome6 name="van-shuttle"  color="black" style={styles.vehicleIcon} />
+        <View style={styles.viewContainter}>
+                    <View style={styles.cardContainer}>
+                        <View style={styles.mainInfosContainer}>
+                            <View style={styles.content}>
+                                <View style={styles.nameYearContent}>
+                                    <Text style={styles.title}>{schoolVehicleData?.school?.name}</Text>
+                                </View>
+                                
+                                <View style={{width: "100%"}}>
+                                    <View>
+                                        <Text style={styles.text}>{schoolVehicleData?.school?.address}</Text>
+                                        <Text style={styles.text}>{schoolVehicleData?.school?.neighborhood} - {schoolVehicleData?.school?.city}/{schoolVehicleData?.school?.state}</Text>
+                                    </View>
+                                    <OpenURLButton url={`https://www.google.com/maps?q=${schoolVehicleData?.school?.lat},${schoolVehicleData?.school?.lng}`}>Veja no Google Maps</OpenURLButton>
+                                </View>
+                                
                         </View>
-                        <View style={styles.content}>
-                            <View style={styles.nameYearContent}>
-                                <Text style={styles.title}>{schoolVehicleData?.vehicle?.plate}</Text>
-                            </View>
+                    </View>
+        
+                    <View style={styles.lineSeparator}/>
+        
+                    <View style={styles.schoolContainer}>
+                        <View style={styles.schoolContent}>
+                            <Text style={styles.colorBox}>Veículo</Text>
+                            <Text style={styles.text}>{schoolVehicleData?.vehicle?.plate}</Text>
+                            <Text style={styles.text}>({schoolVehicleData?.vehicle?.color})</Text>
+                        </View>
+                        <View>
+                            <Text style={styles.text}>{schoolVehicleData?.vehicle?.model} - {schoolVehicleData?.vehicle?.year}</Text>
+                        </View>
                             <View style={styles.nameYearContent}>
                                 {
                                     schoolVehicleData?.vehicle?.code && <View style={styles.codeContent}>
@@ -41,28 +60,10 @@ const SchoolVehicleDetails = ({navigation, route}) => {
                                         <Text style={styles.colorBox}>{schoolVehicleData?.vehicle?.code}</Text>
                                     </View>
                                 }
-                                <Text style={styles.text}>{schoolVehicleData?.vehicle?.model}</Text>
                             </View>
-                            
                         </View>
-                    </View>
-
-                    <View style={styles.lineSeparator}/>
-
-                    <View style={styles.schoolContainer}>
-                        <View style={styles.schoolContent}>
-                            <Text style={styles.colorBox}>Escola</Text>
-                            <Text style={styles.text}>{schoolVehicleData?.school?.name}</Text>
-                        </View>
-                        <View>
-                            <Text style={styles.text}>{schoolVehicleData?.school?.address}</Text>
-                            <Text style={styles.text}>{schoolVehicleData?.school?.neighborhood} - {schoolVehicleData?.school?.city}/{schoolVehicleData?.school?.state}</Text>
-                        </View>
-                        <OpenURLButton url={`https://www.google.com/maps?q=${schoolVehicleData?.school?.lat},${schoolVehicleData?.school?.lng}`}>Veja no Google Maps</OpenURLButton>
                     </View>
                 </View>
-            </View>
-        </View>
         <View style={styles.buttonContainer}>
             <Button
                 mode="contained"
@@ -83,7 +84,7 @@ const styles = StyleSheet.create({
     viewContainter: {
         display: "flex",
         justifyContent: "center",
-        width: "100%",
+        width: "90%",
         marginBottom: 15,
         alignItems: "center",
     },

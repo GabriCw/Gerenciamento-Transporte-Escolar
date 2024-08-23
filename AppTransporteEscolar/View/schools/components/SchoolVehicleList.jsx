@@ -30,41 +30,44 @@ const SchoolVehicleList = ({navigation, list}) => {
                 return <View style={styles.viewContainter} key={index}>
                     <View style={styles.cardContainer}>
                         <View style={styles.mainInfosContainer}>
-                            <View style={styles.iconContent}>
-                            <FontAwesome6 name="van-shuttle"  color="black" style={styles.vehicleIcon} />
-                            </View>
                             <View style={styles.content}>
                                 <View style={styles.nameYearContent}>
-                                    <Text style={styles.title}>{item?.vehicle?.plate}</Text>
+                                    <Text style={styles.title}>{item?.school?.name}</Text>
                                     <Pressable onPress={() => handleGoToSchoolVehicleDetails(item)}>
                                         <MaterialIcons name="edit" size={24} color="black" />
                                     </Pressable>
                                 </View>
-                                <View style={styles.nameYearContent}>
-                                    {
-                                        item?.vehicle?.code && <View style={styles.codeContent}>
-                                            <Text style={styles.codeText}>Código:</Text>
-                                            <Text style={styles.colorBox}>{item?.vehicle?.code}</Text>
-                                        </View>
-                                    }
-                                    <Text style={styles.text}>{item?.vehicle?.model}</Text>
+                                
+                                <View style={{width: "100%"}}>
+                                    <View>
+                                        <Text style={styles.text}>{item?.school?.address}</Text>
+                                        <Text style={styles.text}>{item?.school?.neighborhood} - {item?.school?.city}/{item?.school?.state}</Text>
+                                    </View>
+                                    <OpenURLButton url={`https://www.google.com/maps?q=${item?.school?.lat},${item?.school?.lng}`}>Veja no Google Maps</OpenURLButton>
                                 </View>
                                 
-                            </View>
                         </View>
+                    </View>
         
-                        <View style={styles.lineSeparator}/>
+                    <View style={styles.lineSeparator}/>
         
-                        <View style={styles.schoolContainer}>
-                            <View style={styles.schoolContent}>
-                                <Text style={styles.colorBox}>Escola</Text>
-                                <Text style={styles.text}>{item?.school?.name}</Text>
+                    <View style={styles.schoolContainer}>
+                        <View style={styles.schoolContent}>
+                            <Text style={styles.colorBox}>Veículo</Text>
+                            <Text style={styles.text}>{item?.vehicle?.plate}</Text>
+                            <Text style={styles.text}>({item?.vehicle?.color})</Text>
+                        </View>
+                        <View>
+                            <Text style={styles.text}>{item?.vehicle?.model} - {item?.vehicle?.year}</Text>
+                        </View>
+                            <View style={styles.nameYearContent}>
+                                {
+                                    item?.vehicle?.code && <View style={styles.codeContent}>
+                                        <Text style={styles.codeText}>Código:</Text>
+                                        <Text style={styles.colorBox}>{item?.vehicle?.code}</Text>
+                                    </View>
+                                }
                             </View>
-                            <View>
-                                <Text style={styles.text}>{item?.school?.address}</Text>
-                                <Text style={styles.text}>{item?.school?.neighborhood} - {item?.school?.city}/{item?.school?.state}</Text>
-                            </View>
-                            <OpenURLButton url={`https://www.google.com/maps?q=${item?.school?.lat},${item?.school?.lng}`}>Veja no Google Maps</OpenURLButton>
                         </View>
                     </View>
                 </View>
@@ -83,6 +86,7 @@ const styles = StyleSheet.create({
         display: "flex",
         justifyContent: "center",
         width: "100%",
+        minWidth: "90%",
         marginBottom: 15,
         alignItems: "center",
     },
@@ -106,8 +110,8 @@ const styles = StyleSheet.create({
         paddingBottom: 10
     },
     iconContent: {
-        justifyContent: 'center',
-        alignItems: 'center',
+        alignSelf: "flex-start",
+        paddingTop: 5,
         borderRadius: 30,
         paddingLeft: 1,
     },
@@ -120,7 +124,7 @@ const styles = StyleSheet.create({
         flex: 1,
         paddingHorizontal: 5,
         display: "flex",
-        rowGap: 5
+        rowGap: 5,
     },
     nameYearContent: {
         display: "flex",
@@ -169,11 +173,13 @@ const styles = StyleSheet.create({
     schoolContainer:{
         paddingTop: 10,
         rowGap: 3,
+        width: "100%",
         display: "flex",
     },
     schoolContent: {
         display: "flex",
         flexDirection: "row",
+        width: "100%",
         alignItems: "center",
         columnGap: 10
     },
