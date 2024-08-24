@@ -2,23 +2,9 @@ import { Linking, Pressable, ScrollView, StyleSheet, View } from "react-native";
 import PageDefault from "../../../components/pageDefault/PageDefault";
 import { Button, IconButton, Text } from "react-native-paper";
 import { useCallback } from "react";
-import { FontAwesome6, Ionicons, MaterialIcons } from "@expo/vector-icons";
+import { AntDesign, FontAwesome6, Ionicons, MaterialIcons } from "@expo/vector-icons";
 
 const SchoolVehicleList = ({navigation, list}) => {
-    
-    const OpenURLButton = ({url, children}) => {
-        const handlePress = useCallback(async () => {
-          const supported = await Linking.canOpenURL(url);
-      
-          if (supported) {
-            await Linking.openURL(url);
-          } else {
-            Alert.alert(`Don't know how to open this URL: ${url}`);
-          }
-        }, [url]);
-      
-        return <Button onPress={handlePress}>{children}</Button>;
-    };
 
     const handleGoToSchoolVehicleDetails = (item) => {
         navigation.navigate("SchoolVehicleDetails", {schoolVehicleData: item});
@@ -27,15 +13,13 @@ const SchoolVehicleList = ({navigation, list}) => {
     return <ScrollView style={styles.scrollContainer}>
         {
             list?.map((item, index) => {
-                return <View style={styles.viewContainter} key={index}>
+                return <Pressable style={styles.viewContainter} key={index} onPress={() => handleGoToSchoolVehicleDetails(item)}>
                     <View style={styles.cardContainer}>
                         <View style={styles.mainInfosContainer}>
                             <View style={styles.content}>
                                 <View style={styles.nameYearContent}>
                                     <Text style={styles.title}>{item?.school?.name}</Text>
-                                    <Pressable onPress={() => handleGoToSchoolVehicleDetails(item)}>
-                                        <MaterialIcons name="edit" size={24} color="black" />
-                                    </Pressable>
+                                    <AntDesign name="rightcircle" size={24} color="black"/>
                                 </View>
                                 
                                 <View style={{width: "100%"}}>
@@ -43,7 +27,6 @@ const SchoolVehicleList = ({navigation, list}) => {
                                         <Text style={styles.text}>{item?.school?.address}</Text>
                                         <Text style={styles.text}>{item?.school?.neighborhood} - {item?.school?.city}/{item?.school?.state}</Text>
                                     </View>
-                                    <OpenURLButton url={`https://www.google.com/maps?q=${item?.school?.lat},${item?.school?.lng}`}>Veja no Google Maps</OpenURLButton>
                                 </View>
                                 
                         </View>
@@ -70,7 +53,7 @@ const SchoolVehicleList = ({navigation, list}) => {
                             </View>
                         </View>
                     </View>
-                </View>
+                </Pressable>
             })
         }
     </ScrollView>
