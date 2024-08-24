@@ -5,11 +5,14 @@ import { useCallback, useEffect, useState } from "react";
 import { FontAwesome6, Ionicons, MaterialIcons } from "@expo/vector-icons";
 import ModalEditPoint from "./ModalEditPoint";
 import ModalEditVehicle from "./ModalEditVehicle";
+import { associateVehicleToPoint } from "../../../data/vehicleServices";
+import Toast from "react-native-toast-message";
 
 const SchoolVehicleDetails = ({navigation, route}) => {
     
     const {schoolVehicleData} = route.params;
 
+    const [loading, setLoading] = useState(false);
     const [school, setSchool] = useState(null);
     const [vehicle, setVehicle] = useState(null);
     const [editPoint, setEditPoint] = useState(false);
@@ -28,7 +31,39 @@ const SchoolVehicleDetails = ({navigation, route}) => {
         setVehicle(vehicleUpdate);
     };
 
-    return <PageDefault headerTitle="Detalhes" navigation={navigation}>
+    const handleUpdateAssociation = async() => {
+        setLoading(true);
+
+        const body = {
+            vehicle_id: vehicle.id,
+            point_id: school.id
+        };
+
+        const association = await associateVehicleToPoint(body);
+
+        if(association.status === 200){
+            Toast.show({
+                type: 'success',
+                text1: 'Sucesso',
+                text2: 'Escola e veículo associados com sucesso!',
+                visibilityTime: 3000,
+            });
+
+            navigation.navigate("Perfil");
+        }
+        else{
+            Toast.show({
+                type: 'error',
+                text1: 'Erro',
+                text2: 'Erro ao associar veículo à escola',
+                visibilityTime: 3000,
+            });
+        }
+
+        setLoading(false);
+    };
+
+    return <PageDefault headerTitle="Detalhes" loading={loading} navigation={navigation}>
         <View style={styles.viewContainter}>
             <View style={styles.cardContainer}>
                 <View style={styles.mainInfosContainer}>
@@ -78,7 +113,7 @@ const SchoolVehicleDetails = ({navigation, route}) => {
         <View style={styles.buttonContainer}>
             <Button
                 mode="contained"
-                // onPress={handleOpenEditModal}
+                onPress={handleUpdateAssociation}
                 style={styles.button}
             >
                 Concluir

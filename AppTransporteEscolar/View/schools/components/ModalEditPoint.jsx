@@ -19,7 +19,7 @@ const ModalEditPoint = ({schoolSelected, open, setOpen, navigation, handleUpdate
 
             if(response.status === 200){
                 const schoolFormatted = response.data.map(item => {
-                    if(item.school.id === schoolSelected.id){
+                    if(item.school?.id === schoolSelected?.id){
                         return {...item.school, isChecked: true};
                     }
                     return {...item.school, isChecked: false};
@@ -44,7 +44,7 @@ const ModalEditPoint = ({schoolSelected, open, setOpen, navigation, handleUpdate
 
     const handleSelectSchool = (selected) => {
         const schoolFormatted = schools.map(item => {
-            if(item.id === selected.id){
+            if(item?.id === selected?.id){
                 return {...item, isChecked: true}; 
             }
             return {...item, isChecked: false};
