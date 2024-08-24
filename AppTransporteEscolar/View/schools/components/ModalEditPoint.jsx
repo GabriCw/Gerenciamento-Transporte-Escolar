@@ -7,7 +7,7 @@ import { StyleSheet, Text, View } from "react-native";
 import BouncyCheckbox from "react-native-bouncy-checkbox"
 import { Button } from "react-native-paper";
 
-const ModalEditPoint = ({schoolSelected, open, setOpen, navigation}) => {
+const ModalEditPoint = ({schoolSelected, open, setOpen, navigation, handleUpdate}) => {
 
     const {userData} = useContext(AuthContext);
 
@@ -52,6 +52,15 @@ const ModalEditPoint = ({schoolSelected, open, setOpen, navigation}) => {
 
         setSchools(schoolFormatted);
     };
+
+    const handleUpdateSchool = () => {
+        const school = schools.find(s => s.isChecked === true);
+
+        if(school !== undefined){
+            handleUpdate(school);
+            setOpen(false);
+        }
+    };
     
     return <ModalDefault title="Selecione uma escola" open={open} onClose={() => setOpen(false)}>
         {
@@ -73,7 +82,7 @@ const ModalEditPoint = ({schoolSelected, open, setOpen, navigation}) => {
         }
         <Button
             mode="contained"
-            // onPress={handleOpenEditModal}
+            onPress={handleUpdateSchool}
             style={styles.button}
         >
             Confirmar

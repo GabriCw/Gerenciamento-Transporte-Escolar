@@ -1,7 +1,7 @@
 import { Linking, Pressable, ScrollView, StyleSheet, View } from "react-native";
 import PageDefault from "../../../components/pageDefault/PageDefault";
 import { Button, IconButton, Text } from "react-native-paper";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { FontAwesome6, Ionicons, MaterialIcons } from "@expo/vector-icons";
 import ModalEditPoint from "./ModalEditPoint";
 import ModalEditVehicle from "./ModalEditVehicle";
@@ -10,8 +10,19 @@ const SchoolVehicleDetails = ({navigation, route}) => {
     
     const {schoolVehicleData} = route.params;
 
+    const [school, setSchool] = useState(null);
+    const [vehicle, setVehicle] = useState(null);
     const [editPoint, setEditPoint] = useState(false);
     const [editVehicle, setEditVehicle] = useState(false);
+
+    useEffect(() => {
+        setSchool(schoolVehicleData?.school);
+        setVehicle(schoolVehicleData?.vehicle);
+    }, [schoolVehicleData]);
+
+    const handleUpdateSchool = (schoolUpdate) => {
+        setSchool(schoolUpdate);
+    };
 
     return <PageDefault headerTitle="Detalhes" navigation={navigation}>
         <View style={styles.viewContainter}>
@@ -19,7 +30,7 @@ const SchoolVehicleDetails = ({navigation, route}) => {
                 <View style={styles.mainInfosContainer}>
                     <View style={styles.content}>
                         <View style={styles.nameYearContent}>
-                            <Text style={styles.title}>{schoolVehicleData?.school?.name}</Text>
+                            <Text style={styles.title}>{school?.name}</Text>
                             <Pressable onPress={() => setEditPoint(true)}>
                                 <MaterialIcons name="edit" size={24} color="black" />
                             </Pressable>
@@ -27,8 +38,8 @@ const SchoolVehicleDetails = ({navigation, route}) => {
                         
                         <View style={{width: "100%"}}>
                             <View>
-                                <Text style={styles.text}>{schoolVehicleData?.school?.address}</Text>
-                                <Text style={styles.text}>{schoolVehicleData?.school?.neighborhood} - {schoolVehicleData?.school?.city}/{schoolVehicleData?.school?.state}</Text>
+                                <Text style={styles.text}>{school?.address}</Text>
+                                <Text style={styles.text}>{school?.neighborhood} - {school?.city}/{school?.state}</Text>
                             </View>
                         </View>  
                     </View>
@@ -39,20 +50,20 @@ const SchoolVehicleDetails = ({navigation, route}) => {
             <View style={styles.schoolContainer}>
                 <View style={styles.schoolContent}>
                     <Text style={styles.colorBox}>Veículo</Text>
-                    <Text style={styles.text}>{schoolVehicleData?.vehicle?.plate}</Text>
-                    <Text style={styles.text}>({schoolVehicleData?.vehicle?.color})</Text>
+                    <Text style={styles.text}>{vehicle?.plate}</Text>
+                    <Text style={styles.text}>({vehicle?.color})</Text>
                     <Pressable onPress={() => setEditVehicle(true)}>
                         <MaterialIcons name="edit" size={24} color="black" />
                     </Pressable>
                 </View>
                 <View>
-                    <Text style={styles.text}>{schoolVehicleData?.vehicle?.model} - {schoolVehicleData?.vehicle?.year}</Text>
+                    <Text style={styles.text}>{vehicle?.model} - {vehicle?.year}</Text>
                 </View>
                     <View style={styles.nameYearContent}>
                         {
-                            schoolVehicleData?.vehicle?.code && <View style={styles.codeContent}>
+                            vehicle?.code && <View style={styles.codeContent}>
                                 <Text style={styles.codeText}>Código:</Text>
-                                <Text style={styles.colorBox}>{schoolVehicleData?.vehicle?.code}</Text>
+                                <Text style={styles.colorBox}>{vehicle?.code}</Text>
                             </View>
                         }
                     </View>
@@ -69,7 +80,7 @@ const SchoolVehicleDetails = ({navigation, route}) => {
                 Concluir
             </Button>
         </View>
-        <ModalEditPoint schoolSelected={schoolVehicleData.school} open={editPoint} setOpen={setEditPoint} navigation={navigation}/>
+        <ModalEditPoint schoolSelected={schoolVehicleData.school} handleUpdate={handleUpdateSchool} open={editPoint} setOpen={setEditPoint} navigation={navigation}/>
         <ModalEditVehicle open={editVehicle} setOpen={setEditVehicle} navigation={navigation}/>
     </PageDefault> 
 };
