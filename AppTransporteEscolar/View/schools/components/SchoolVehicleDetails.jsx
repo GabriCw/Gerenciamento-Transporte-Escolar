@@ -69,7 +69,7 @@ const SchoolVehicleDetails = ({navigation, route}) => {
                 Concluir
             </Button>
         </View>
-        <ModalEditPoint open={editPoint} setOpen={setEditPoint} navigation={navigation}/>
+        <ModalEditPoint schoolSelected={schoolVehicleData.school} open={editPoint} setOpen={setEditPoint} navigation={navigation}/>
         <ModalEditVehicle open={editVehicle} setOpen={setEditVehicle} navigation={navigation}/>
     </PageDefault> 
 };

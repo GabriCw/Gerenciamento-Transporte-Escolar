@@ -16,8 +16,6 @@ const ModalEditVehicle = ({open, setOpen, navigation}) => {
         const requestData = async() => {
             const response = await getVehicleListByUser(userData.id);
 
-            console.log(response.data);
-
             if(response.status === 200){
                 setVehicles(response.data);
             }
@@ -39,7 +37,7 @@ const ModalEditVehicle = ({open, setOpen, navigation}) => {
     return <ModalDefault title="Selecione um veículo" open={open} onClose={() => setOpen(false)}>
         {
             vehicles.map(item => {
-                return  <View>
+                return <View key={item.id}>
                     <Text style={{color: "white"}}>{item.plate}</Text>
                 </View>
             }

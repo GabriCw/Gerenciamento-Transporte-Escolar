@@ -3,9 +3,11 @@ import ModalDefault from "../../../components/modalDefault/ModalDefault";
 import { getSchoolByDriver } from "../../../data/pointServices";
 import { AuthContext } from "../../../providers/AuthProvider";
 import Toast from "react-native-toast-message";
-import { Text, View } from "react-native";
+import { StyleSheet, Text, View } from "react-native";
+import BouncyCheckbox from "react-native-bouncy-checkbox"
+import { Button } from "react-native-paper";
 
-const ModalEditPoint = ({open, setOpen, navigation}) => {
+const ModalEditPoint = ({schoolSelected, open, setOpen, navigation}) => {
 
     const {userData} = useContext(AuthContext);
 
@@ -15,10 +17,15 @@ const ModalEditPoint = ({open, setOpen, navigation}) => {
         const requestData = async() => {
             const response = await getSchoolByDriver(userData.id);
 
-            console.log(response.data)
-
             if(response.status === 200){
-                setSchools(response.data);
+                const schoolFormatted = response.data.map(item => {
+                    if(item.school.id === schoolSelected.id){
+                        return {...item.school, isChecked: true};
+                    }
+                    return {...item.school, isChecked: false};
+                });
+
+                setSchools(schoolFormatted);
             }
             else{
                 setSchools([]);
@@ -33,18 +40,61 @@ const ModalEditPoint = ({open, setOpen, navigation}) => {
         };
 
         requestData();
-    }, []);
+    }, [schoolSelected]);
 
+    const handleSelectSchool = (selected) => {
+        const schoolFormatted = schools.map(item => {
+            if(item.id === selected.id){
+                return {...item, isChecked: true}; 
+            }
+            return {...item, isChecked: false};
+        });
+
+        setSchools(schoolFormatted);
+    };
+    
     return <ModalDefault title="Selecione uma escola" open={open} onClose={() => setOpen(false)}>
         {
             schools.map(item => {
-                return  <View>
-                <Text style={{color: "white"}}>{item.school.name}</Text>
-            </View>
-            }
-           )
+                return <View style={styles.container} key={item.id}>
+                    <BouncyCheckbox
+                        size={25}
+                        fillColor="#C36005"
+                        unFillColor="transparent"
+                        text={item.name}
+                        isChecked={item.isChecked}
+                        iconStyle={{ borderColor: "#C36005" }}
+                        innerIconStyle={{ borderWidth: 1 }}
+                        textStyle={{ textDecorationLine: "none", color: "white" }}
+                        onPress={() => handleSelectSchool(item)}
+                    />
+                </View>
+            })
         }
+        <Button
+            mode="contained"
+            // onPress={handleOpenEditModal}
+            style={styles.button}
+        >
+            Confirmar
+        </Button>
     </ModalDefault>
 };
+
+const styles = StyleSheet.create({
+    container: {
+        flex: 1,
+        display: "flex",
+        flexDirection: "column",
+        marginBottom: 10
+    },
+    button: {
+        backgroundColor: '#C36005',
+        width: "40%",
+        marginTop: 10,
+        marginHorizontal: "auto",
+        display: "flex"
+    },
+});
 
 export default ModalEditPoint;
