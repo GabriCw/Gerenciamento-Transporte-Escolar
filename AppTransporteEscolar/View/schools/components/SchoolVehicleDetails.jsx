@@ -24,6 +24,10 @@ const SchoolVehicleDetails = ({navigation, route}) => {
         setSchool(schoolUpdate);
     };
 
+    const handleUpdateVehicle = (vehicleUpdate) => {
+        setVehicle(vehicleUpdate);
+    };
+
     return <PageDefault headerTitle="Detalhes" navigation={navigation}>
         <View style={styles.viewContainter}>
             <View style={styles.cardContainer}>
@@ -80,8 +84,8 @@ const SchoolVehicleDetails = ({navigation, route}) => {
                 Concluir
             </Button>
         </View>
-        <ModalEditPoint schoolSelected={schoolVehicleData.school} handleUpdate={handleUpdateSchool} open={editPoint} setOpen={setEditPoint} navigation={navigation}/>
-        <ModalEditVehicle open={editVehicle} setOpen={setEditVehicle} navigation={navigation}/>
+        <ModalEditPoint schoolSelected={school} handleUpdate={handleUpdateSchool} open={editPoint} setOpen={setEditPoint} navigation={navigation}/>
+        <ModalEditVehicle vehicleSelected={vehicle} handleUpdate={handleUpdateVehicle} open={editVehicle} setOpen={setEditVehicle} navigation={navigation}/>
     </PageDefault> 
 };
 
