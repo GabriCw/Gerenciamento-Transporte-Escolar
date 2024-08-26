@@ -156,6 +156,14 @@ export const styles = StyleSheet.create({
         height: 80,
         justifyContent: 'center',
         flexDirection: 'column'
+    },
+    stopRoute: {
+        flex: 1,
+        justifyContent: 'flex-end',
+        position: 'absolute',
+    },
+    stopRouteIcon: {
+
     }
 
 });
