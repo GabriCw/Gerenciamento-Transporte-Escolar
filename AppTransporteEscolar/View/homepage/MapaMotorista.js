@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useContext } from 'react';
 import { StyleSheet, View, Image, Text } from 'react-native';
 import MapView, { Marker, Polyline } from 'react-native-maps';
 import * as Location from 'expo-location';
@@ -9,11 +9,11 @@ import { getDistance } from 'geolib';
 import { styles } from './Style/mapaMotoristaStyle';
 import { Button } from 'react-native-paper';
 import { formatTime, formatDistance } from '../../utils/formatUtils';
+import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import * as FileSystem from 'expo-file-system';
-
-
-
-
+import FontAwesome from '@expo/vector-icons/FontAwesome';
+import { postDriverLocation } from '../../data/locationServices';
+import { AuthContext } from '../../providers/AuthProvider';
 
 
 const MapaMotorista = ({ navigation }) => {
@@ -41,6 +41,10 @@ const MapaMotorista = ({ navigation }) => {
     const recalculateThreshold = 50; // Distância em metros para recalcular a rota
     const [waypointProximity, setWaypointProximity] = useState(true)
     const [startButton, setStartButton] = useState(true);
+    const [routeOnGoing, setRouteOngoing] = useState(false);
+    const [waypointOrder, setWaypointOrder] = useState([]);
+    const {userData} = useContext(AuthContext);
+    const [clock, setClock] = useState(true);
 
 
     useEffect(() => {
@@ -91,6 +95,7 @@ const MapaMotorista = ({ navigation }) => {
                 (location) => {
                     const { latitude, longitude, heading } = location.coords;
                     setUserLocation({ latitude, longitude });
+                    // console.log('User Location: ', userLocation)
                     setRegion({
                         latitude,
                         longitude,
@@ -98,11 +103,10 @@ const MapaMotorista = ({ navigation }) => {
                         longitudeDelta: 0.005,
                     });
                     setHeading(heading || 0);
-                    if ( routePoints.length > 0) {
-                        const distanceToRoute = calculateDistanceToRoute(latitude, longitude);
-                        // console.log(distanceToRoute)
+                    if ( routePoints.length > 0 && {latitude, longitude}) {
+                        const distanceToRoute = calculateDistanceToRoute({latitude, longitude});
                         if (distanceToRoute > recalculateThreshold) {
-                            calculateRoute(waypoints,{ latitude, longitude });
+                            calculateRoute(waypoints,{latitude, longitude});
                         }
                     }
                 }
@@ -116,7 +120,7 @@ const MapaMotorista = ({ navigation }) => {
                 locationSubscription.remove();
             }
         };
-    }, [isUserInteracting, routePoints]);
+    }, []);
 
     const calculateRoute = async (stateWaypoints, currentLocation) => {
         const waypoints = [{ name: 'Felipe Matos Silvieri', latitude: currentLocation.latitude, longitude: currentLocation.longitude },...stateWaypoints] 
@@ -132,7 +136,6 @@ const MapaMotorista = ({ navigation }) => {
         try {
             const response = await axios.get(url);
             if (response.data.routes && response.data.routes.length) {
-                // console.log(response)
                 const route = response.data.routes[0];
                 const decodedPolyline = polyline.decode(route.overview_polyline.points).map(point => ({
                     latitude: point[0],
@@ -141,8 +144,10 @@ const MapaMotorista = ({ navigation }) => {
                 setRoutePoints(decodedPolyline);
 
                 const optimizedOrder = route.waypoint_order;
+                setWaypointOrder(optimizedOrder);
+                
                 const orderedWaypoints = [waypoints[0], ...optimizedOrder.map(i => waypoints[i + 1]), waypoints[waypoints.length - 1]];
-                // console.log(route)
+        
                 setOptimizedWaypoints(orderedWaypoints);
 
                 setTotalDuration(route.legs.reduce((acc, leg) => acc + leg.duration.value, 0)); // duração em segundos
@@ -153,27 +158,27 @@ const MapaMotorista = ({ navigation }) => {
                     setNextWaypointDistance(nextLeg.distance.value); // distância em metros
                     setNextWaypointDuration(nextLeg.duration.value); // duração em segundos
                 }
-                saveRouteToFile(route);
             } else {
                 console.log('No routes found');
             }
         } catch (error) {
             console.log(`Error fetching directions: ${error.message || error}`);
         }
-        console.log('Chegou Final')
     };
 
     const startRoute = (schedule) => {
-        if (schedule === 0){
-            // Chamada API ida
+        if (schedule === 1){
+            // Chamada API ida (recebe do backend a lista de alunos de ida (waypoints))
             calculateRoute(waypoints, userLocation); // os waypoints vem da API (backend)
+            setRouteOngoing(true);
             setStartButton(false);
             console.log('Rota de ida iniciada!')
         }
-        else if (schedule === 1){
-            // Chamada API volta
+        else if (schedule === 2){
+            // Chamada API volta (recebe do backend a lista de alunos de volta (waypoints))
             calculateRoute(waypoints, userLocation); // os waypoints vem da API (backend)
-            setStartButton(false)
+            setRouteOngoing(true);
+            setStartButton(false);
             console.log('Rota de volta iniciada!')
         }
         else {
@@ -184,10 +189,12 @@ const MapaMotorista = ({ navigation }) => {
     const endRoute = (schedule) => {
         if (schedule === 0){
             // Enviar info de fim de viagem pra API
+            setRouteOngoing(false);
             setStartButton(true);
         }
         else if (schedule === 1){
             // Enviar info de fim de viagem pra API
+            setRouteOngoing(false);
             setStartButton(true)
         }
         else {
@@ -251,17 +258,68 @@ const MapaMotorista = ({ navigation }) => {
 
     // ---------- Envio do pacote de informações ao Backend ----------
 
+    const handlePostDriverLocation = async(body) => {
+        const postLocation = await postDriverLocation(body)
+
+        if(postLocation.status === 201){
+            console.log('Sucesso ao enviar localização do motorista')
+        }
+        else{   
+            console.log('Erro ao enviar localização do motorista')
+        }
+    }
+
     // O que tem que ser enviado:
     // UserId do motorista, que vem do user 
     useEffect(() => {
-        const intervalId = setInterval(() => {
-            // console.log(userLocation)
-            // Enviar só a coordenada
-            }, 60000);
 
-            // Cleanup function para limpar o intervalo quando o componente for desmontado
-            return () => clearInterval(intervalId);
-    },[])
+        
+        // if (isLocationAvailable && routeOnGoing) {
+            
+        //     setRegion({
+            //         latitude: userLocation.latitude,
+            //         longitude: userLocation.longitude,
+        //         latitudeDelta: 0.005,  // Ajuste o zoom conforme necessário
+        //         longitudeDelta: 0.005,
+        //     });
+        // }
+        
+    },[userLocation])
+
+    
+    useEffect(() => {
+        // console.log(clock)
+        
+        const isLocationAvailable = userLocation?.latitude && userLocation?.longitude
+        
+        if (isLocationAvailable && routeOnGoing) {
+            const body = {
+                lat: userLocation.latitude,
+                lng: userLocation.longitude,
+                user_id: userData.id
+            }
+            console.log('body: ',body)
+        }
+    },[clock])
+
+
+    useEffect(() => {
+        let isMounted = true;
+
+        const intervalFunc = () => {
+            if (isMounted) {
+                setClock(prevClock => !prevClock);
+                setTimeout(intervalFunc, 10000); // Repetir a cada 10 segundos
+
+            }
+        };
+
+        intervalFunc(); // Inicializar a primeira execução
+
+        return () => {
+            isMounted = false; // Limpar na desmontagem do componente
+        };
+    }, []);
 
     return (
         <View style={styles.view}>
@@ -288,7 +346,7 @@ const MapaMotorista = ({ navigation }) => {
                             pitch: 0,
                             heading: heading, // Controla a direção do mapa
                             altitude: 0,
-                            zoom: 18, // Ajuste o zoom conforme necessário
+                            zoom: 18,
                         }}
                     >
                         {userLocation && (
@@ -330,13 +388,13 @@ const MapaMotorista = ({ navigation }) => {
                 <View style={styles.startButtonPos}>
                     <View style={styles.startButton}>
                         <Button style = {styles.startRouteButton}
-                            onPress={() => startRoute(0)}
+                            onPress={() => startRoute(1)}
                         >
                             <Text style={{color:'white', fontSize: 15, fontWeight: 'bold'}}>IDA ESCOLA</Text>
                         </Button>
 
                         <Button style = {styles.startRouteButton}
-                            onPress={() => startRoute(1)}
+                            onPress={() => startRoute(2)}
                         >
                             <Text style={{color:'white', fontSize: 15, fontWeight: 'bold'}}>VOLTA ESCOLA</Text>
                         </Button>
@@ -399,6 +457,5 @@ const MapaMotorista = ({ navigation }) => {
         </View>
     );
 }
-
 
 export default MapaMotorista;
