@@ -12,7 +12,7 @@ import PageDefault from "../../../components/pageDefault/PageDefault";
 const StudentDetail = ({navigation, route}) => {
 
     const {studentData} = route.params;
-    const {userData} = useContext(AuthContext);
+    const {userData, handleVerifyStudent} = useContext(AuthContext);
 
     const [openEditModal, setOpenEditModal] = useState(false);
     const [loading, setLoading] = useState(false);
@@ -40,6 +40,7 @@ const StudentDetail = ({navigation, route}) => {
             });
 
             navigation.navigate("Perfil");
+            await handleVerifyStudent();
         }
         else{
             setOpenEditModal(true);
