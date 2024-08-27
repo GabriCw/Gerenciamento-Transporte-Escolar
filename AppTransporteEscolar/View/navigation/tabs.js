@@ -34,8 +34,8 @@ const HomeStack = () => (
 );
 
 const PerfilRespStack = () => {
-  return <Stack.Navigator initialRouteName={'PerfilResp'}>
-    <Stack.Screen name="PerfilResp" component={ProfileTab} options={{ headerShown: false }} />
+  return <Stack.Navigator initialRouteName={'Perfil'}>
+    <Stack.Screen name="Perfil" component={ProfileTab} options={{ headerShown: false }} />
     <Stack.Screen name="Alunos" component={Students} options={{ headerShown: false }} />
     <Stack.Screen name="StudentDetail" component={StudentDetail} options={{ headerShown: false }} />
     <Stack.Screen name="CreateStudent" component={CreateStudent} options={{ headerShown: false }} />
@@ -46,8 +46,8 @@ const PerfilRespStack = () => {
 };
 
 const PerfilMotoStack = () => (
-  <Stack.Navigator initialRouteName='PerfilMoto'>
-    <Stack.Screen name="PerfilMoto" component={ProfileTab} options={{ headerShown: false }} />
+  <Stack.Navigator initialRouteName='Perfil'>
+    <Stack.Screen name="Perfil" component={ProfileTab} options={{ headerShown: false }} />
     <Stack.Screen name="Veiculo" component={Vehicle} options={{ headerShown: false }} />
     <Stack.Screen name="VerPerfilMoto" component={Profile} options={{ headerShown: false }} />
     <Stack.Screen name="DriverSchools" component={DriverSchools} options={{ headerShown: false }} />
@@ -59,8 +59,8 @@ const PerfilMotoStack = () => (
 );
 
 const PerfilAdminStack = () => (
-  <Stack.Navigator initialRouteName='PerfilAdmin'>
-    <Stack.Screen name="PerfilAdmin" component={ProfileTab} options={{ headerShown: false }} />
+  <Stack.Navigator initialRouteName='Perfil'>
+    <Stack.Screen name="Perfil" component={ProfileTab} options={{ headerShown: false }} />
     <Stack.Screen name="Veiculo" component={Vehicle} options={{ headerShown: false }} />
     <Stack.Screen name="Alunos" component={Students} options={{ headerShown: false }} />
     <Stack.Screen name="StudentDetail" component={StudentDetail} options={{ headerShown: false }} />

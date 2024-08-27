@@ -1,16 +1,19 @@
 import { Linking, Pressable, ScrollView, StyleSheet, View } from "react-native";
 import PageDefault from "../../../components/pageDefault/PageDefault";
 import { Button, IconButton, Text } from "react-native-paper";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useContext, useEffect, useState } from "react";
 import { FontAwesome6, Ionicons, MaterialIcons } from "@expo/vector-icons";
 import ModalEditPoint from "./ModalEditPoint";
 import ModalEditVehicle from "./ModalEditVehicle";
 import { associateVehicleToPoint } from "../../../data/vehicleServices";
 import Toast from "react-native-toast-message";
+import { deleteAssociation, updateAssociation } from "../../../data/vehiclePointServices";
+import { AuthContext } from "../../../providers/AuthProvider";
 
 const SchoolVehicleDetails = ({navigation, route}) => {
     
     const {schoolVehicleData} = route.params;
+    const {userData} = useContext(AuthContext);
 
     const [loading, setLoading] = useState(false);
     const [school, setSchool] = useState(null);
@@ -19,7 +22,7 @@ const SchoolVehicleDetails = ({navigation, route}) => {
     const [editVehicle, setEditVehicle] = useState(false);
 
     useEffect(() => {
-        setSchool(schoolVehicleData?.school);
+        setSchool(schoolVehicleData?.point);
         setVehicle(schoolVehicleData?.vehicle);
     }, [schoolVehicleData]);
 
@@ -35,11 +38,13 @@ const SchoolVehicleDetails = ({navigation, route}) => {
         setLoading(true);
 
         const body = {
+            vehicle_point_id: schoolVehicleData.id,
             vehicle_id: vehicle.id,
-            point_id: school.id
+            point_id: school.id,
+            user_id: userData.id
         };
 
-        const association = await associateVehicleToPoint(body);
+        const association = await updateAssociation(body);
 
         if(association.status === 200){
             Toast.show({
@@ -55,7 +60,34 @@ const SchoolVehicleDetails = ({navigation, route}) => {
             Toast.show({
                 type: 'error',
                 text1: 'Erro',
-                text2: 'Erro ao associar veículo à escola',
+                text2: association.data.detail,
+                visibilityTime: 3000,
+            });
+        }
+
+        setLoading(false);
+    };
+
+    const handleRemoveAssociation = async() => {
+        setLoading(true);
+
+        const remove = await deleteAssociation(schoolVehicleData.id);
+
+        if(remove.status === 200){
+            Toast.show({
+                type: 'success',
+                text1: 'Sucesso',
+                text2: 'Associação removida com sucesso!',
+                visibilityTime: 3000,
+            });
+
+            navigation.navigate("Perfil");
+        }
+        else{
+            Toast.show({
+                type: 'error',
+                text1: 'Erro',
+                text2: remove.data.detail,
                 visibilityTime: 3000,
             });
         }
@@ -111,6 +143,13 @@ const SchoolVehicleDetails = ({navigation, route}) => {
         </View>
 
         <View style={styles.buttonContainer}>
+            <Button
+                mode="contained"
+                onPress={handleRemoveAssociation}
+                style={styles.button}
+            >
+                Remover
+            </Button>
             <Button
                 mode="contained"
                 onPress={handleUpdateAssociation}
@@ -241,7 +280,7 @@ const styles = StyleSheet.create({
     buttonContainer: {
         display : "flex",
         flexDirection: "row",
-        justifyContent: "center",
+        justifyContent: "space-around",
         width: "90%"
     },
     button: {

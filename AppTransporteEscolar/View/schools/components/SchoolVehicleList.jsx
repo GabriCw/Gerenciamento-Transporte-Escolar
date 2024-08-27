@@ -1,8 +1,6 @@
-import { Linking, Pressable, ScrollView, StyleSheet, View } from "react-native";
-import PageDefault from "../../../components/pageDefault/PageDefault";
-import { Button, IconButton, Text } from "react-native-paper";
-import { useCallback } from "react";
-import { AntDesign, FontAwesome6, Ionicons, MaterialIcons } from "@expo/vector-icons";
+import { Pressable, ScrollView, StyleSheet, View } from "react-native";
+import { Text } from "react-native-paper";
+import { AntDesign } from "@expo/vector-icons";
 
 const SchoolVehicleList = ({navigation, list}) => {
 
@@ -18,14 +16,14 @@ const SchoolVehicleList = ({navigation, list}) => {
                         <View style={styles.mainInfosContainer}>
                             <View style={styles.content}>
                                 <View style={styles.nameYearContent}>
-                                    <Text style={styles.title}>{item?.school?.name}</Text>
+                                    <Text style={styles.title}>{item?.point?.name}</Text>
                                     <AntDesign name="rightcircle" size={24} color="black"/>
                                 </View>
                                 
                                 <View style={{width: "100%"}}>
                                     <View>
-                                        <Text style={styles.text}>{item?.school?.address}</Text>
-                                        <Text style={styles.text}>{item?.school?.neighborhood} - {item?.school?.city}/{item?.school?.state}</Text>
+                                        <Text style={styles.text}>{item?.point?.address}</Text>
+                                        <Text style={styles.text}>{item?.point?.neighborhood} - {item?.point?.city}/{item?.point?.state}</Text>
                                     </View>
                                 </View>
                                 
@@ -52,6 +50,14 @@ const SchoolVehicleList = ({navigation, list}) => {
                                 }
                             </View>
                         </View>
+                        <View style={styles.lineSeparator}/>
+
+                    <View style={styles.codeContainer}>
+                        <View style={styles.codeContent}>
+                            <Text style={styles.codeText}>Código Associação</Text>
+                            <Text style={[styles.colorBox, {backgroundColor: "#C36005"}]}>{item?.code}</Text>
+                        </View>
+                    </View>
                     </View>
                 </Pressable>
             })
@@ -154,7 +160,7 @@ const styles = StyleSheet.create({
         backgroundColor: "#d0d0d0"
     },
     schoolContainer:{
-        paddingTop: 10,
+        paddingVertical: 10,
         rowGap: 3,
         width: "100%",
         display: "flex",
@@ -166,14 +172,15 @@ const styles = StyleSheet.create({
         alignItems: "center",
         columnGap: 10
     },
-    driverContainer:{
+    codeContainer:{
         paddingTop: 10,
         rowGap: 3,
         display: "flex",
     },
-    driverContent: {
+    codeContent: {
         display: "flex",
         flexDirection: "row",
+        justifyContent: "space-between",
         alignItems: "center",
         columnGap: 10
     },

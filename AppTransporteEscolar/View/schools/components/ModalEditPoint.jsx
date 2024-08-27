@@ -19,10 +19,10 @@ const ModalEditPoint = ({schoolSelected, open, setOpen, navigation, handleUpdate
 
             if(response.status === 200){
                 const schoolFormatted = response.data.map(item => {
-                    if(item.school?.id === schoolSelected?.id){
-                        return {...item.school, isChecked: true};
+                    if(item?.id === schoolSelected?.id){
+                        return {...item, isChecked: true};
                     }
-                    return {...item.school, isChecked: false};
+                    return {...item, isChecked: false};
                 });
 
                 setSchools(schoolFormatted);

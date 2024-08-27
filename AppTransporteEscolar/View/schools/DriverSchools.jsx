@@ -6,33 +6,34 @@ import Toast from "react-native-toast-message";
 import PageDefault from "../../components/pageDefault/PageDefault";
 import { getVehicleListByUser } from "../../data/vehicleServices";
 import SchoolVehicleList from "./components/SchoolVehicleList";
+import { getAssociationsByUser } from "../../data/vehiclePointServices";
 
 const DriverSchools = ({navigation}) => {
 
     const [isLoading, setIsLoading] = useState(false);
-    const [actualSchool, setActualSchool] = useState(null);
+    const [associationList, setAssociationList] = useState(null);
     const {userData} = useContext(AuthContext);
 
-    const handleListVehicles = async() => {
-        setIsLoading(true);
+    // const handleListVehicles = async() => {
+    //     setIsLoading(true);
 
-        const vehicles = await getSchoolAssociatedByDriver(userData.id);
+    //     const vehicles = await getSchoolAssociatedByDriver(userData.id);
 
-        if(vehicles.status === 200){
-            navigation.navigate("VehiclesList", {vehicleList: vehicles.data})
-        }
-        else{
-            Toast.show({
-                type: 'error',
-                text1: 'Erro',
-                text2: 'Erro ao listar veículos',
-                visibilityTime: 3000,
-            });
-            navigation.goBack();
-        }
+    //     if(vehicles.status === 200){
+    //         navigation.navigate("VehiclesList", {vehicleList: vehicles.data})
+    //     }
+    //     else{
+    //         Toast.show({
+    //             type: 'error',
+    //             text1: 'Erro',
+    //             text2: 'Erro ao listar veículos',
+    //             visibilityTime: 3000,
+    //         });
+    //         navigation.goBack();
+    //     }
 
-        setIsLoading(false);
-    };
+    //     setIsLoading(false);
+    // };
 
     const handleDisassociate = async() => {
         setIsLoading(true);
@@ -70,18 +71,18 @@ const DriverSchools = ({navigation}) => {
         const requestData = async() => {
             setIsLoading(true);
 
-            const hasSchool = await getSchoolAssociatedByDriver(userData.id);
+            const associations = await getAssociationsByUser(userData.id);
 
-            if(hasSchool.status === 200){
-                if(hasSchool.data !== null){
-                    setActualSchool(hasSchool.data);
+            if(associations.status === 200){
+                if(associations.data !== null){
+                    setAssociationList(associations.data);
                 }
                 else{
-                    await handleListVehicles();
+                    // await handleListVehicles();
                 }
             }
             else{
-                await handleListVehicles();
+                // await handleListVehicles();
             }
 
             setIsLoading(false);
@@ -92,7 +93,7 @@ const DriverSchools = ({navigation}) => {
 
     return <PageDefault headerTitle="Minha Escola" loading={isLoading} navigation={navigation}>
         <SchoolVehicleList
-            list={actualSchool}
+            list={associationList}
             loading={isLoading}
             navigation={navigation}
         />
