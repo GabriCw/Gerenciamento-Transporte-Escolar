@@ -1,6 +1,6 @@
 import { Pressable, ScrollView, StyleSheet, View } from "react-native";
 import { Text } from "react-native-paper";
-import { AntDesign } from "@expo/vector-icons";
+import { AntDesign, FontAwesome5, Ionicons } from "@expo/vector-icons";
 
 const SchoolVehicleList = ({navigation, list}) => {
 
@@ -8,68 +8,60 @@ const SchoolVehicleList = ({navigation, list}) => {
         navigation.navigate("SchoolVehicleDetails", {schoolVehicleData: item});
     };
 
-    return <ScrollView style={styles.scrollContainer}>
-        {
-            list?.map((item, index) => {
-                return <Pressable style={styles.viewContainter} key={index} onPress={() => handleGoToSchoolVehicleDetails(item)}>
-                    <View style={styles.cardContainer}>
-                        <View style={styles.mainInfosContainer}>
-                            <View style={styles.content}>
-                                <View style={styles.nameYearContent}>
-                                    <Text style={styles.title}>{item?.point?.name}</Text>
-                                    <AntDesign name="rightcircle" size={24} color="black"/>
-                                </View>
-                                
-                                <View style={{width: "100%"}}>
-                                    <View>
-                                        <Text style={styles.text}>{item?.point?.address}</Text>
-                                        <Text style={styles.text}>{item?.point?.neighborhood} - {item?.point?.city}/{item?.point?.state}</Text>
+    return <>
+        <ScrollView style={styles.scrollContainer}>
+            {
+                list?.map((item, index) => {
+                    return <Pressable style={styles.viewContainter} key={index} onPress={() => handleGoToSchoolVehicleDetails(item)}>
+                        <View style={styles.cardContainer}>
+                            <View style={styles.mainInfosContainer}>
+                                <View style={styles.content}>
+                                    <View style={styles.nameYearContent}>
+                                        <View style={{display: "flex", flexDirection: "row", flex: 1, gap: 15, alignItems: "center"}}>
+                                        <Ionicons name="school" size={24} color="black" />
+                                            <Text style={styles.title}>{item?.point?.name}</Text>
+                                        </View>
+                                        <AntDesign name="rightcircle" size={24} color="black"/>
                                     </View>
-                                </View>
-                                
-                        </View>
-                    </View>
-        
-                    <View style={styles.lineSeparator}/>
-        
-                    <View style={styles.schoolContainer}>
-                        <View style={styles.schoolContent}>
-                            <Text style={styles.colorBox}>Veículo</Text>
-                            <Text style={styles.text}>{item?.vehicle?.plate}</Text>
-                            <Text style={styles.text}>({item?.vehicle?.color})</Text>
-                        </View>
-                        <View>
-                            <Text style={styles.text}>{item?.vehicle?.model} - {item?.vehicle?.year}</Text>
-                        </View>
-                            <View style={styles.nameYearContent}>
-                                {
-                                    item?.vehicle?.code && <View style={styles.codeContent}>
-                                        <Text style={styles.codeText}>Código:</Text>
-                                        <Text style={styles.colorBox}>{item?.vehicle?.code}</Text>
-                                    </View>
-                                }
+                                    <View style={styles.schoolContent}>
+                                    <FontAwesome5 name="car" size={24} color="black" />
+                                <Text style={[styles.text, {marginLeft: 5}]}>{item?.vehicle?.plate.toUpperCase()}</Text>
+                            </View>   
+                            </View>
+                        </View>            
+                        <View style={styles.lineSeparator}/>
+                        <View style={styles.codeContainer}>
+                            <View style={styles.codeContent}>
+                                <Text style={styles.codeText}>Código Associação</Text>
+                                <Text style={[styles.colorBox, {backgroundColor: "#C36005"}]}>{item?.code}</Text>
                             </View>
                         </View>
-                        <View style={styles.lineSeparator}/>
-
-                    <View style={styles.codeContainer}>
-                        <View style={styles.codeContent}>
-                            <Text style={styles.codeText}>Código Associação</Text>
-                            <Text style={[styles.colorBox, {backgroundColor: "#C36005"}]}>{item?.code}</Text>
                         </View>
-                    </View>
-                    </View>
-                </Pressable>
-            })
-        }
-    </ScrollView>
+                    </Pressable>
+                })
+            }
+        </ScrollView>
+            <Pressable onPress={handleGoToSchoolVehicleDetails}>
+                <Ionicons name="add-circle-sharp" style={styles.button}/>
+            </Pressable>
+    </>
 };
 
 const styles = StyleSheet.create({
     scrollContainer: {
         display: "flex",
         flexDirection: "column",
-    },  
+        position: "relative"
+    }, 
+    button: {
+        position: "absolute",
+        zIndex: 5,
+        bottom: 0,
+        left: "30%",
+        width: "100%",
+        color: "#C36005",
+        fontSize: "70%"
+    },
     viewContainter: {
         flex: 1,
         display: "flex",
@@ -189,11 +181,6 @@ const styles = StyleSheet.create({
         flexDirection: "row",
         justifyContent: "space-between",
         width: "100%"
-    },
-    button: {
-        backgroundColor: '#C36005',
-        width: "40%",
-        display: "flex"
     },
     loadingOverlay: {
         ...StyleSheet.absoluteFillObject,

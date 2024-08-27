@@ -30,6 +30,7 @@ const styles = StyleSheet.create({
         height: "100%",
         alignItems: 'center',
         justifyContent: "center",
+        position: "relative"
     },
     loadingOverlay: {
         backgroundColor: '#090833',

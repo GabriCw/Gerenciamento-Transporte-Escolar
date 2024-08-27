@@ -30,6 +30,19 @@ export const updateAssociation = async(body) => {
     }
 }; 
 
+export const createAssociation = async(body) => {
+    const _endpoint = `/create`;
+
+    try{
+        const response  = await axios.post(_controller + _endpoint, body);
+
+        return response;
+    }
+    catch(error){
+        return error.response;
+    }
+}; 
+
 export const deleteAssociation = async(id) => {
     const _endpoint = `/delete?vehicle_point_id=${id}`;
 

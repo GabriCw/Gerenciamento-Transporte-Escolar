@@ -7,7 +7,7 @@ import ModalEditPoint from "./ModalEditPoint";
 import ModalEditVehicle from "./ModalEditVehicle";
 import { associateVehicleToPoint } from "../../../data/vehicleServices";
 import Toast from "react-native-toast-message";
-import { deleteAssociation, updateAssociation } from "../../../data/vehiclePointServices";
+import { createAssociation, deleteAssociation, updateAssociation } from "../../../data/vehiclePointServices";
 import { AuthContext } from "../../../providers/AuthProvider";
 
 const SchoolVehicleDetails = ({navigation, route}) => {
@@ -50,7 +50,7 @@ const SchoolVehicleDetails = ({navigation, route}) => {
             Toast.show({
                 type: 'success',
                 text1: 'Sucesso',
-                text2: 'Escola e veículo associados com sucesso!',
+                text2: 'Escola e veículo atualizados com sucesso!',
                 visibilityTime: 3000,
             });
 
@@ -95,68 +95,128 @@ const SchoolVehicleDetails = ({navigation, route}) => {
         setLoading(false);
     };
 
+    const handleCreateAssociation = async() => {
+        setLoading(true);
+
+        const body = {
+            vehicle_id: vehicle.id,
+            point_id: school.id,
+            user_id: userData.id
+        };
+
+        const association = await createAssociation(body);
+
+        if(association.status === 201){
+            Toast.show({
+                type: 'success',
+                text1: 'Sucesso',
+                text2: 'Escola e veículo associados com sucesso!',
+                visibilityTime: 3000,
+            });
+
+            navigation.navigate("Perfil");
+        }
+        else{
+            Toast.show({
+                type: 'error',
+                text1: 'Erro',
+                text2: association.data.detail,
+                visibilityTime: 3000,
+            });
+        }
+
+        setLoading(false);
+    };
+
     return <PageDefault headerTitle="Detalhes" loading={loading} navigation={navigation}>
         <View style={styles.viewContainter}>
             <View style={styles.cardContainer}>
                 <View style={styles.mainInfosContainer}>
-                    <View style={styles.content}>
-                        <View style={styles.nameYearContent}>
-                            <Text style={styles.title}>{school?.name}</Text>
+                    {
+                        school ? <View style={styles.content}>
+                            <View style={styles.nameYearContent}>
+                                <Text style={styles.title}>{school?.name}</Text>
+                                <Pressable onPress={() => setEditPoint(true)}>
+                                    <MaterialIcons name="edit" size={24} color="black" />
+                                </Pressable>
+                            </View>
+                        
+                            <View style={{width: "100%"}}>
+                                <View>
+                                    <Text style={styles.text}>{school?.address}</Text>
+                                    <Text style={styles.text}>{school?.neighborhood} - {school?.city}/{school?.state}</Text>
+                                </View>
+                            </View>  
+                        </View>
+                    :
+                        <View style={styles.contentCreation}>
+                            <Text style={[styles.text, {fontWeight: 600}]}>Selecione uma escola</Text>
                             <Pressable onPress={() => setEditPoint(true)}>
-                                <MaterialIcons name="edit" size={24} color="black" />
+                                <Ionicons name="add-circle-sharp" style={styles.buttonAdd}/>
                             </Pressable>
                         </View>
-                        
-                        <View style={{width: "100%"}}>
-                            <View>
-                                <Text style={styles.text}>{school?.address}</Text>
-                                <Text style={styles.text}>{school?.neighborhood} - {school?.city}/{school?.state}</Text>
-                            </View>
-                        </View>  
-                    </View>
+                    }
                 </View>
 
             <View style={styles.lineSeparator}/>
 
             <View style={styles.schoolContainer}>
-                <View style={styles.schoolContent}>
-                    <Text style={styles.colorBox}>Veículo</Text>
-                    <Text style={styles.text}>{vehicle?.plate}</Text>
-                    <Text style={styles.text}>({vehicle?.color})</Text>
-                    <Pressable onPress={() => setEditVehicle(true)}>
-                        <MaterialIcons name="edit" size={24} color="black" />
-                    </Pressable>
-                </View>
-                <View>
-                    <Text style={styles.text}>{vehicle?.model} - {vehicle?.year}</Text>
-                </View>
-                    <View style={styles.nameYearContent}>
-                        {
-                            vehicle?.code && <View style={styles.codeContent}>
-                                <Text style={styles.codeText}>Código:</Text>
-                                <Text style={styles.colorBox}>{vehicle?.code}</Text>
+                {
+                    vehicle ? <>
+                        <View style={styles.schoolContent}>
+                            <View style={{display: "flex", flexDirection: "row", gap: 10}}>
+                                <Text style={styles.colorBox}>Veículo</Text>
+                                <Text style={styles.text}>{vehicle?.plate}</Text>
                             </View>
-                        }
-                    </View>
+                            <Pressable onPress={() => setEditVehicle(true)}>
+                                <MaterialIcons name="edit" size={24} color="black" />
+                            </Pressable>
+                        </View>
+                        <View>
+                            <Text style={styles.text}>{vehicle?.model} {vehicle?.color} - {vehicle?.year}</Text>
+                        </View>
+                    </> 
+                    :
+                        <View style={styles.contentCreation}>
+                            <Text style={[styles.text, {fontWeight: 600}]}>Selecione um veículo</Text>
+                            <Pressable onPress={() => setEditVehicle(true)}>
+                                <Ionicons name="add-circle-sharp" style={styles.buttonAdd}/>
+                            </Pressable>
+                        </View>
+                }
                 </View>
             </View>
         </View>
 
         <View style={styles.buttonContainer}>
-            <Button
-                mode="contained"
-                onPress={handleRemoveAssociation}
-                style={styles.button}
-            >
-                Remover
-            </Button>
-            <Button
-                mode="contained"
-                onPress={handleUpdateAssociation}
-                style={styles.button}
-            >
-                Concluir
-            </Button>
+            {
+                schoolVehicleData?.point && schoolVehicleData?.vehicle ? 
+                <>
+                    <Button
+                        mode="contained"
+                        onPress={handleRemoveAssociation}
+                        style={styles.button}
+                    >
+                        Remover
+                    </Button>
+                    <Button
+                        mode="contained"
+                        onPress={handleUpdateAssociation}
+                        style={styles.button}
+                    >
+                        Atualizar
+                    </Button>
+                </>
+                :
+                <Button
+                    mode="contained"
+                    onPress={handleCreateAssociation}
+                    style={styles.button}
+                    disabled={!(vehicle && school)}
+                >
+                    Criar
+                </Button>
+            }
         </View>
         <ModalEditPoint schoolSelected={school} handleUpdate={handleUpdateSchool} open={editPoint} setOpen={setEditPoint} navigation={navigation}/>
         <ModalEditVehicle vehicleSelected={vehicle} handleUpdate={handleUpdateVehicle} open={editVehicle} setOpen={setEditVehicle} navigation={navigation}/>
@@ -211,6 +271,13 @@ const styles = StyleSheet.create({
         display: "flex",
         rowGap: 5
     },
+    contentCreation: {
+        display: "flex",
+        flexDirection: "row",
+        justifyContent: "space-between",
+        width: "100%",
+        alignItems: "center"
+    },
     nameYearContent: {
         display: "flex",
         flexDirection: "row",
@@ -264,6 +331,7 @@ const styles = StyleSheet.create({
         display: "flex",
         flexDirection: "row",
         alignItems: "center",
+        justifyContent: "space-between",
         columnGap: 10
     },
     driverContainer:{
@@ -287,6 +355,10 @@ const styles = StyleSheet.create({
         backgroundColor: '#C36005',
         width: "40%",
         display: "flex"
+    },
+    buttonAdd: {
+        color: "#C36005",
+        fontSize: "30%",
     },
     loadingOverlay: {
         ...StyleSheet.absoluteFillObject,
