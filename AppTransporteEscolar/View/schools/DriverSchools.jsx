@@ -1,5 +1,5 @@
 import { useContext, useEffect, useState } from "react";
-import { StyleSheet} from "react-native";
+import { StyleSheet, Text, View} from "react-native";
 import { disassociateDriverToSchool, getSchoolAssociatedByDriver, getSchoolByDriver } from "../../data/pointServices";
 import { AuthContext } from "../../providers/AuthProvider";
 import Toast from "react-native-toast-message";
@@ -7,6 +7,7 @@ import PageDefault from "../../components/pageDefault/PageDefault";
 import { getVehicleListByUser } from "../../data/vehicleServices";
 import SchoolVehicleList from "./components/SchoolVehicleList";
 import { getAssociationsByUser } from "../../data/vehiclePointServices";
+import { Button } from "react-native-paper";
 
 const DriverSchools = ({navigation}) => {
 
@@ -14,57 +15,8 @@ const DriverSchools = ({navigation}) => {
     const [associationList, setAssociationList] = useState(null);
     const {userData} = useContext(AuthContext);
 
-    // const handleListVehicles = async() => {
-    //     setIsLoading(true);
-
-    //     const vehicles = await getSchoolAssociatedByDriver(userData.id);
-
-    //     if(vehicles.status === 200){
-    //         navigation.navigate("VehiclesList", {vehicleList: vehicles.data})
-    //     }
-    //     else{
-    //         Toast.show({
-    //             type: 'error',
-    //             text1: 'Erro',
-    //             text2: 'Erro ao listar veículos',
-    //             visibilityTime: 3000,
-    //         });
-    //         navigation.goBack();
-    //     }
-
-    //     setIsLoading(false);
-    // };
-
-    const handleDisassociate = async() => {
-        setIsLoading(true);
-
-        const body = {
-            user_id: userData.id,
-            point_id: actualSchool?.id
-        };  
-
-        const disassociate = await disassociateDriverToSchool(body)
-
-        if(disassociate.status === 200){
-            await handleListVehicles();
-
-            Toast.show({
-                type: 'success',
-                text1: 'Sucesso',
-                text2: 'Escola desassociada com sucesso!',
-                visibilityTime: 3000,
-            });
-        }
-        else{
-            Toast.show({
-                type: 'error',
-                text1: 'Erro',
-                text2: 'Erro ao desassociar da escola',
-                visibilityTime: 3000,
-            });
-        }
-
-        setIsLoading(false);
+    const handleGoToSchoolVehicleDetails = (item) => {
+        navigation.navigate("SchoolVehicleDetails", {schoolVehicleData: item});
     };
 
     useEffect(() => {
@@ -74,15 +26,17 @@ const DriverSchools = ({navigation}) => {
             const associations = await getAssociationsByUser(userData.id);
 
             if(associations.status === 200){
-                if(associations.data !== null){
-                    setAssociationList(associations.data);
-                }
-                else{
-                    // await handleListVehicles();
-                }
+                setAssociationList(associations.data);
             }
             else{
-                // await handleListVehicles();
+                Toast.show({
+                    type: 'error',
+                    text1: 'Erro',
+                    text2: "Erro ao listar associações",
+                    visibilityTime: 3000,
+                });
+
+                navigation.goBack();
             }
 
             setIsLoading(false);
@@ -91,12 +45,31 @@ const DriverSchools = ({navigation}) => {
         requestData();
     }, []);
 
-    return <PageDefault headerTitle="Minha Escola" loading={isLoading} navigation={navigation}>
-        <SchoolVehicleList
-            list={associationList}
-            loading={isLoading}
-            navigation={navigation}
-        />
+    return <PageDefault headerTitle="Escolas e Veículos" loading={isLoading} navigation={navigation}>
+        {
+            associationList?.length > 0 ?
+            <SchoolVehicleList
+                list={associationList}
+                loading={isLoading}
+                navigation={navigation}
+            />
+            :
+            <>
+                <View style={styles.withoutAssociation}>
+                    <Text style={styles.withoutAssociationTitle}>Crie uma associação entre suas escolas e veículos</Text>
+                    <View style={styles.initialButtonContainer}>
+                        <Button
+                            mode="contained"
+                            onPress={handleGoToSchoolVehicleDetails}
+                            style={styles.addButton}
+                        >
+                            Criar Aluno
+                        </Button>
+                    </View>
+                </View>
+            </>
+        }
+        
     </PageDefault>
 };
 
@@ -224,6 +197,28 @@ const styles = StyleSheet.create({
         display: "flex",
         flexDirection: "row"
     },
+    withoutAssociation: {
+        textAlign: "center",
+        flex: 1,
+        justifyContent: "center",
+        alignItems: "center",
+        rowGap: 25,
+        width: "100%"
+    },
+    withoutAssociationTitle: {
+        color: "#fff",
+        fontSize: 20,
+        width: "80%",
+        textAlign: "center",
+        fontWeight: "bold"
+    },
+    initialButtonContainer: {
+        display: "flex",
+        flexDirection: "row",
+        justifyContent: "center",
+        columnGap: 15,
+        width: "100%"
+    },  
     loadingOverlay: {
         ...StyleSheet.absoluteFillObject,
         backgroundColor: '#090833',

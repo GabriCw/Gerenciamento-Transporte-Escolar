@@ -1,4 +1,4 @@
-import { Linking, Pressable, ScrollView, StyleSheet, View } from "react-native";
+import { Alert, Linking, Pressable, ScrollView, StyleSheet, View } from "react-native";
 import PageDefault from "../../../components/pageDefault/PageDefault";
 import { Button, IconButton, Text } from "react-native-paper";
 import { useCallback, useContext, useEffect, useState } from "react";
@@ -68,6 +68,16 @@ const SchoolVehicleDetails = ({navigation, route}) => {
         setLoading(false);
     };
 
+    const handleRemoveModal = () => {
+        Alert.alert('Remover Associação', 'Confirma a remoção desta associação?', [
+            {
+              text: 'Cancelar',
+              style: 'cancel',
+            },
+            {text: 'Confirmar', onPress: () => handleRemoveAssociation()},
+        ]);
+    };
+
     const handleRemoveAssociation = async() => {
         setLoading(true);
 
@@ -128,7 +138,7 @@ const SchoolVehicleDetails = ({navigation, route}) => {
         setLoading(false);
     };
 
-    return <PageDefault headerTitle="Detalhes" loading={loading} navigation={navigation}>
+    return <PageDefault headerTitle={schoolVehicleData?.point && schoolVehicleData?.vehicle ? "Detalhes" : "Criar Associação"} loading={loading} navigation={navigation}>
         <View style={styles.viewContainter}>
             <View style={styles.cardContainer}>
                 <View style={styles.mainInfosContainer}>
@@ -194,7 +204,7 @@ const SchoolVehicleDetails = ({navigation, route}) => {
                 <>
                     <Button
                         mode="contained"
-                        onPress={handleRemoveAssociation}
+                        onPress={handleRemoveModal}
                         style={styles.button}
                     >
                         Remover
@@ -211,7 +221,7 @@ const SchoolVehicleDetails = ({navigation, route}) => {
                 <Button
                     mode="contained"
                     onPress={handleCreateAssociation}
-                    style={styles.button}
+                    style={[styles.button, !(vehicle && school) ? {opacity: 0.7} : null]}
                     disabled={!(vehicle && school)}
                 >
                     Criar
