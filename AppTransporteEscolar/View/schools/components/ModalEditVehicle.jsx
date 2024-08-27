@@ -1,6 +1,5 @@
 import { useContext, useEffect, useState } from "react";
 import ModalDefault from "../../../components/modalDefault/ModalDefault";
-import { getSchoolByDriver } from "../../../data/pointServices";
 import { AuthContext } from "../../../providers/AuthProvider";
 import Toast from "react-native-toast-message";
 import { StyleSheet, Text, View } from "react-native";

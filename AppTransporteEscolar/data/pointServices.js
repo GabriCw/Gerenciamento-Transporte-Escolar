@@ -96,3 +96,16 @@ export const getSchoolByDriver = async(userId) => {
         return error.response;
     }
 };
+
+export const getSchoolAssociatedByDriver = async(userId) => {
+    const _endpoint = `/get-school-associated-by-driver?user_id=${userId}`;
+
+    try{
+        const response  = await axios.get(_controller + _endpoint);
+
+        return response;
+    }
+    catch(error){
+        return error.response;
+    }
+};

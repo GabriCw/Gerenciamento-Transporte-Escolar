@@ -1,6 +1,6 @@
 import { useContext, useEffect, useState } from "react";
 import { StyleSheet} from "react-native";
-import { disassociateDriverToSchool, getSchoolByDriver } from "../../data/pointServices";
+import { disassociateDriverToSchool, getSchoolAssociatedByDriver, getSchoolByDriver } from "../../data/pointServices";
 import { AuthContext } from "../../providers/AuthProvider";
 import Toast from "react-native-toast-message";
 import PageDefault from "../../components/pageDefault/PageDefault";
@@ -16,7 +16,7 @@ const DriverSchools = ({navigation}) => {
     const handleListVehicles = async() => {
         setIsLoading(true);
 
-        const vehicles = await getVehicleListByUser(userData.id);
+        const vehicles = await getSchoolAssociatedByDriver(userData.id);
 
         if(vehicles.status === 200){
             navigation.navigate("VehiclesList", {vehicleList: vehicles.data})
@@ -70,7 +70,7 @@ const DriverSchools = ({navigation}) => {
         const requestData = async() => {
             setIsLoading(true);
 
-            const hasSchool = await getSchoolByDriver(userData.id);
+            const hasSchool = await getSchoolAssociatedByDriver(userData.id);
 
             if(hasSchool.status === 200){
                 if(hasSchool.data !== null){
