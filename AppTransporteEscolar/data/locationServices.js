@@ -17,3 +17,22 @@ export const postDriverLocation = async(body) => {
         return error.response;
     }
 };
+
+export const getDriverLocation = async(schedule_id) => {
+    const _endpoint = `/get-by-schedule?schedule_id=${schedule_id}`;
+
+    try{
+        const response  = await axios.get(_controller + _endpoint);
+
+        return response;
+    }
+    catch(error){
+        return error.response;
+    }
+};
+
+// export const getAddressByCEP = async (cep) => {
+//     const response = await axios.get(`https://viacep.com.br/ws/${cep}/json/`);
+
+//     return response;
+// };

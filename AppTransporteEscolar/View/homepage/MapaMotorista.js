@@ -269,36 +269,21 @@ const MapaMotorista = ({ navigation }) => {
         }
     }
 
+    
     // O que tem que ser enviado:
     // UserId do motorista, que vem do user 
     useEffect(() => {
-
-        
-        // if (isLocationAvailable && routeOnGoing) {
-            
-        //     setRegion({
-            //         latitude: userLocation.latitude,
-            //         longitude: userLocation.longitude,
-        //         latitudeDelta: 0.005,  // Ajuste o zoom conforme necessário
-        //         longitudeDelta: 0.005,
-        //     });
-        // }
-        
-    },[userLocation])
-
-    
-    useEffect(() => {
         // console.log(clock)
-        
         const isLocationAvailable = userLocation?.latitude && userLocation?.longitude
         
-        if (isLocationAvailable && routeOnGoing) {
+        if (isLocationAvailable && routeOnGoing && userData) {
             const body = {
                 lat: userLocation.latitude,
                 lng: userLocation.longitude,
                 user_id: userData.id
             }
-            console.log('body: ',body)
+            // console.log('body: ',body)
+            handlePostDriverLocation(body);
         }
     },[clock])
 

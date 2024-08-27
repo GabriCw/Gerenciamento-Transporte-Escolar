@@ -10,6 +10,7 @@ import { styles } from './Style/mapaResponsavelStyle';
 import { Button } from 'react-native-paper';
 import { formatTime, formatDistance } from '../../utils/formatUtils';
 import { FontAwesome5 } from '@expo/vector-icons';
+import { getDriverLocation } from '../../data/locationServices';
 
 // Camera que nem a do uber (rota inteira, aumentando o zoom conforme diminuindo o tamanho)
 
@@ -30,62 +31,87 @@ const MapaResponsavel = ({ navigation }) => {
 
     const mapRef = useRef(null);
 
+    const [clock, setClock] = useState(true);
+
+    // useEffect(() => {
+    //     const initializeLocation = async () => {
+    //         try {
+    //             let { status } = await Location.requestForegroundPermissionsAsync();
+    //             if (status !== 'granted') {
+    //                 console.log('Permission to access location was denied');
+    //                 return;
+    //             }
+
+    //             const location = await Location.getCurrentPositionAsync({
+    //                 accuracy: Location.Accuracy.BestForNavigation,
+    //             });
+
+    //             if (location) {
+    //                 const { latitude, longitude, heading } = location.coords;
+    //                 updateRegion({ latitude, longitude }, residenciaAtiva, 50);
+    //                 setMotoristaLoc({ latitude, longitude });
+    //                 setHeading(heading);
+    //             } else {
+    //                 console.log('Could not get current location');
+    //             }
+    //         } catch (error) {
+    //             console.error('Error during location initialization:', error);
+    //         }
+    //     };
+
+    //     initializeLocation();
+    // }, []);
+
+    
+    const handleGetDriverLocation = async(schedule_id) => {
+        const getLocation = await getDriverLocation(schedule_id)
+
+        if(getLocation.status === 200){
+            console.log('Sucesso ao receber localização do motorista')
+            return getLocation.data
+        }
+        else{   
+            console.log('Erro ao receber localização do motorista')
+        }
+    }
+
+
     useEffect(() => {
-        const initializeLocation = async () => {
-            try {
-                let { status } = await Location.requestForegroundPermissionsAsync();
-                if (status !== 'granted') {
-                    console.log('Permission to access location was denied');
-                    return;
-                }
+        const requestLocation = async () => {
+            const locationResponse = await handleGetDriverLocation(1);
+            const lastCoordinate = locationResponse.coordinates[locationResponse.coordinates?.length - 1];
+            console.log('last coord: ', lastCoordinate.lat, lastCoordinate.lng);
+            return lastCoordinate;
+        };
+    
+        const updateLocation = async () => {
+            const lastCoord = await requestLocation();
+            updateRegion({latitude: lastCoord.lat, longitude: lastCoord.lng}, residenciaAtiva, 1000);
+            setMotoristaLoc({latitude: lastCoord.lat, longitude: lastCoord.lng});
+        };
+    
+        updateLocation();
+    }, [clock]);
 
-                const location = await Location.getCurrentPositionAsync({
-                    accuracy: Location.Accuracy.BestForNavigation,
-                });
 
-                if (location) {
-                    const { latitude, longitude, heading } = location.coords;
-                    updateRegion({ latitude, longitude }, residenciaAtiva, 50);
-                    setMotoristaLoc({ latitude, longitude });
-                    setHeading(heading);
-                } else {
-                    console.log('Could not get current location');
-                }
-            } catch (error) {
-                console.error('Error during location initialization:', error);
+    useEffect(() => {
+        let isMounted = true;
+
+        const intervalFunc = () => {
+            if (isMounted) {
+                setClock(prevClock => !prevClock);
+                setTimeout(intervalFunc, 10000); // Repetir a cada 10 segundos
+
             }
         };
 
-        initializeLocation();
-    }, []);
-
-    useEffect(() => {
-        let locationSubscription;
-
-        const startLocationUpdates = async () => {
-            locationSubscription = await Location.watchPositionAsync(
-                {
-                    accuracy: Location.Accuracy.BestForNavigation,
-                    timeInterval: 1000, // Atualiza a cada 1 segundo
-                    distanceInterval: 1, // Ou a cada 1 metro
-                },
-                (location) => {
-                    const { latitude, longitude, heading } = location.coords;
-                    updateRegion({ latitude, longitude }, residenciaAtiva, 1000);
-                    setMotoristaLoc({ latitude, longitude });
-                    setHeading(heading);
-                }
-            );
-        };
-
-        startLocationUpdates();
+        intervalFunc(); // Inicializar a primeira execução
 
         return () => {
-            if (locationSubscription) {
-                locationSubscription.remove();
-            }
+            isMounted = false; // Limpar na desmontagem do componente
         };
-    }, [residenciaAtiva]);
+    }, []);
+
 
     const updateRegion = (motoristaLoc, residenciaAtiva, time) => {
         if (!motoristaLoc || !residenciaAtiva) return;
