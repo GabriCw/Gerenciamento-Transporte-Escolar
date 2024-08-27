@@ -21,7 +21,7 @@ const ConfirmDriverAndSchool = ({navigation, route}) => {
             name: studentData.name,
             year: studentData.year,
             responsible_id: userData.id,
-            driver_code: studentData.driverCode
+            driver_id: driverData.user.id
         };
 
         const response = await createStudent(body);
@@ -95,9 +95,14 @@ const ConfirmDriverAndSchool = ({navigation, route}) => {
                             })
                         }
                     </View>
-                    <View style={styles.codeContent}>
-                        <Text style={styles.codeText}>Código:</Text>
-                        <Text style={styles.colorBox}>{driverData?.user?.code}</Text>
+                </View>
+
+                <View style={styles.lineSeparator}/>
+
+                <View style={styles.driverContainer}>
+                    <View style={styles.driverContent}>
+                        <Text style={styles.colorBox}>Veículo</Text>
+                        <Text style={styles.text}>{driverData?.vehicle?.plate.toUpperCase()} - {driverData?.vehicle?.model} {driverData?.vehicle?.color}</Text>
                     </View>
                 </View>
             </View>
