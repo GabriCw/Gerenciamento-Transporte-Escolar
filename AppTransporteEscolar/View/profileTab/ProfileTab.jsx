@@ -8,9 +8,11 @@ import ResponsibleButtons from './components/ResponsibleButtons';
 import AdminButtons from './components/AdminButtons';
 import { onAuthStateChanged, signOut } from 'firebase/auth';
 import { auth } from '../../firebase/firebase';
+import { useNavigation } from '@react-navigation/native';
 
-const ProfileTab = ({navigation}) => {
+const ProfileTab = () => {
 
+    const navigation = useNavigation();
     const {userData} = useContext(AuthContext);
 
     useEffect(() => {

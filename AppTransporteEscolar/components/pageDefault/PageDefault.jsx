@@ -2,9 +2,9 @@ import { StyleSheet, View } from "react-native";
 import Header from "../header/Header";
 import { ActivityIndicator } from "react-native-paper";
 
-const PageDefault = ({children, headerTitle, loading, navigation}) => {
+const PageDefault = ({children, headerTitle, loading, backNavigation}) => {
     return <View style={styles.view}>
-        {headerTitle && <Header title={headerTitle} navigation={navigation}/>}
+        {headerTitle && <Header title={headerTitle} specificNavigation={backNavigation}/>}
         {
             !loading ? 
                 <View style={styles.content}>

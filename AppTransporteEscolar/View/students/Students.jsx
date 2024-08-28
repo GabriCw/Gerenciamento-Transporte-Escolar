@@ -8,9 +8,12 @@ import Toast from 'react-native-toast-message';
 import ModalAssociation from './components/ModalAssociation';
 import Header from '../../components/header/Header';
 import PageDefault from '../../components/pageDefault/PageDefault';
+import { useNavigation } from '@react-navigation/native';
 
-const Students = ({ navigation }) => {
+const Students = () => {
     const { userData, hasStudent } = useContext(AuthContext);
+
+    const navigation = useNavigation();
 
     const [associationModalVisible, setAssociationModalVisible] = useState(false);
     const [students, setStudents] = useState([]);
@@ -103,7 +106,7 @@ const Students = ({ navigation }) => {
     };
 
     return (
-        <PageDefault headerTitle={headerTitle} loading={loading} navigation={navigation}>
+        <PageDefault headerTitle={headerTitle} loading={loading} navigation={navigation} backNavigation={"Perfil"}>
             {
                 students.length > 0 ? <>
                     <View style={styles.content}>

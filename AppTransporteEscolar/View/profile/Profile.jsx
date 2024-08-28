@@ -13,8 +13,10 @@ import ModalEditUser from './components/ModalEditUser';
 import ModalEditPoint from './components/ModalEditPoint';
 import Header from '../../components/header/Header';
 import PageDefault from '../../components/pageDefault/PageDefault';
+import { useNavigation } from '@react-navigation/native';
 
-const Profile = ({ navigation }) => {
+const Profile = () => {
+    const navigation = useNavigation();
     const { userData } = useContext(AuthContext);
 
     const [user, setUser] = useState(null);
@@ -154,7 +156,7 @@ const Profile = ({ navigation }) => {
     };
 
     return (
-        <PageDefault headerTitle="Perfil" navigation={navigation} loading={isLoading}>
+        <PageDefault headerTitle="Perfil" navigation={navigation} loading={isLoading} backNavigation={"Perfil"}>
             <ScrollView>
                     <KeyboardAwareScrollView
                         contentContainerStyle={styles.container}

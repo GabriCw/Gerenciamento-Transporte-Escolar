@@ -9,8 +9,11 @@ import Toast from 'react-native-toast-message';
 import { FontAwesome } from '@expo/vector-icons';
 import Header from "../../components/header/Header";
 import PageDefault from '../../components/pageDefault/PageDefault';
+import { useNavigation } from '@react-navigation/native';
 
-const Vehicle = ({ navigation }) => {
+const Vehicle = () => {
+
+    const navigation = useNavigation();
     const { userData } = useContext(AuthContext);
     const [modalVisible, setModalVisible] = useState(false);
     const [vehicle, setVehicle] = useState(null);
@@ -95,7 +98,7 @@ const Vehicle = ({ navigation }) => {
         setModalVisible(!modalVisible);
     };
 
-    return  <PageDefault headerTitle="Meu Veículo" navigation={navigation} loading={isLoading}>
+    return  <PageDefault headerTitle="Meu Veículo" navigation={navigation} loading={isLoading} backNavigation={"Perfil"}>
         <View style={styles.content}>
             <View style={styles.card}>
                 <View style={styles.iconEdit}>

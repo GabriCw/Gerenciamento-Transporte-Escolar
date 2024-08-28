@@ -1,11 +1,24 @@
 import { Ionicons } from "@expo/vector-icons";
+import { useNavigation } from "@react-navigation/native";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
-const Header = ({title, navigation}) => {
+const Header = ({title, specificNavigation}) => {
+
+    const navigation = useNavigation();
+
+    const handleNavigation = () => {
+        if(specificNavigation){
+            navigation.navigate(specificNavigation);
+        }
+        else{
+            navigation.goBack();
+        }
+    };
+
     return <View style={styles.container}>
         <View style={styles.content}>
             <Pressable
-                onPress={() => navigation.goBack()}
+                onPress={handleNavigation}
                 style={styles.iconContainer}
             >
                 <Ionicons style={styles.iconContent} name="arrow-back" size={24} color="white" />

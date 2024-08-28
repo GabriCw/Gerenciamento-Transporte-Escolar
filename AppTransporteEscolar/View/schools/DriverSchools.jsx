@@ -8,8 +8,11 @@ import { getVehicleListByUser } from "../../data/vehicleServices";
 import SchoolVehicleList from "./components/SchoolVehicleList";
 import { getAssociationsByUser } from "../../data/vehiclePointServices";
 import { Button } from "react-native-paper";
+import { useNavigation } from "@react-navigation/native";
 
-const DriverSchools = ({navigation}) => {
+const DriverSchools = () => {
+
+    const navigation = useNavigation();
 
     const [isLoading, setIsLoading] = useState(false);
     const [associationList, setAssociationList] = useState(null);
@@ -45,7 +48,7 @@ const DriverSchools = ({navigation}) => {
         requestData();
     }, []);
 
-    return <PageDefault headerTitle="Escolas e Veículos" loading={isLoading} navigation={navigation}>
+    return <PageDefault headerTitle="Escolas e Veículos" loading={isLoading} navigation={navigation} backNavigation={"Perfil"}>
         {
             associationList?.length > 0 ?
             <SchoolVehicleList
