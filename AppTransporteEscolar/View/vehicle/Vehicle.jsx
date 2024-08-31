@@ -3,7 +3,7 @@ import { View, StyleSheet, Text } from 'react-native';
 import { Button, IconButton, ActivityIndicator } from 'react-native-paper';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import ModalEdit from './components/ModalEdit';
-import { getVehicleByUser, updateVehicle } from '../../data/vehicleServices';
+import { getVehicleByUser, getVehicleListByUser, updateVehicle } from '../../data/vehicleServices';
 import { AuthContext } from '../../providers/AuthProvider';
 import Toast from 'react-native-toast-message';
 import { FontAwesome } from '@expo/vector-icons';
@@ -16,15 +16,16 @@ const Vehicle = () => {
     const navigation = useNavigation();
     const { userData } = useContext(AuthContext);
     const [modalVisible, setModalVisible] = useState(false);
-    const [vehicle, setVehicle] = useState(null);
+    const [vehicles, setVehicles] = useState(null);
+    const [vehicleSelect, setVehicleSelect] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
     const [reload, setReload] = useState(false);
 
     const requestData = async() => {
-        const response = await getVehicleByUser(userData.id) ;
+        const response = await getVehicleListByUser(userData.id) ;
 
         if(response.status === 200){
-            setVehicle(response.data);
+            setVehicles(response.data);
         }
         else{
             navigation.goBack();
@@ -94,31 +95,36 @@ const Vehicle = () => {
         }
     };
 
-    const handleOpenModalEdit = () => {
+    const handleOpenModalEdit = (vehicle) => {
         setModalVisible(!modalVisible);
+        setVehicleSelect(vehicle);
     };
 
-    return  <PageDefault headerTitle="Meu Veículo" navigation={navigation} loading={isLoading} backNavigation={"Perfil"}>
+    return  <PageDefault headerTitle="Meus Veículos" navigation={navigation} loading={isLoading} backNavigation={"Perfil"}>
         <View style={styles.content}>
-            <View style={styles.card}>
-                <View style={styles.iconEdit}>
-                    <IconButton 
-                        icon="pencil" 
-                        onPress={handleOpenModalEdit} 
-                    />
-                </View>
-                <View style={styles.cardContent}>
-                    <View style={styles.iconContent}>
-                        <FontAwesome name="bus" size={"40%"} color="black"/>
+            {
+                vehicles?.map((vehicle, index) => {
+                    return <View style={styles.card}>
+                        <View style={styles.iconEdit}>
+                            <IconButton 
+                                icon="pencil" 
+                                onPress={() => handleOpenModalEdit(vehicle)} 
+                            />
+                        </View>
+                        <View style={styles.cardContent} key={index}>
+                            <View style={styles.iconContent}>
+                                <FontAwesome name="bus" size={"40%"} color="black"/>
+                            </View>
+                            <View style={styles.textContent}>
+                                <Text style={styles.cardText}>Placa: {vehicle?.plate.toUpperCase()}</Text>
+                                <Text style={styles.cardText}>Modelo: {vehicle?.model ?? "Não informado"}</Text>
+                            </View>
+                        </View>
                     </View>
-                    <View style={styles.textContent}>
-                        <Text style={styles.cardText}>Placa: {vehicle?.plate.toUpperCase()}</Text>
-                        <Text style={styles.cardText}>Modelo: {vehicle?.model ?? "Não informado"}</Text>
-                    </View>
-                </View>
-            </View>
+                })
+            }
         </View>
-        <ModalEdit data={vehicle} open={modalVisible} onClose={handleOpenModalEdit} handleConfirm={handleUpdate}/>
+        <ModalEdit data={vehicleSelect} open={modalVisible} onClose={handleOpenModalEdit} handleConfirm={handleUpdate}/>
     </PageDefault> 
 };
 
@@ -143,6 +149,7 @@ const styles = StyleSheet.create({
     content: {
         flex: 1,
         justifyContent: 'center',
+        rowGap: 10,
         width: "100%",
         alignItems: 'center',
     },
