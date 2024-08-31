@@ -16,8 +16,7 @@ const ButtonDefault = ({icon, title, onClick}) => {
 const styles = StyleSheet.create({
     container: {
         width: "30%",
-        height: "23%",
-        maxHeight: "23%",
+        height: 85
     },
     content: {
         backgroundColor: "#C36005",
