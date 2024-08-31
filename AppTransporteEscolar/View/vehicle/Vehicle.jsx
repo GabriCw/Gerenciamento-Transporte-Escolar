@@ -22,6 +22,8 @@ const Vehicle = () => {
     const [reload, setReload] = useState(false);
 
     const requestData = async() => {
+        setIsLoading(true);
+        
         const response = await getVehicleListByUser(userData.id) ;
 
         if(response.status === 200){
@@ -46,9 +48,7 @@ const Vehicle = () => {
 
     useEffect(() => {
         if(reload === true){
-            setTimeout(async() => {
-                requestData();
-            }, 1000);
+            requestData();
         }
     }, [reload]);
 

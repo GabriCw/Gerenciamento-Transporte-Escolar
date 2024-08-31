@@ -35,7 +35,7 @@ const AdminButtons = ({navigation}) => {
                 />
                 <ButtonDefault
                     icon={<FontAwesome name="bus" size={"30%"} color="#fff"/>}
-                    title={"Veículo"}
+                    title={"Veículos"}
                     onClick={handleToVehiclePage}
                 />
                 <ButtonDefault
