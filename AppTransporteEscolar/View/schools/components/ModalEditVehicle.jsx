@@ -12,9 +12,12 @@ const ModalEditVehicle = ({vehicleSelected, open, setOpen, handleUpdate, navigat
     const {userData} = useContext(AuthContext);
 
     const [vehicles, setVehicles] = useState([]);
+    const [loading, setLoading] = useState(false);
 
     useEffect(() => {
         const requestData = async() => {
+            setLoading(true);
+
             const response = await getVehicleListByUser(userData.id);
 
             if(response.status === 200){
@@ -36,6 +39,8 @@ const ModalEditVehicle = ({vehicleSelected, open, setOpen, handleUpdate, navigat
                 });
                 navigation.goBack();
             }
+
+            setLoading(false);
         };
 
         requestData();
@@ -61,7 +66,7 @@ const ModalEditVehicle = ({vehicleSelected, open, setOpen, handleUpdate, navigat
         }
     };
 
-    return <ModalDefault title="Selecione um veículo" open={open} onClose={() => setOpen(false)}>
+    return <ModalDefault title="Selecione um veículo" loading={loading} open={open} onClose={() => setOpen(false)}>
         {
             vehicles.map(item => {
                 return <View style={styles.container} key={item.id}>

@@ -12,9 +12,12 @@ const ModalEditPoint = ({schoolSelected, open, setOpen, navigation, handleUpdate
     const {userData} = useContext(AuthContext);
 
     const [schools, setSchools] = useState([]);
+    const [loading, setLoading] = useState(false);
 
     useEffect(() => {
         const requestData = async() => {
+            setLoading(true);
+
             const response = await getSchoolByDriver(userData.id);
 
             if(response.status === 200){
@@ -37,6 +40,8 @@ const ModalEditPoint = ({schoolSelected, open, setOpen, navigation, handleUpdate
                 });
                 navigation.goBack();
             }
+
+            setLoading(false);
         };
 
         requestData();
@@ -62,7 +67,7 @@ const ModalEditPoint = ({schoolSelected, open, setOpen, navigation, handleUpdate
         }
     };
     
-    return <ModalDefault title="Selecione uma escola" open={open} onClose={() => setOpen(false)}>
+    return <ModalDefault title="Selecione uma escola" loading={loading} open={open} onClose={() => setOpen(false)}>
         {
             schools.map(item => {
                 return <View style={styles.container} key={item.id}>
