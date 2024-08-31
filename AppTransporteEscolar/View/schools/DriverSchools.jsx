@@ -1,10 +1,8 @@
 import { useContext, useEffect, useState } from "react";
 import { StyleSheet, Text, View} from "react-native";
-import { disassociateDriverToSchool, getSchoolAssociatedByDriver, getSchoolByDriver } from "../../data/pointServices";
 import { AuthContext } from "../../providers/AuthProvider";
 import Toast from "react-native-toast-message";
 import PageDefault from "../../components/pageDefault/PageDefault";
-import { getVehicleListByUser } from "../../data/vehicleServices";
 import SchoolVehicleList from "./components/SchoolVehicleList";
 import { getAssociationsByUser } from "../../data/vehiclePointServices";
 import { Button } from "react-native-paper";
@@ -66,7 +64,7 @@ const DriverSchools = () => {
                             onPress={handleGoToSchoolVehicleDetails}
                             style={styles.addButton}
                         >
-                            Criar Aluno
+                            Criar Associação
                         </Button>
                     </View>
                 </View>

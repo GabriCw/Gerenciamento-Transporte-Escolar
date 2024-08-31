@@ -14,12 +14,9 @@ import ProfileTab from '../profileTab/ProfileTab';
 import ConfirmStudentAssociation from '../students/components/ConfirmStudentAssociation';
 import Schools from '../schools/DriverSchools';
 import DriverSchools from '../schools/DriverSchools';
-import ConfirmDriverSchool from '../schools/components/ConfirmDriverSchool';
 import StudentDetail from '../students/components/StudentDetail';
 import CreateStudent from '../students/components/CreateStudent';
 import ConfirmDriverAndSchool from '../students/components/ConfirmDriverAndSchool';
-import VehicleList from '../schools/components/VehiclesList';
-import SchoolsList from '../schools/components/SchoolsList';
 import SchoolVehicleDetails from '../schools/components/SchoolVehicleDetails';
 
 const Stack = createStackNavigator();
@@ -51,9 +48,6 @@ const PerfilMotoStack = () => (
     <Stack.Screen name="Veiculo" component={Vehicle} options={{ headerShown: false }} />
     <Stack.Screen name="VerPerfilMoto" component={Profile} options={{ headerShown: false }} />
     <Stack.Screen name="DriverSchools" component={DriverSchools} options={{ headerShown: false }} />
-    <Stack.Screen name="ConfirmDriverSchool" component={ConfirmDriverSchool} options={{ headerShown: false }} />
-    <Stack.Screen name="VehiclesList" component={VehicleList} options={{ headerShown: false }} />
-    <Stack.Screen name="SchoolsList" component={SchoolsList} options={{ headerShown: false }} />
     <Stack.Screen name="SchoolVehicleDetails" component={SchoolVehicleDetails} options={{ headerShown: false }} />
   </Stack.Navigator>
 );
@@ -69,9 +63,6 @@ const PerfilAdminStack = () => (
     <Stack.Screen name="ConfirmDriverAndSchool" component={ConfirmDriverAndSchool} options={{ headerShown: false }} />
     <Stack.Screen name="CreateStudent" component={CreateStudent} options={{ headerShown: false }} />
     <Stack.Screen name="DriverSchools" component={DriverSchools} options={{ headerShown: false }} />
-    <Stack.Screen name="ConfirmDriverSchool" component={ConfirmDriverSchool} options={{ headerShown: false }} />
-    <Stack.Screen name="VehiclesList" component={VehicleList} options={{ headerShown: false }} />
-    <Stack.Screen name="SchoolsList" component={SchoolsList} options={{ headerShown: false }} />
     <Stack.Screen name="SchoolVehicleDetails" component={SchoolVehicleDetails} options={{ headerShown: false }} />
   </Stack.Navigator>
 );
