@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useContext } from 'react';
-import { StyleSheet, View, Image, Text } from 'react-native';
+import { StyleSheet, View, Image, Text, Alert, Linking } from 'react-native';
 import MapView, { Marker, Polyline } from 'react-native-maps';
 import * as Location from 'expo-location';
 import axios from 'axios';
@@ -45,6 +45,7 @@ const MapaMotorista = ({ navigation }) => {
     const [waypointOrder, setWaypointOrder] = useState([]);
     const {userData} = useContext(AuthContext);
     const [clock, setClock] = useState(true);
+    const [mapsUrl, setMapsUrl] = useState('');
 
 
     useEffect(() => {
@@ -158,6 +159,12 @@ const MapaMotorista = ({ navigation }) => {
                     setNextWaypointDistance(nextLeg.distance.value); // distância em metros
                     setNextWaypointDuration(nextLeg.duration.value); // duração em segundos
                 }
+
+                 // Geração do link clicável para o Google Maps
+                const mapsUrll = `https://www.google.com/maps/dir/?api=1&origin=${origin}&destination=${destination}&waypoints=${waypointsString.replace(/\|/g, '%7C')}`;
+                console.log('Link para Google Maps:', mapsUrll);
+                setMapsUrl(mapsUrll);
+
             } else {
                 console.log('No routes found');
             }
@@ -306,6 +313,16 @@ const MapaMotorista = ({ navigation }) => {
         };
     }, []);
 
+    const openGoogleMaps = () => {
+        if (mapsUrl) {
+          Linking.openURL(mapsUrl).catch(err => {
+            Alert.alert('Erro', 'Não foi possível abrir o Google Maps.');
+          });
+        } else {
+          Alert.alert('Aviso', 'Nenhuma rota gerada ainda.');
+        }
+    };
+
     return (
         <View style={styles.view}>
             <View style={styles.content}>
@@ -395,6 +412,7 @@ const MapaMotorista = ({ navigation }) => {
                             <Text style={styles.infoCardTitle}>
                                 Próxima Parada
                             </Text>
+                            <Button title="Abrir no Google Maps" onPress={openGoogleMaps}>Google Maps</Button>
                             {nextWaypointDistance && nextWaypointDuration && (
                                 <View style={styles.infoCardNextStopTexts}>
                                     <Text style={styles.infoCardText}>
