@@ -99,10 +99,6 @@ const ConfirmStudentAssociation = ({route, navigation}) => {
                                     </View>
                                 })
                             }
-                            <View style={styles.codeContent}>
-                                <Text style={styles.codeText}>Código:</Text>
-                                <Text style={styles.colorBox}>{studentData?.driver?.code}</Text>
-                            </View>
                         </View>
                     </View>
                     <View style={styles.buttonContainer}>
