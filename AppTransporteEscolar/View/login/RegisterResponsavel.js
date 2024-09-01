@@ -146,7 +146,8 @@ const RegisterResponsavelScreen = ({ navigation }) => {
                 address: `${rua}, ${numero}`,
                 city: cidade,
                 neighborhood: bairro,
-                state: estado
+                state: estado,
+                point_type_id: 1
             }
         };
 

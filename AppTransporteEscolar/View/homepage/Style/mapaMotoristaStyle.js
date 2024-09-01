@@ -49,7 +49,7 @@ export const styles = StyleSheet.create({
     },
     footer: {
         position: 'absolute',
-        bottom: 30,
+        bottom: '5%',
         height: '15%',
         width: '100%',
         alignItems: 'center',
@@ -59,14 +59,33 @@ export const styles = StyleSheet.create({
         width: '95%',
         height: '100%',
         borderRadius: 25,
-        justifyContent: 'center',
         alignItems: 'center',
         shadowColor: '#000',
         shadowOffset: { width: 2, height: 2 },
         shadowOpacity: 0.4,
         shadowRadius: 5,
-        marginBottom: 20,
+        flexDirection: 'column',
     },
+    infoCardContent: {
+        flexDirection: 'row',
+    },
+    infoCardTitle: {
+        marginVertical: 10,
+        fontWeight: '200'
+    },
+    infoCardLeft: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        width: '50%'
+    },
+    infoCardRight: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        width: '50%'
+    },
+
     infoCardNextStop: {
         flex: 1,
         paddingTop: 10,
@@ -162,8 +181,17 @@ export const styles = StyleSheet.create({
         justifyContent: 'flex-end',
         position: 'absolute',
     },
-    stopRouteIcon: {
-
+    googleMapsPos: {
+        position: 'absolute',
+        bottom: "20%",
+        margin: 15,
+        opacity: 0.8
+    },
+    googlMaps: {
+        shadowColor: '#000',
+        shadowOffset: { width: 2, height: 2 },
+        shadowOpacity: 0.4,
+        shadowRadius: 5,
     }
 
 });
