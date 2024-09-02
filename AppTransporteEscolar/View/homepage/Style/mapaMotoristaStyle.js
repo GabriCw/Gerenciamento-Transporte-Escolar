@@ -149,7 +149,7 @@ export const styles = StyleSheet.create({
         width: 80,
         padding: 0
     },
-    startButtonPos: {
+    startContainer: {
         position: 'absolute',
         flex: 1,
         bottom: 30,
@@ -157,24 +157,36 @@ export const styles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center'
     },
-    startButton: {
+    startContent:{
         flex: 1,
-        flexDirection: 'row',
-        backgroundColor: '#999999DD',
-        width: '90%',
         height: 200,
+        flexDirection: 'column',
+        backgroundColor: '#999999DD',
         justifyContent: 'space-around',
         alignItems: 'center',
         borderRadius: 50,
-        paddingHorizontal: 30
+    },
+    startButton: {
+        flexDirection: 'row',
+        justifyContent: 'space-evenly',
+        paddingHorizontal: 30,
+        marginVertical: 10
     },
     startRouteButton: {
-        width: 150,
+        width: '42%',
         backgroundColor: '#C36005',
         text: '#FFFFFF',
         height: 80,
         justifyContent: 'center',
-        flexDirection: 'column'
+        flexDirection: 'column',
+        marginHorizontal: '2%',
+    },
+    startText:{
+        // backgroundColor: '#FFFFFF99',
+        color: 'black',
+        fontSize: 18,
+        fontWeight: 'bold',
+        padding: 5,
     },
     stopRoute: {
         flex: 1,
