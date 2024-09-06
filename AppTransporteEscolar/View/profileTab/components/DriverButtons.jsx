@@ -8,6 +8,10 @@ const DriverButtons = ({navigation}) => {
         navigation.navigate('DriverSchools');
     }
 
+    const handleToSchoolsPage = () => {
+        navigation.navigate('Schools');
+    }
+
     const handleToVehiclePage = () => {
         navigation.navigate('Veiculo');
     }
@@ -38,6 +42,11 @@ const DriverButtons = ({navigation}) => {
                     icon={<MaterialCommunityIcons name="connection" size={"30%"} color="#fff" />}
                     title={"Associação"}
                     onClick={handleToDriverSchoolPage}
+                />
+                <ButtonDefault
+                    icon={<MaterialCommunityIcons name="connection" size={"30%"} color="#fff" />}
+                    title={"Escolas"}
+                    onClick={handleToSchoolsPage}
                 />
             </View>
         </View>

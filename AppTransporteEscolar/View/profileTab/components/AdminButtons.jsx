@@ -20,6 +20,10 @@ const AdminButtons = ({navigation}) => {
         navigation.navigate('VerPerfilMoto');
     }
 
+    const handleToSchoolsPage = () => {
+        navigation.navigate('Schools');
+    }
+
     return <KeyboardAwareScrollView
         contentContainerStyle={styles.container}
         enableOnAndroid={true}
@@ -47,6 +51,11 @@ const AdminButtons = ({navigation}) => {
                     icon={<MaterialCommunityIcons name="connection" size={"30%"} color="#fff" />}
                     title={"Associação"}
                     onClick={handleToDriverSchoolPage}
+                />
+                <ButtonDefault
+                    icon={<MaterialCommunityIcons name="connection" size={"30%"} color="#fff" />}
+                    title={"Escolas"}
+                    onClick={handleToSchoolsPage}
                 />
             </View>
         </View>
