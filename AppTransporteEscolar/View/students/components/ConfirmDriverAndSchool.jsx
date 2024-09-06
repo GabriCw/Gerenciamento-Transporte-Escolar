@@ -27,15 +27,15 @@ const ConfirmDriverAndSchool = ({navigation, route}) => {
         const response = await createStudent(body);
 
         if(response.status === 201){
+            await handleVerifyStudent();
+
             Toast.show({
                 type: 'success',
                 text1: 'Sucesso',
                 text2: 'Cadastro realizado com sucesso!',
                 visibilityTime: 3000,
             });
-
-            await handleVerifyStudent();
-
+            
             navigation.navigate("Perfil");
         }
         else{
@@ -70,11 +70,11 @@ const ConfirmDriverAndSchool = ({navigation, route}) => {
                 <View style={styles.schoolContainer}>
                     <View style={styles.schoolContent}>
                         <Text style={styles.colorBox}>Escola</Text>
-                        <Text style={styles.text}>{driverData?.school?.name}</Text>
+                        <Text style={styles.text}>{driverData?.point?.name}</Text>
                     </View>
                     <View>
-                        <Text style={styles.text}>{driverData?.school?.address}</Text>
-                        <Text style={styles.text}>{driverData?.school?.neighborhood} - {driverData?.school?.city}/{driverData?.school?.state}</Text>
+                        <Text style={styles.text}>{driverData?.point?.address}</Text>
+                        <Text style={styles.text}>{driverData?.point?.neighborhood} - {driverData?.point?.city}/{driverData?.point?.state}</Text>
                     </View>
                 </View>
 
@@ -94,15 +94,6 @@ const ConfirmDriverAndSchool = ({navigation, route}) => {
                             </View>
                             })
                         }
-                    </View>
-                </View>
-
-                <View style={styles.lineSeparator}/>
-
-                <View style={styles.driverContainer}>
-                    <View style={styles.driverContent}>
-                        <Text style={styles.colorBox}>Veículo</Text>
-                        <Text style={styles.text}>{driverData?.vehicle?.plate.toUpperCase()} - {driverData?.vehicle?.model} {driverData?.vehicle?.color}</Text>
                     </View>
                 </View>
             </View>
