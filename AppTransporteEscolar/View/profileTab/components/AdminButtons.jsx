@@ -1,7 +1,7 @@
 import { StyleSheet, View } from "react-native";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 import ButtonDefault from "./ButtonDefault";
-import { FontAwesome, FontAwesome5, MaterialCommunityIcons } from "@expo/vector-icons";
+import { FontAwesome, FontAwesome5, Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 
 const AdminButtons = ({navigation}) => {
     const handleToDriverSchoolPage = () => {
@@ -48,12 +48,7 @@ const AdminButtons = ({navigation}) => {
                     onClick={handleToStudentPage}
                 />
                 <ButtonDefault
-                    icon={<MaterialCommunityIcons name="connection" size={"30%"} color="#fff" />}
-                    title={"Associação"}
-                    onClick={handleToDriverSchoolPage}
-                />
-                <ButtonDefault
-                    icon={<MaterialCommunityIcons name="connection" size={"30%"} color="#fff" />}
+                    icon={<Ionicons name="school" size={"30%"} color="#fff" />}
                     title={"Escolas"}
                     onClick={handleToSchoolsPage}
                 />

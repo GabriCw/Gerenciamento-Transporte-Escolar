@@ -18,6 +18,8 @@ import CreateStudent from '../students/components/CreateStudent';
 import ConfirmDriverAndSchool from '../students/components/ConfirmDriverAndSchool';
 import SchoolVehicleDetails from '../schools/components/SchoolVehicleDetails';
 import Schools from '../school/Schools';
+import AllSchoolsList from '../school/components/AllSchoolsList';
+import SchoolsDetails from '../school/components/SchoolsDetails';
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -50,6 +52,8 @@ const PerfilMotoStack = () => (
     <Stack.Screen name="DriverSchools" component={DriverSchools} options={{ headerShown: false }} />
     <Stack.Screen name="SchoolVehicleDetails" component={SchoolVehicleDetails} options={{ headerShown: false }} />
     <Stack.Screen name="Schools" component={Schools} options={{ headerShown: false }} />
+    <Stack.Screen name="AllSchoolsList" component={AllSchoolsList} options={{ headerShown: false }} />
+    <Stack.Screen name="SchoolsDetails" component={SchoolsDetails} options={{ headerShown: false }} />
   </Stack.Navigator>
 );
 
@@ -66,6 +70,8 @@ const PerfilAdminStack = () => (
     <Stack.Screen name="DriverSchools" component={DriverSchools} options={{ headerShown: false }} />
     <Stack.Screen name="SchoolVehicleDetails" component={SchoolVehicleDetails} options={{ headerShown: false }} />
     <Stack.Screen name="Schools" component={Schools} options={{ headerShown: false }} />
+    <Stack.Screen name="AllSchoolsList" component={AllSchoolsList} options={{ headerShown: false }} />
+    <Stack.Screen name="SchoolsDetails" component={SchoolsDetails} options={{ headerShown: false }} />
   </Stack.Navigator>
 );
 

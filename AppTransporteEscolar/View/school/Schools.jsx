@@ -3,11 +3,13 @@ import { StyleSheet, Text, View} from "react-native";
 import { AuthContext } from "../../providers/AuthProvider";
 import Toast from "react-native-toast-message";
 import PageDefault from "../../components/pageDefault/PageDefault";
-import SchoolVehicleList from "./components/SchoolsList";
+import SchoolVehicleList from "./components/SchoolsAssociatedList";
 import { getAssociationsByUser } from "../../data/vehiclePointServices";
 import { Button } from "react-native-paper";
 import { useNavigation } from "@react-navigation/native";
-import SchoolsList from "./components/SchoolsList";
+import SchoolsList from "./components/SchoolsAssociatedList";
+import { getSchoolByDriver } from "../../data/pointServices";
+import SchoolsAssociatedList from "./components/SchoolsAssociatedList";
 
 const Schools = () => {
 
@@ -17,15 +19,15 @@ const Schools = () => {
     const [associationList, setAssociationList] = useState(null);
     const {userData} = useContext(AuthContext);
 
-    const handleGoToSchoolVehicleDetails = (item) => {
-        navigation.navigate("SchoolVehicleDetails", {schoolVehicleData: item});
+    const handleGoToAllSchoolsList = () => {
+        navigation.navigate("AllSchoolsList", {schoolsIds: []});
     };
 
     useEffect(() => {
         const requestData = async() => {
             setIsLoading(true);
 
-            const associations = await getAssociationsByUser(userData.id);
+            const associations = await getSchoolByDriver(userData.id);
 
             if(associations.status === 200){
                 setAssociationList(associations.data);
@@ -47,25 +49,24 @@ const Schools = () => {
         requestData();
     }, []);
 
-    return <PageDefault headerTitle="Escolas" loading={isLoading} navigation={navigation} backNavigation={"Perfil"}>
+    return <PageDefault headerTitle="Escolas" loading={isLoading} backNavigation={"Perfil"}>
         {
             associationList?.length > 0 ?
-            <SchoolsList
+            <SchoolsAssociatedList
                 list={associationList}
                 loading={isLoading}
-                navigation={navigation}
             />
             :
             <>
                 <View style={styles.withoutAssociation}>
-                    <Text style={styles.withoutAssociationTitle}>Crie uma associação entre suas escolas e veículos</Text>
+                    <Text style={styles.withoutAssociationTitle}>Você não possui uma escola, vamos escolher?</Text>
                     <View style={styles.initialButtonContainer}>
                         <Button
                             mode="contained"
-                            onPress={handleGoToSchoolVehicleDetails}
+                            onPress={handleGoToAllSchoolsList}
                             style={styles.addButton}
                         >
-                            Criar Associação
+                            Avançar
                         </Button>
                     </View>
                 </View>

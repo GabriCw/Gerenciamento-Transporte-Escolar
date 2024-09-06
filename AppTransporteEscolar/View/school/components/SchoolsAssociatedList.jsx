@@ -1,18 +1,25 @@
 import { Pressable, ScrollView, StyleSheet, View } from "react-native";
 import { Text } from "react-native-paper";
 import { AntDesign, FontAwesome5, Ionicons } from "@expo/vector-icons";
+import { useNavigation } from "@react-navigation/native";
 
-const SchoolsList = ({navigation, list}) => {
+const SchoolsAssociatedList = ({ list }) => {
 
-    const handleGoToSchoolVehicleDetails = (item) => {
-        navigation.navigate("SchoolVehicleDetails", {schoolVehicleData: item});
+    const navigation = useNavigation();
+
+    const handleGoToSchoolDetails = (item) => {
+        navigation.navigate("SchoolsDetails", {schoolData: item, isAssociation: false});
+    };
+
+    const handleGoToAllSchoolsList = () => {
+        navigation.navigate("AllSchoolsList", {schoolsIds: list.map(item => item?.point?.id)});
     };
 
     return <>
         <ScrollView style={styles.scrollContainer}>
             {
                 list?.map((item, index) => {
-                    return <Pressable style={styles.viewContainter} key={index} onPress={() => handleGoToSchoolVehicleDetails(item)}>
+                    return <Pressable style={styles.viewContainter} key={index} onPress={() => handleGoToSchoolDetails(item?.point)}>
                         <View style={styles.cardContainer}>
                             <View style={styles.mainInfosContainer}>
                                 <View style={styles.content}>
@@ -24,8 +31,7 @@ const SchoolsList = ({navigation, list}) => {
                                         <AntDesign name="rightcircle" size={24} color="black"/>
                                     </View>
                                     <View style={styles.schoolContent}>
-                                    <FontAwesome5 name="car" size={24} color="black" />
-                                <Text style={[styles.text, {marginLeft: 5}]}>{item?.vehicle?.plate.toUpperCase()}</Text>
+                                <Text style={styles.text}>{item?.point?.address}</Text>
                             </View>   
                             </View>
                         </View>            
@@ -41,9 +47,9 @@ const SchoolsList = ({navigation, list}) => {
                 })
             }
         </ScrollView>
-            <Pressable onPress={handleGoToSchoolVehicleDetails}>
-                <Ionicons name="add-circle-sharp" style={styles.button}/>
-            </Pressable>
+        <Pressable onPress={handleGoToAllSchoolsList}>
+            <Ionicons name="add-circle-sharp" style={styles.button}/>
+        </Pressable>
     </>
 };
 
@@ -190,4 +196,4 @@ const styles = StyleSheet.create({
     },
 });
 
-export default SchoolsList;
+export default SchoolsAssociatedList;
