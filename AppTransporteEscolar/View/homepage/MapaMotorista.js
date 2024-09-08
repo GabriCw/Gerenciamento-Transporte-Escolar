@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef, useContext } from 'react';
-import { View, Image, Text, Alert, Linking, Pressable } from 'react-native';
+import { View, Image, Text, Alert, Linking, Pressable, FlatList } from 'react-native';
 import MapView, { Marker, Polyline } from 'react-native-maps';
+import { Picker } from '@react-native-picker/picker';
 import * as Location from 'expo-location';
 import axios from 'axios';
 import polyline from '@mapbox/polyline';
@@ -48,7 +49,11 @@ const MapaMotorista = ({ navigation }) => {
     const [mapsUrl, setMapsUrl] = useState('');
     const [currentStudentIndex, setCurrentStudentIndex] = useState(1); // ìndice do aluno atual (na lista de orderedWaypoints)
     const [eta, setEta] = useState(null);
-
+    const [showDropdowns, setShowDropdowns] = useState(false);
+    const [selectedCar, setSelectedCar] = useState('');
+    const [selectedSchool, setSelectedSchool] = useState('');
+    const [routeType, setRouteType] = useState('');
+    const [showStudentList, setShowStudentList] = useState(false);
 
     useEffect(() => {
         const initializeLocation = async () => {
@@ -187,20 +192,22 @@ const MapaMotorista = ({ navigation }) => {
         }
     };
 
-    const startRoute = (schedule) => {
-        if (schedule === 1){
+    const startRoute = () => {
+        if (routeType === 1){
+            setShowDropdowns(false);
             // Chamada API ida (recebe do backend a lista de alunos de ida (waypoints))
             calculateRoute(waypoints, userLocation); // os waypoints vem da API (backend)
             setRouteOngoing(true);
             setStartButton(false);
-            console.log('Rota de ida iniciada!')
+            console.log(`Rota de ida iniciada! Na ${selectedSchool} com o ${selectedCar}`)
         }
-        else if (schedule === 2){
+        else if (routeType === 2){
+            setShowDropdowns(false);
             // Chamada API volta (recebe do backend a lista de alunos de volta (waypoints))
             calculateRoute(waypoints, userLocation); // os waypoints vem da API (backend)
             setRouteOngoing(true);
             setStartButton(false);
-            console.log('Rota de volta iniciada!')
+            console.log(`Rota de volta iniciada! Na ${selectedSchool} com o ${selectedCar}`)
         }
         else {
             console.log('Erro no tipo da schedule.')
@@ -487,7 +494,7 @@ const MapaMotorista = ({ navigation }) => {
                 {/* Exibe os botões "IDA ESCOLA" e "VOLTA ESCOLA" se os dropdowns ainda não estiverem visíveis */}
                 {!showDropdowns && !showStudentList && (
                   <View style={styles.startButtonPos}>
-                    <View style={styles.startButton}>
+                    <View style={styles.startContent}>
                       <Button
                         style={styles.startRouteButton}
                         onPress={() => {setShowDropdowns(true), setRouteType(1)}} // Rota de ida
