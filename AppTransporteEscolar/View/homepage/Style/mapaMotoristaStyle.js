@@ -49,7 +49,7 @@ export const styles = StyleSheet.create({
     },
     footer: {
         position: 'absolute',
-        bottom: '5%',
+        bottom: 30,
         height: '15%',
         width: '100%',
         alignItems: 'center',
@@ -59,33 +59,14 @@ export const styles = StyleSheet.create({
         width: '95%',
         height: '100%',
         borderRadius: 25,
+        justifyContent: 'center',
         alignItems: 'center',
         shadowColor: '#000',
         shadowOffset: { width: 2, height: 2 },
         shadowOpacity: 0.4,
         shadowRadius: 5,
-        flexDirection: 'column',
+        marginBottom: 20,
     },
-    infoCardContent: {
-        flexDirection: 'row',
-    },
-    infoCardTitle: {
-        marginVertical: 10,
-        fontWeight: '200'
-    },
-    infoCardLeft: {
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-        width: '50%'
-    },
-    infoCardRight: {
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-        width: '50%'
-    },
-
     infoCardNextStop: {
         flex: 1,
         paddingTop: 10,
@@ -149,7 +130,7 @@ export const styles = StyleSheet.create({
         width: 80,
         padding: 0
     },
-    startContainer: {
+    startButtonPos: {
         position: 'absolute',
         flex: 1,
         bottom: 30,
@@ -157,53 +138,43 @@ export const styles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center'
     },
-    startContent:{
+    startDropdown: {
         flex: 1,
-        height: 200,
         flexDirection: 'column',
         backgroundColor: '#999999DD',
+        width: '90%',
+        height: 250,
         justifyContent: 'space-around',
         alignItems: 'center',
         borderRadius: 50,
+        paddingTop: 30
     },
     startButton: {
+        flex: 1,
         flexDirection: 'row',
-        justifyContent: 'space-evenly',
-        paddingHorizontal: 30,
-        marginVertical: 10
+        backgroundColor: '#999999DD',
+        width: '90%',
+        height: 200,
+        justifyContent: 'space-around',
+        alignItems: 'center',
+        borderRadius: 50,
+        paddingHorizontal: 30
     },
     startRouteButton: {
-        width: '42%',
+        width: 150,
         backgroundColor: '#C36005',
         text: '#FFFFFF',
         height: 80,
         justifyContent: 'center',
-        flexDirection: 'column',
-        marginHorizontal: '2%',
-    },
-    startText:{
-        // backgroundColor: '#FFFFFF99',
-        color: 'black',
-        fontSize: 18,
-        fontWeight: 'bold',
-        padding: 5,
+        flexDirection: 'column'
     },
     stopRoute: {
         flex: 1,
         justifyContent: 'flex-end',
         position: 'absolute',
     },
-    googleMapsPos: {
-        position: 'absolute',
-        bottom: "20%",
-        margin: 15,
-        opacity: 0.8
-    },
-    googlMaps: {
-        shadowColor: '#000',
-        shadowOffset: { width: 2, height: 2 },
-        shadowOpacity: 0.4,
-        shadowRadius: 5,
+    stopRouteIcon: {
+
     }
 
 });

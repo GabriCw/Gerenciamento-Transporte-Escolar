@@ -482,27 +482,101 @@ const MapaMotorista = ({ navigation }) => {
             
 
             {/* ---------- CARD IDA VOLTA ---------- */}
-            {startButton && (
-                <View style={styles.startContainer}>
-                    <View style={styles.startContent}>
-                        <Text style={styles.startText}>
-                            Selecione o Tipo de Trajeto 
-                        </Text>
-                        <FontAwesome5 name="route" size={24} color="black" />
-                        <View style={styles.startButton}>
-                            <Button style = {styles.startRouteButton}
-                                onPress={() => startRoute(1)}
-                            >
-                                <Text style={{color:'white', fontSize: 15, fontWeight: 'bold'}}>IDA ESCOLA</Text>
-                            </Button>
-                            <Button style = {styles.startRouteButton}
-                                onPress={() => startRoute(2)}
-                            >
-                                <Text style={{color:'white', fontSize: 15, fontWeight: 'bold'}}>VOLTA ESCOLA</Text>
-                            </Button>
-                        </View>
+            {startButton && region && (
+                <View>
+                {/* Exibe os botões "IDA ESCOLA" e "VOLTA ESCOLA" se os dropdowns ainda não estiverem visíveis */}
+                {!showDropdowns && !showStudentList && (
+                  <View style={styles.startButtonPos}>
+                    <View style={styles.startButton}>
+                      <Button
+                        style={styles.startRouteButton}
+                        onPress={() => {setShowDropdowns(true), setRouteType(1)}} // Rota de ida
+                        title="IDA ESCOLA"
+                      >
+                        IDA ESCOLA
+                      </Button>
+                      <Button
+                        style={styles.startRouteButton}
+                        onPress={() => {setShowDropdowns(true), setRouteType(2)}} // Rota de volta
+                        title="VOLTA ESCOLA"
+                      >
+                        VOLTA ESCOLA
+                    </Button>
+                    </View>
+                  </View>
+                )}
+          
+                {/* Exibe os dropdowns se um dos botões tiver sido clicado */}
+                {showDropdowns && (
+                  <View style={styles.startButtonPos}>
+                    <View style={styles.startDropdown}>
+                        <Text>Escolha o carro:</Text>
+                        <Picker
+                        selectedValue={selectedCar}
+                        onValueChange={(itemValue) => setSelectedCar(itemValue)}
+                        style={{width: 200}}
+                        >
+                        <Picker.Item label="Selecione um carro" value="" />
+                        <Picker.Item label="Carro 1" value="carro1" />
+                        <Picker.Item label="Carro 2" value="carro2" />
+                        <Picker.Item label="Carro 3" value="carro3" />
+                        </Picker>
+            
+                        <Text>Escolha a escola:</Text>
+                        <Picker
+                        selectedValue={selectedSchool}
+                        onValueChange={(itemValue) => setSelectedSchool(itemValue)}
+                        style={{width: 200}}
+                        >
+                        <Picker.Item label="Selecione uma escola" value="" />
+                        <Picker.Item label="Escola A" value="escolaA" />
+                        <Picker.Item label="Escola B" value="escolaB" />
+                        <Picker.Item label="Escola C" value="escolaC" />
+                        </Picker>
+            
+                        <Button title="Confirmar" onPress={() => {
+                        if (selectedCar && selectedSchool) {
+                            setShowDropdowns(false);
+                            setShowStudentList(true);
+                        } else {
+                            alert("Por favor, selecione o carro e a escola.");
+                        }
+                        }}>
+                            Confirmar
+                        </Button>
+                    </View>
+                  </View>
+                )}
+          
+                {/* Exibe a lista de alunos após a confirmação dos dropdowns */}
+                {showStudentList && (
+                <View style={styles.startButtonPos}>
+                    <View style={styles.startDropdown}>
+                        <FlatList
+                            data={[
+                            { id: '1', name: 'João da Silva', age: 10 },
+                            { id: '2', name: 'Maria Oliveira', age: 9 },
+                            { id: '3', name: 'Carlos Souza', age: 11 },
+                            { id: '4', name: 'Ana Santos', age: 10 },
+                            ]}
+                            keyExtractor={(item) => item.id}
+                            renderItem={({ item }) => (
+                            <View style={styles.card}>
+                                <Text style={styles.studentName}>{item.name}</Text>
+                                <Text>Idade: {item.age}</Text>
+                            </View>
+                            )}
+                        />
+                        <Button
+                            title="Confirmar"
+                            onPress={startRoute}
+                        >
+                            Confirmar
+                        </Button>
                     </View>
                 </View>
+                )}
+              </View>          
             )}
 
             {!startButton && eta && totalDistance && (
