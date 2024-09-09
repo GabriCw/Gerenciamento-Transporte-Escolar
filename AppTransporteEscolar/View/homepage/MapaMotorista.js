@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef, useContext } from 'react';
-import { StyleSheet, View, Image, Text } from 'react-native';
+import { View, Image, Text, Alert, Linking, Pressable, FlatList } from 'react-native';
 import MapView, { Marker, Polyline } from 'react-native-maps';
+import { Picker } from '@react-native-picker/picker';
 import * as Location from 'expo-location';
 import axios from 'axios';
 import polyline from '@mapbox/polyline';
@@ -9,10 +10,9 @@ import { getDistance } from 'geolib';
 import { styles } from './Style/mapaMotoristaStyle';
 import { Button } from 'react-native-paper';
 import { formatTime, formatDistance } from '../../utils/formatUtils';
-import MaterialIcons from '@expo/vector-icons/MaterialIcons';
-import * as FileSystem from 'expo-file-system';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
-import { postDriverLocation } from '../../data/locationServices';
+import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
+import { postDriverLocation, postRoutePoints } from '../../data/locationServices';
 import { AuthContext } from '../../providers/AuthProvider';
 
 
@@ -28,6 +28,7 @@ const MapaMotorista = ({ navigation }) => {
     const [heading, setHeading] = useState(0);
     const [userLocation, setUserLocation] = useState(null);
     const [routePoints, setRoutePoints] = useState([]);
+    const [encodedRoutePoints, setEncodedRoutePoints] = useState([]);
     const [optimizedWaypoints, setOptimizedWaypoints] = useState([]);
     const mapRef = useRef(null);
     const apiKey = 'AIzaSyB65ouahlrzxKKS3X_VeMHKWZPYrJTJx6E';
@@ -38,14 +39,22 @@ const MapaMotorista = ({ navigation }) => {
     const [nextWaypointDistance, setNextWaypointDistance] = useState(null);
     const [nextWaypointDuration, setNextWaypointDuration] = useState(null);
     const [currentLeg, setCurrentLeg] = useState(1)
-    const recalculateThreshold = 50; // Distância em metros para recalcular a rota
+    const recalculateThreshold = 100; // Distância em metros para recalcular a rota
     const [waypointProximity, setWaypointProximity] = useState(true)
     const [startButton, setStartButton] = useState(true);
     const [routeOnGoing, setRouteOngoing] = useState(false);
     const [waypointOrder, setWaypointOrder] = useState([]);
     const {userData} = useContext(AuthContext);
     const [clock, setClock] = useState(true);
-
+    const [mapsUrl, setMapsUrl] = useState('');
+    const [currentStudentIndex, setCurrentStudentIndex] = useState(1); // ìndice do aluno atual (na lista de orderedWaypoints)
+    const [eta, setEta] = useState(null);
+    const [showDropdowns, setShowDropdowns] = useState(false);
+    const [selectedCar, setSelectedCar] = useState('');
+    const [selectedSchool, setSelectedSchool] = useState('');
+    const [routeType, setRouteType] = useState('');
+    const [showStudentList, setShowStudentList] = useState(false);
+    const [apiCalls, setApiCalls] = useState(0)
 
     useEffect(() => {
         const initializeLocation = async () => {
@@ -82,7 +91,15 @@ const MapaMotorista = ({ navigation }) => {
         initializeLocation();
     }, []);
 
+
+    const routePointsRef = useRef(routePoints);
     useEffect(() => {
+        routePointsRef.current = routePoints;
+    }, [routePoints]);
+
+
+    useEffect(() => {
+
         let locationSubscription;
 
         const startLocationUpdates = async () => {
@@ -93,20 +110,29 @@ const MapaMotorista = ({ navigation }) => {
                     distanceInterval: 1, // Ou a cada 1 metro
                 },
                 (location) => {
-                    const { latitude, longitude, heading } = location.coords;
-                    setUserLocation({ latitude, longitude });
-                    // console.log('User Location: ', userLocation)
-                    setRegion({
-                        latitude,
-                        longitude,
-                        latitudeDelta: 0.005,  // Ajuste o zoom conforme necessário
-                        longitudeDelta: 0.005,
-                    });
-                    setHeading(heading || 0);
-                    if ( routePoints.length > 0 && {latitude, longitude}) {
-                        const distanceToRoute = calculateDistanceToRoute({latitude, longitude});
-                        if (distanceToRoute > recalculateThreshold) {
-                            calculateRoute(waypoints,{latitude, longitude});
+                    const { latitude, longitude, heading, speed } = location.coords;
+                    
+                    console.log('Tamanho de routePoints antes da checagem:', routePointsRef.current.length);
+
+                    if (speed >= 0){  // Só atualiza os dados caso a velocidade seja maior que 0.5 m/s
+                        setUserLocation({ latitude, longitude });
+                        // console.log('User Location: ', userLocation)
+                        setRegion({
+                            latitude,
+                            longitude,
+                            latitudeDelta: 0.005,
+                            longitudeDelta: 0.005,
+                        });
+                        setHeading(heading || 0);
+                        
+                        if ( routePointsRef.current.length > 0 && {latitude, longitude}) {
+                            console.log('lat, long',latitude,longitude, speed)
+                            const distanceToRoute = calculateDistanceToRoute(latitude, longitude);
+                            console.log('Distância para a rota:', distanceToRoute);
+                            if (distanceToRoute > recalculateThreshold) {
+                                calculateRoute(waypoints,{latitude, longitude});
+
+                            }
                         }
                     }
                 }
@@ -135,29 +161,43 @@ const MapaMotorista = ({ navigation }) => {
 
         try {
             const response = await axios.get(url);
+            console.log('Chamou a API -----------------------------------------------------------------')
             if (response.data.routes && response.data.routes.length) {
                 const route = response.data.routes[0];
                 const decodedPolyline = polyline.decode(route.overview_polyline.points).map(point => ({
                     latitude: point[0],
                     longitude: point[1],
                 }));
+                setEncodedRoutePoints(route.overview_polyline.points);
+                console.log('decodedpole', decodedPolyline.length)
                 setRoutePoints(decodedPolyline);
 
                 const optimizedOrder = route.waypoint_order;
                 setWaypointOrder(optimizedOrder);
                 
                 const orderedWaypoints = [waypoints[0], ...optimizedOrder.map(i => waypoints[i + 1]), waypoints[waypoints.length - 1]];
-        
+                // console.log(decodedPolyline)
                 setOptimizedWaypoints(orderedWaypoints);
+                // console.log('orderedWaypoints', orderedWaypoints)
 
                 setTotalDuration(route.legs.reduce((acc, leg) => acc + leg.duration.value, 0)); // duração em segundos
                 setTotalDistance(route.legs.reduce((acc, leg) => acc + leg.distance.value, 0)); // distância em metros
-                
+
                 if (route.legs.length > 0) {
                     const nextLeg = route.legs[currentLeg];
                     setNextWaypointDistance(nextLeg.distance.value); // distância em metros
                     setNextWaypointDuration(nextLeg.duration.value); // duração em segundos
+
+                    // Cálculo do ETA: hora atual + duração em segundos
+                    const eta = new Date(Date.now() + nextLeg.duration.value * 1000); // Converte segundos para milissegundos
+                    setEta(eta); // Define o ETA
                 }
+
+                // Geração do link clicável para o Google Maps
+                const mapsUrll = `https://www.google.com/maps/dir/?api=1&origin=${origin}&destination=${destination}&waypoints=${waypointsString.replace(/\|/g, '%7C')}`;
+                // console.log('Link para Google Maps:', mapsUrll)
+                setMapsUrl(mapsUrll);
+
             } else {
                 console.log('No routes found');
             }
@@ -166,20 +206,22 @@ const MapaMotorista = ({ navigation }) => {
         }
     };
 
-    const startRoute = (schedule) => {
-        if (schedule === 1){
+    const startRoute = () => {
+        if (routeType === 1){
+            setShowDropdowns(false);
             // Chamada API ida (recebe do backend a lista de alunos de ida (waypoints))
             calculateRoute(waypoints, userLocation); // os waypoints vem da API (backend)
             setRouteOngoing(true);
             setStartButton(false);
-            console.log('Rota de ida iniciada!')
+            console.log(`Rota de ida iniciada! Na ${selectedSchool} com o ${selectedCar}`)
         }
-        else if (schedule === 2){
+        else if (routeType === 2){
+            setShowDropdowns(false);
             // Chamada API volta (recebe do backend a lista de alunos de volta (waypoints))
             calculateRoute(waypoints, userLocation); // os waypoints vem da API (backend)
             setRouteOngoing(true);
             setStartButton(false);
-            console.log('Rota de volta iniciada!')
+            console.log(`Rota de volta iniciada! Na ${selectedSchool} com o ${selectedCar}`)
         }
         else {
             console.log('Erro no tipo da schedule.')
@@ -203,10 +245,35 @@ const MapaMotorista = ({ navigation }) => {
     }
 
     const calculateDistanceToRoute = (latitude, longitude) => {
-        if (routePoints.length === 0) return 0;
+
+        // if (!latitude || !longitude) {
+        //     console.log('Erro: Coordenadas inválidas para a localização atual.');
+        //     return 0;
+        // }
+        if (!routePointsRef.current || routePointsRef.current.length === 0) {
+            console.log('Erro: Nenhum ponto de rota disponível.');
+            return 0;
+        }
+    
         const currentLocation = { latitude, longitude };
-        return Math.min(...routePoints.map(point => getDistance(currentLocation, point)));
+    
+        const validRoutePoints = routePointsRef.current.filter(
+            point =>
+                point &&
+                typeof point.latitude === 'number' &&
+                typeof point.longitude === 'number' &&
+                !isNaN(point.latitude) &&
+                !isNaN(point.longitude)
+        );
+        // console.log('validRoutePoints', validRoutePoints)
+        if (validRoutePoints.length === 0) {
+            console.log('Erro: Nenhum ponto de rota válido encontrado.');
+            return 0;
+        }
+        
+        return Math.min(...validRoutePoints.map(point => getDistance(currentLocation, point)));
     };
+    
 
     const recenterMap = () => {
         if (region) {
@@ -243,21 +310,47 @@ const MapaMotorista = ({ navigation }) => {
     }
 
 
-    // ---------- Gerencia a entrega do aluno ----------
+    // ------------------------------------------------------------ //
+    //                Gerencia a Entrega dos Alunos
+    // ------------------------------------------------------------ //
+
     const handleEntrega = (bool) => {
-        if (bool){
-            setCurrentLeg(currentLeg+1);
-            // calculateRoute()
+        if (bool) {
+            console.log(`Aluno ${optimizedWaypoints[currentStudentIndex]?.name} Entregue!`);
+            
+            // Vai pulando de aluno em aluno enquanto houver alunos na lista de orderedWaypoints
+            if (currentStudentIndex < optimizedWaypoints.length - 1) {
+                setCurrentStudentIndex(currentStudentIndex + 1);
+                setWaypointProximity(true);
+                // Espaço para enviar pro backend \/
+                //
+                //
+            } else {
+                console.log('Toda a fila de alunos foi percorrida.');
+                setWaypointProximity(false);
+            }
+
+        } else {
+            if (currentStudentIndex < optimizedWaypoints.length - 1) {
+                console.log('Criança não entregue!');
+                setCurrentStudentIndex(currentStudentIndex + 1);
+                setWaypointProximity(true);
+                // Espaço para enviar pro backend \/
+                //
+                //
+            }
+            else {
+                console.log('Toda a fila de alunos foi percorrida.');
+                setWaypointProximity(false);
+            }
         }
-        else{
-            console.log('Criança não entregue!')
-        }
+    };
+    
+    
 
-        setWaypointProximity(false);
-    }
-
-    // ---------- Envio do pacote de informações ao Backend ----------
-
+    // ------------------------------------------------------------ //
+    //             Envio da Localização (60 em 60 seg)
+    // ------------------------------------------------------------ //
     const handlePostDriverLocation = async(body) => {
         const postLocation = await postDriverLocation(body)
 
@@ -269,11 +362,7 @@ const MapaMotorista = ({ navigation }) => {
         }
     }
 
-    
-    // O que tem que ser enviado:
-    // UserId do motorista, que vem do user 
     useEffect(() => {
-        // console.log(clock)
         const isLocationAvailable = userLocation?.latitude && userLocation?.longitude
         
         if (isLocationAvailable && routeOnGoing && userData) {
@@ -287,14 +376,13 @@ const MapaMotorista = ({ navigation }) => {
         }
     },[clock])
 
-
     useEffect(() => {
         let isMounted = true;
 
         const intervalFunc = () => {
             if (isMounted) {
                 setClock(prevClock => !prevClock);
-                setTimeout(intervalFunc, 10000); // Repetir a cada 10 segundos
+                setTimeout(intervalFunc, 60000); // Repetir a cada 10 segundos
 
             }
         };
@@ -302,9 +390,42 @@ const MapaMotorista = ({ navigation }) => {
         intervalFunc(); // Inicializar a primeira execução
 
         return () => {
-            isMounted = false; // Limpar na desmontagem do componente
+            isMounted = false;
         };
     }, []);
+
+
+    // ------------------------------------------------------------ //
+    //        Envio da Rota pro Backend (Sempre que att a rota)
+    // ------------------------------------------------------------ //
+    const handlePostRoute = async(body) => {
+        if (encodedRoutePoints && routeOnGoing && userData) {
+            const body = {
+                route_points: encodedRoutePoints
+            }
+            const postRoute = await postRoutePoints(body)
+    
+            if(postRoute.status === 201){
+                console.log('Sucesso ao enviar rota codificada')
+            }
+            else{   
+                console.log('Erro ao enviar rota codificada')
+            }
+        }
+    }
+
+    // ------------------------------------------------------------ //
+    //                    Abrir App google Maps
+    // ------------------------------------------------------------ //
+    const openGoogleMaps = () => {
+        if (mapsUrl) {
+          Linking.openURL(mapsUrl).catch(err => {
+            Alert.alert('Erro', 'Não foi possível abrir o Google Maps.');
+          });
+        } else {
+          Alert.alert('Aviso', 'Nenhuma rota gerada ainda.');
+        }
+    };
 
     return (
         <View style={styles.view}>
@@ -369,53 +490,133 @@ const MapaMotorista = ({ navigation }) => {
                     </MapView>
                 )}
             </View>
-            {startButton && (
-                <View style={styles.startButtonPos}>
-                    <View style={styles.startButton}>
-                        <Button style = {styles.startRouteButton}
-                            onPress={() => startRoute(1)}
-                        >
-                            <Text style={{color:'white', fontSize: 15, fontWeight: 'bold'}}>IDA ESCOLA</Text>
-                        </Button>
 
-                        <Button style = {styles.startRouteButton}
-                            onPress={() => startRoute(2)}
+            {/* Botão Google Maps */}
+            {routeOnGoing && (
+                <View style={styles.googleMapsPos}>
+                    <Pressable style={styles.googleMaps} title="Abrir no Google Maps" onPress={openGoogleMaps}>
+                        <Image
+                            source={require('../../assets/icons/googleMaps.png')}
+                            style={{ width: 45, height: 45 }}
+                        />
+                    </Pressable>  
+                </View>
+            )}
+            
+
+            {/* ---------- CARD IDA VOLTA ---------- */}
+            {startButton && region && (
+                <View>
+                {/* Exibe os botões "IDA ESCOLA" e "VOLTA ESCOLA" se os dropdowns ainda não estiverem visíveis */}
+                {!showDropdowns && !showStudentList && (
+                  <View style={styles.startButtonPos}>
+                    <View style={styles.startContent}>
+                      <Button
+                        style={styles.startRouteButton}
+                        onPress={() => {setShowDropdowns(true), setRouteType(1)}} // Rota de ida
+                        title="IDA ESCOLA"
+                      >
+                        IDA ESCOLA
+                      </Button>
+                      <Button
+                        style={styles.startRouteButton}
+                        onPress={() => {setShowDropdowns(true), setRouteType(2)}} // Rota de volta
+                        title="VOLTA ESCOLA"
+                      >
+                        VOLTA ESCOLA
+                    </Button>
+                    </View>
+                  </View>
+                )}
+          
+                {/* Exibe os dropdowns se um dos botões tiver sido clicado */}
+                {showDropdowns && (
+                  <View style={styles.startButtonPos}>
+                    <View style={styles.startDropdown}>
+                        <Text>Escolha o carro:</Text>
+                        <Picker
+                        selectedValue={selectedCar}
+                        onValueChange={(itemValue) => setSelectedCar(itemValue)}
+                        style={{width: 200}}
                         >
-                            <Text style={{color:'white', fontSize: 15, fontWeight: 'bold'}}>VOLTA ESCOLA</Text>
+                        <Picker.Item label="Selecione um carro" value="" />
+                        <Picker.Item label="Carro 1" value="carro1" />
+                        <Picker.Item label="Carro 2" value="carro2" />
+                        <Picker.Item label="Carro 3" value="carro3" />
+                        </Picker>
+            
+                        <Text>Escolha a escola:</Text>
+                        <Picker
+                        selectedValue={selectedSchool}
+                        onValueChange={(itemValue) => setSelectedSchool(itemValue)}
+                        style={{width: 200}}
+                        >
+                        <Picker.Item label="Selecione uma escola" value="" />
+                        <Picker.Item label="Escola A" value="escolaA" />
+                        <Picker.Item label="Escola B" value="escolaB" />
+                        <Picker.Item label="Escola C" value="escolaC" />
+                        </Picker>
+            
+                        <Button title="Confirmar" onPress={() => {
+                        if (selectedCar && selectedSchool) {
+                            setShowDropdowns(false);
+                            setShowStudentList(true);
+                        } else {
+                            alert("Por favor, selecione o carro e a escola.");
+                        }
+                        }}>
+                            Confirmar
+                        </Button>
+                    </View>
+                  </View>
+                )}
+          
+                {/* Exibe a lista de alunos após a confirmação dos dropdowns */}
+                {showStudentList && (
+                <View style={styles.startButtonPos}>
+                    <View style={styles.startDropdown}>
+                        <FlatList
+                            data={[
+                            { id: '1', name: 'João da Silva', age: 10 },
+                            { id: '2', name: 'Maria Oliveira', age: 9 },
+                            { id: '3', name: 'Carlos Souza', age: 11 },
+                            { id: '4', name: 'Ana Santos', age: 10 },
+                            ]}
+                            keyExtractor={(item) => item.id}
+                            renderItem={({ item }) => (
+                            <View style={styles.card}>
+                                <Text style={styles.studentName}>{item.name}</Text>
+                                <Text>Idade: {item.age}</Text>
+                            </View>
+                            )}
+                        />
+                        <Button
+                            title="Confirmar"
+                            onPress={startRoute}
+                        >
+                            Confirmar
                         </Button>
                     </View>
                 </View>
+                )}
+              </View>          
             )}
 
-            {/* ---------- CARD INFO ROTA ---------- */}
-            {!startButton &&(
+            {!startButton && eta && totalDistance && (
                 <View style={styles.footer}>
                     <View style={styles.infoCard}>
-                        <View style={styles.infoCardNextStop}>
-                            <Text style={styles.infoCardTitle}>
-                                Próxima Parada
-                            </Text>
-                            {nextWaypointDistance && nextWaypointDuration && (
-                                <View style={styles.infoCardNextStopTexts}>
-                                    <Text style={styles.infoCardText}>
-                                        {formatDistance(nextWaypointDistance)}
-                                    </Text>
-                                    <Text style={styles.infoCardText}>
-                                        {formatTime(nextWaypointDuration)}
-                                    </Text>
-                                </View>
-                            )}
-
-                            {(totalDistance && totalDuration && typeof speed !== 'undefined' && typeof heading !== 'undefined') && (
-                                <View style={styles.infoCardFullRouteTexts}>
-                                    <Text>
-                                        {formatDistance(totalDistance)}
-                                    </Text>
-                                    <Text>
-                                        {formatTime(totalDuration)}{'\n'}
-                                    </Text>
-                                </View>
-                            )}
+                        <Text style={styles.infoCardTitle}>Até próxima parada ({optimizedWaypoints[currentStudentIndex]?.name})</Text>
+                        <View style={styles.infoCardContent}>
+                            <View style={styles.infoCardLeft}>
+                                <Text>ETA</Text>
+                                <Text style={styles.infoCardText}>
+                                    {eta ? eta.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''} {/* Verifica se eta não é null */}
+                                </Text>
+                            </View>
+                            <View style={styles.infoCardRight}>
+                                <Text>Distância</Text>
+                                <Text style={styles.infoCardText}>{formatDistance(nextWaypointDistance)}</Text>
+                            </View>
                         </View>
                     </View>
                 </View>
@@ -423,10 +624,12 @@ const MapaMotorista = ({ navigation }) => {
             }
             
             {/* ---------- CARD ALUNO ENTREGUE ---------- */}
-            {waypointProximity && (
+            {waypointProximity && currentStudentIndex < optimizedWaypoints.length && (
                 <View style={styles.deliveredCardPosition}> 
                     <View style={styles.deliveredCardContent}>
-                        <Text style={styles.deliveredCardText}>O ALUNO FELIPE FOI ENTREGUE?</Text>
+                        <Text style={styles.deliveredCardText}>
+                            O ALUNO {optimizedWaypoints[currentStudentIndex]?.name?.toUpperCase() || 'NOME DESCONHECIDO'} FOI ENTREGUE?
+                        </Text>
                         <View style={styles.deliveredCardButtons}>
                             <Button style={styles.deliveredCardButtonYes} mode="contained" onPress={() => handleEntrega(true)}>
                                 SIM
