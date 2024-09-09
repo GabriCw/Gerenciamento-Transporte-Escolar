@@ -102,7 +102,7 @@ const MapaMotorista = ({ navigation }) => {
                 },
                 (location) => {
                     const { latitude, longitude, heading, speed } = location.coords;
-                    if (speed >= 0.5){ ; // Só atualiza os dados caso a velocidade seja maior que 0.5 m/s
+                    if (speed >= 0){  // Só atualiza os dados caso a velocidade seja maior que 0.5 m/s
                         setUserLocation({ latitude, longitude });
                         // console.log('User Location: ', userLocation)
                         setRegion({
@@ -112,9 +112,12 @@ const MapaMotorista = ({ navigation }) => {
                             longitudeDelta: 0.005,
                         });
                         setHeading(heading || 0);
+                        console.log('routepoints: ', routePoints.length)
+                        console.log('latlon: ', latitude, longitude)
                         if ( routePoints.length > 0 && {latitude, longitude}) {
                             console.log('lat, long',latitude,longitude, speed)
                             const distanceToRoute = calculateDistanceToRoute({latitude, longitude});
+                            console.log('Distância para a rota:', distanceToRoute);
                             if (distanceToRoute > recalculateThreshold) {
                                 calculateRoute(waypoints,{latitude, longitude});
                             }
@@ -153,20 +156,21 @@ const MapaMotorista = ({ navigation }) => {
                     longitude: point[1],
                 }));
                 setEncodedRoutePoints(route.overview_polyline.points);
+                console.log('decodedpole', decodedPolyline.length)
                 setRoutePoints(decodedPolyline);
 
                 const optimizedOrder = route.waypoint_order;
                 setWaypointOrder(optimizedOrder);
                 
                 const orderedWaypoints = [waypoints[0], ...optimizedOrder.map(i => waypoints[i + 1]), waypoints[waypoints.length - 1]];
-                console.log(decodedPolyline)
+                // console.log(decodedPolyline)
                 setOptimizedWaypoints(orderedWaypoints);
                 console.log('orderedWaypoints', orderedWaypoints)
 
                 setTotalDuration(route.legs.reduce((acc, leg) => acc + leg.duration.value, 0)); // duração em segundos
                 setTotalDistance(route.legs.reduce((acc, leg) => acc + leg.distance.value, 0)); // distância em metros
                 
-                console.log('aaaaaaaaaaaaaa', route.legs)
+                // console.log('aaaaaaaaaaaaaa', route.legs)
 
                 if (route.legs.length > 0) {
                     const nextLeg = route.legs[currentLeg];
@@ -231,10 +235,11 @@ const MapaMotorista = ({ navigation }) => {
     }
 
     const calculateDistanceToRoute = (latitude, longitude) => {
-        if (!latitude || !longitude || isNaN(latitude) || isNaN(longitude)) {
-            console.log('Erro: Coordenadas inválidas para a localização atual.');
-            return 0;
-        }
+
+        // if (!latitude || !longitude) {
+        //     console.log('Erro: Coordenadas inválidas para a localização atual.');
+        //     return 0;
+        // }
         if (!routePoints || routePoints.length === 0) {
             console.log('Erro: Nenhum ponto de rota disponível.');
             return 0;
@@ -250,6 +255,7 @@ const MapaMotorista = ({ navigation }) => {
                 !isNaN(point.latitude) &&
                 !isNaN(point.longitude)
         );
+        // console.log('validRoutePoints', validRoutePoints)
         if (validRoutePoints.length === 0) {
             console.log('Erro: Nenhum ponto de rota válido encontrado.');
             return 0;
