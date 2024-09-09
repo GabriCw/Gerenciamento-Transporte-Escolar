@@ -38,7 +38,6 @@ const MapaMotorista = ({ navigation }) => {
     const [totalDistance, setTotalDistance] = useState(null);
     const [nextWaypointDistance, setNextWaypointDistance] = useState(null);
     const [nextWaypointDuration, setNextWaypointDuration] = useState(null);
-    const [currentLeg, setCurrentLeg] = useState(1)
     const recalculateThreshold = 100; // Distância em metros para recalcular a rota
     const [waypointProximity, setWaypointProximity] = useState(true)
     const [startButton, setStartButton] = useState(true);
@@ -55,7 +54,9 @@ const MapaMotorista = ({ navigation }) => {
     const [routeType, setRouteType] = useState('');
     const [showStudentList, setShowStudentList] = useState(false);
     const [apiCalls, setApiCalls] = useState(0)
-
+    const [currentLeg, setCurrentLeg] = useState(1)
+    const [routeLegs, setRouteLegs] = useState([]);
+    
     useEffect(() => {
         const initializeLocation = async () => {
             try {
@@ -171,6 +172,7 @@ const MapaMotorista = ({ navigation }) => {
                 setEncodedRoutePoints(route.overview_polyline.points);
                 console.log('decodedpole', decodedPolyline.length)
                 setRoutePoints(decodedPolyline);
+                setRouteLegs(route.legs);
 
                 const optimizedOrder = route.waypoint_order;
                 setWaypointOrder(optimizedOrder);
@@ -198,11 +200,26 @@ const MapaMotorista = ({ navigation }) => {
                 // console.log('Link para Google Maps:', mapsUrll)
                 setMapsUrl(mapsUrll);
 
+                // Define o ETA e a distância para o primeiro waypoint
+                updateNextWaypointDetails(currentStudentIndex);
+
             } else {
                 console.log('No routes found');
             }
         } catch (error) {
             console.log(`Error fetching directions: ${error.message || error}`);
+        }
+    };
+
+    const updateNextWaypointDetails = (nextIndex) => {
+        if (nextIndex < routeLegs.length) {
+            const nextLeg = routeLegs[nextIndex];
+            setNextWaypointDistance(nextLeg.distance.value); // Distância em metros
+            setNextWaypointDuration(nextLeg.duration.value); // Duração em segundos
+    
+            // Atualiza o ETA com base no tempo atual e na duração do próximo leg
+            const eta = new Date(Date.now() + nextLeg.duration.value * 1000); // Converte segundos para milissegundos
+            setEta(eta);
         }
     };
 
@@ -246,10 +263,10 @@ const MapaMotorista = ({ navigation }) => {
 
     const calculateDistanceToRoute = (latitude, longitude) => {
 
-        // if (!latitude || !longitude) {
-        //     console.log('Erro: Coordenadas inválidas para a localização atual.');
-        //     return 0;
-        // }
+        if (!latitude || !longitude) {
+            console.log('Erro: Coordenadas inválidas para a localização atual.');
+            return 0;
+        }
         if (!routePointsRef.current || routePointsRef.current.length === 0) {
             console.log('Erro: Nenhum ponto de rota disponível.');
             return 0;
@@ -314,38 +331,76 @@ const MapaMotorista = ({ navigation }) => {
     //                Gerencia a Entrega dos Alunos
     // ------------------------------------------------------------ //
 
+    // const handleEntrega = (bool) => {
+    //     if (bool) {
+    //         console.log(`Aluno ${optimizedWaypoints[currentStudentIndex]?.name} Entregue!`);
+            
+    //         // Vai pulando de aluno em aluno enquanto houver alunos na lista de orderedWaypoints
+    //         if (currentStudentIndex < optimizedWaypoints.length - 1) {
+    //             setCurrentStudentIndex(currentStudentIndex + 1);
+    //             setWaypointProximity(true);
+    //             // Espaço para enviar pro backend \/
+    //             //
+    //             //
+    //         } else {
+    //             console.log('Toda a fila de alunos foi percorrida.');
+    //             setWaypointProximity(false);
+    //         }
+
+    //     } else {
+    //         if (currentStudentIndex < optimizedWaypoints.length - 1) {
+    //             console.log('Criança não entregue!');
+    //             setCurrentStudentIndex(currentStudentIndex + 1);
+    //             setWaypointProximity(true);
+    //             // Espaço para enviar pro backend \/
+    //             //
+    //             //
+    //         }
+    //         else {
+    //             console.log('Toda a fila de alunos foi percorrida.');
+    //             setWaypointProximity(false);
+    //         }
+    //     }
+    // };
+
+    // Atualização na função handleEntrega
     const handleEntrega = (bool) => {
         if (bool) {
             console.log(`Aluno ${optimizedWaypoints[currentStudentIndex]?.name} Entregue!`);
-            
+
             // Vai pulando de aluno em aluno enquanto houver alunos na lista de orderedWaypoints
             if (currentStudentIndex < optimizedWaypoints.length - 1) {
-                setCurrentStudentIndex(currentStudentIndex + 1);
-                setWaypointProximity(true);
-                // Espaço para enviar pro backend \/
-                //
-                //
+                setCurrentStudentIndex((prevIndex) => {
+                    const newIndex = prevIndex + 1;
+                    setWaypointProximity(true);
+
+                    // Atualiza os detalhes do próximo waypoint usando as legs da rota
+                    updateNextWaypointDetails(newIndex);
+
+                    return newIndex;
+                });
             } else {
                 console.log('Toda a fila de alunos foi percorrida.');
                 setWaypointProximity(false);
             }
-
         } else {
             if (currentStudentIndex < optimizedWaypoints.length - 1) {
                 console.log('Criança não entregue!');
-                setCurrentStudentIndex(currentStudentIndex + 1);
-                setWaypointProximity(true);
-                // Espaço para enviar pro backend \/
-                //
-                //
-            }
-            else {
+                setCurrentStudentIndex((prevIndex) => {
+                    const newIndex = prevIndex + 1;
+                    setWaypointProximity(true);
+
+                    // Atualiza os detalhes do próximo waypoint usando as legs da rota
+                    updateNextWaypointDetails(newIndex);
+
+                    return newIndex;
+                });
+            } else {
                 console.log('Toda a fila de alunos foi percorrida.');
                 setWaypointProximity(false);
             }
         }
     };
-    
     
 
     // ------------------------------------------------------------ //
