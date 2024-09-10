@@ -120,3 +120,49 @@ export const getStudentDetails = async(student_id) => {
         return error.response;
     }
 };
+
+export const getListAllHomes = async(student_id, user_id) => {
+    const _endpoint = "/list-all-homes";
+    
+    const headerBody = {
+        'student-id': student_id,
+        'user-id': user_id
+    };
+
+    try{
+        const response = await axios.get(_controller + _endpoint, {
+            headers: headerBody
+        });
+
+        return response;
+    }
+    catch(error){
+        return error.response;
+    }
+};
+
+export const updateAddress = async(body) => {
+    const _endpoint = "/update-address";
+
+    try{
+        const response = await axios.put(_controller + _endpoint, body);
+
+        return response;
+    }
+    catch(error){
+        return error.response;
+    }
+};
+
+export const updateAddressByPoint = async(body) => {
+    const _endpoint = "/update-address-by-point";
+
+    try{
+        const response = await axios.put(_controller + _endpoint, body);
+
+        return response;
+    }
+    catch(error){
+        return error.response;
+    }
+};

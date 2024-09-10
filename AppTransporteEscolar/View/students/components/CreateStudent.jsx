@@ -5,7 +5,7 @@ import Header from "../../../components/header/Header";
 import Toast from "react-native-toast-message";
 import { getDriverDetailsByCode } from "../../../data/userServices";
 import PageDefault from "../../../components/pageDefault/PageDefault";
-import { getStudentByCode } from "../../../data/userPointServices";
+import { getDriverByCode, getStudentByCode } from "../../../data/userPointServices";
 
 const CreateStudent = ({navigation}) => {
     const [student, setStudent] = useState(null);
@@ -25,7 +25,7 @@ const CreateStudent = ({navigation}) => {
 
         setLoading(true);
 
-        const verifyCode = await getStudentByCode(student?.driverCode);
+        const verifyCode = await getDriverByCode(student?.driverCode);
 
         if(verifyCode.status === 200){
             navigation.navigate("ConfirmDriverAndSchool", {studentData: student, driverData: verifyCode.data});

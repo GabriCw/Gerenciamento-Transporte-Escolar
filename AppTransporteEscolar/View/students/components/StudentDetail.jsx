@@ -1,13 +1,14 @@
-import {  Alert, StyleSheet, Text, View } from "react-native";
+import {  Alert, Pressable, StyleSheet, Text, View } from "react-native";
 import Header from "../../../components/header/Header";
 import { FontAwesome } from "@expo/vector-icons";
 import { ActivityIndicator, Button } from "react-native-paper";
-import { useContext, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import ModalEdit from "./ModalEdit";
-import { deleteStudent, disassociationStudent, updateStudent } from "../../../data/studentServices";
+import { deleteStudent, disassociationStudent, getStudentDetails, updateStudent } from "../../../data/studentServices";
 import Toast from "react-native-toast-message";
 import { AuthContext } from "../../../providers/AuthProvider";
 import PageDefault from "../../../components/pageDefault/PageDefault";
+import ModalEditPoint from "./ModalEditPoint";
 
 const StudentDetail = ({navigation, route}) => {
 
@@ -15,10 +16,20 @@ const StudentDetail = ({navigation, route}) => {
     const {userData, handleVerifyStudent} = useContext(AuthContext);
 
     const [openEditModal, setOpenEditModal] = useState(false);
+    const [openEditPointModal, setOpenEditPointModal] = useState(false);
     const [loading, setLoading] = useState(false);
+    const [data, setData] = useState([]);
+
+    useEffect(() => {
+        setData(studentData);
+    }, [studentData]);
 
     const handleOpenEditModal = () => {
         setOpenEditModal(!openEditModal);
+    };
+    
+    const handleOpenEditPointModal = () => {
+        setOpenEditPointModal(!openEditPointModal);
     };
 
     const handleUpdate = async(student) => {
@@ -136,6 +147,27 @@ const StudentDetail = ({navigation, route}) => {
         setLoading(false);
     };
 
+    const handleReloadInfos = async() => {
+        setLoading(true);
+
+        const studentDetails = await getStudentDetails(data.student.id);
+
+        if(studentDetails.status === 200){
+            setData(studentDetails.data);
+        }
+        else{
+            Toast.show({
+                type: 'error',
+                text1: 'Erro',
+                text2:"Erro ao trazer detalhes do aluno",
+                visibilityTime: 3000,
+            });
+            navigation.goBack();
+        }
+
+        setLoading(false);
+    };
+
     return <PageDefault headerTitle="Detalhes do Aluno" loading={loading} navigation={navigation}>
         <View style={styles.viewContainter}>
             <View style={styles.cardContainer}>
@@ -145,12 +177,12 @@ const StudentDetail = ({navigation, route}) => {
                     </View>
                     <View style={styles.content}>
                         <View style={styles.nameYearContent}>
-                            <Text style={styles.title}>{studentData?.student?.name}</Text>
-                            <Text style={styles.text}>{studentData?.student?.year} anos</Text>
+                            <Text style={styles.title}>{data?.student?.name}</Text>
+                            <Text style={styles.text}>{data?.student?.year} anos</Text>
                         </View>
                         <View style={styles.codeContent}>
                             <Text style={styles.codeText}>Código:</Text>
-                            <Text style={styles.colorBox}>{studentData?.student?.code}</Text>
+                            <Text style={styles.colorBox}>{data?.student?.code}</Text>
                         </View>
                     </View>
                 </View>
@@ -158,13 +190,36 @@ const StudentDetail = ({navigation, route}) => {
                 <View style={styles.lineSeparator}/>
 
                 <View style={styles.schoolContainer}>
-                    <View style={styles.schoolContent}>
-                        <Text style={styles.colorBox}>Escola</Text>
-                        <Text style={styles.text}>{studentData?.school?.name}</Text>
+                    <View style={styles.pointContent}>
+                        <View style={styles.pointContent}>
+                            <Text style={styles.colorBox}>Endereço</Text>
+                            <Text style={styles.text}>{data?.point?.name}</Text>
+                        </View>
+                        <Pressable
+                            onPress={handleOpenEditPointModal}
+                            style={styles.changeButtonContainer}
+                        >
+                            <Text style={styles.changeButtonText}>Trocar</Text>
+                        </Pressable>
                     </View>
                     <View>
-                        <Text style={styles.text}>{studentData?.school?.address}</Text>
-                        <Text style={styles.text}>{studentData?.school?.neighborhood} - {studentData?.school?.city}/{studentData?.school?.state}</Text>
+                        <Text style={styles.text}>{data?.point?.address}</Text>
+                        <Text style={styles.text}>{data?.point?.neighborhood} - {data?.point?.city}/{data?.point?.state}</Text>
+                    </View>
+                </View>
+
+                <View style={styles.lineSeparator}/>
+
+                <View style={styles.lineSeparator}/>
+
+                <View style={styles.schoolContainer}>
+                    <View style={styles.schoolContent}>
+                        <Text style={styles.colorBox}>Escola</Text>
+                        <Text style={styles.text}>{data?.school?.name}</Text>
+                    </View>
+                    <View>
+                        <Text style={styles.text}>{data?.school?.address}</Text>
+                        <Text style={styles.text}>{data?.school?.neighborhood} - {data?.school?.city}/{data?.school?.state}</Text>
                     </View>
                 </View>
 
@@ -173,10 +228,10 @@ const StudentDetail = ({navigation, route}) => {
                 <View style={styles.driverContainer}>
                     <View style={styles.driverContent}>
                         <Text style={styles.colorBox}>Motorista</Text>
-                        <Text style={styles.text}>{studentData?.driver?.name}</Text>
+                        <Text style={styles.text}>{data?.driver?.name}</Text>
                     </View>
                     {
-                        studentData?.driver?.phones?.map(item => {
+                        data?.driver?.phones?.map(item => {
                             return <View style={styles.driverContent} key={item.id}>
                                 <FontAwesome name="phone" size={24} color="black" />
                                 <Text style={styles.text}>{item.phone}</Text>
@@ -194,7 +249,7 @@ const StudentDetail = ({navigation, route}) => {
                     Editar
                 </Button>
                 {
-                    studentData?.student?.creation_user !== userData?.id ?
+                    data?.student?.creation_user !== userData?.id ?
                         <Button
                             mode="contained"
                             onPress={hhandleDisassociationModal}
@@ -218,7 +273,16 @@ const StudentDetail = ({navigation, route}) => {
             open={openEditModal}
             onClose={handleOpenEditModal}
             handleConfirm={handleUpdate}
-            data={studentData}
+            data={data}
+        />
+
+        <ModalEditPoint
+            pointSelected={data.point}
+            navigation={navigation}
+            student={data.student}
+            open={openEditPointModal}
+            setOpen={setOpenEditPointModal}
+            handleReload={handleReloadInfos}
         />
     </PageDefault>
 };
@@ -329,6 +393,13 @@ const styles = StyleSheet.create({
         alignItems: "center",
         columnGap: 10
     },
+    pointContent: {
+        display: "flex",
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "space-between",
+        columnGap: 10
+    },
     driverContainer:{
         paddingTop: 10,
         rowGap: 3,
@@ -345,6 +416,16 @@ const styles = StyleSheet.create({
         flexDirection: "row",
         justifyContent: "space-between",
         width: "100%"
+    },
+    changeButtonContainer: {
+        backgroundColor: '#C36005',
+        borderRadius: 5,
+        paddingVertical: "1.5%",
+        paddingHorizontal: "3%",
+    },
+    changeButtonText: {
+        fontSize: 15,
+        color: "#fff"
     },
     button: {
         backgroundColor: '#C36005',
