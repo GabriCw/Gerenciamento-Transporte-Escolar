@@ -13,7 +13,8 @@ const defaultAuthProvider = {
     handleGenerateToken: async() => {},
     handleVerifyStudent: async(data) => {},
     handleUpdateUserdata: async() => {},
-    handleGetUserDetails: async(id) => {}
+    handleGetUserDetails: async(id) => {},
+    handleRemoveUserFromFirebase: async() => {},
 };
 
 export const AuthContext = createContext(defaultAuthProvider);
@@ -74,6 +75,20 @@ export function AuthProvider({children}) {
         }
     };
 
+    const handleRemoveUserFromFirebase = async() => {
+        const currentUser = auth.currentUser;
+
+        if(currentUser){
+            try{
+                await currentUser.delete();
+                await signOut(auth);
+            }
+            catch(e){
+                console.log("erro: ", e)
+            }
+        }
+    };
+
     const handleUpdateUserdata = async() => {
         const response = await handleGetUserDetails(userData.id);
 
@@ -91,7 +106,8 @@ export function AuthProvider({children}) {
             handleGenerateToken,
             handleVerifyStudent,
             handleUpdateUserdata,
-            handleGetUserDetails
+            handleGetUserDetails,
+            handleRemoveUserFromFirebase
         }}>
             {children}
         </AuthContext.Provider>

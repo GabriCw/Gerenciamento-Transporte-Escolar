@@ -20,6 +20,7 @@ import SchoolVehicleDetails from '../schools/components/SchoolVehicleDetails';
 import Schools from '../school/Schools';
 import AllSchoolsList from '../school/components/AllSchoolsList';
 import SchoolsDetails from '../school/components/SchoolsDetails';
+import RemoveUser from '../profile/components/RemoveUser';
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -41,6 +42,7 @@ const PerfilRespStack = () => {
     <Stack.Screen name="ConfirmDriverAndSchool" component={ConfirmDriverAndSchool} options={{ headerShown: false }} />
     <Stack.Screen name="VerPerfilMoto" component={Profile} options={{ headerShown: false }} />
     <Stack.Screen name="StudentAssociation" component={ConfirmStudentAssociation} options={{ headerShown: false }} />
+    <Stack.Screen name="RemoveUser" component={RemoveUser} options={{ headerShown: false }} />
   </Stack.Navigator>
 };
 
@@ -54,6 +56,7 @@ const PerfilMotoStack = () => (
     <Stack.Screen name="Schools" component={Schools} options={{ headerShown: false }} />
     <Stack.Screen name="AllSchoolsList" component={AllSchoolsList} options={{ headerShown: false }} />
     <Stack.Screen name="SchoolsDetails" component={SchoolsDetails} options={{ headerShown: false }} />
+    <Stack.Screen name="RemoveUser" component={RemoveUser} options={{ headerShown: false }} />
   </Stack.Navigator>
 );
 
@@ -72,6 +75,7 @@ const PerfilAdminStack = () => (
     <Stack.Screen name="Schools" component={Schools} options={{ headerShown: false }} />
     <Stack.Screen name="AllSchoolsList" component={AllSchoolsList} options={{ headerShown: false }} />
     <Stack.Screen name="SchoolsDetails" component={SchoolsDetails} options={{ headerShown: false }} />
+    <Stack.Screen name="RemoveUser" component={RemoveUser} options={{ headerShown: false }} />
   </Stack.Navigator>
 );
 

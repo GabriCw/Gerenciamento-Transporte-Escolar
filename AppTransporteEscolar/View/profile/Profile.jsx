@@ -1,5 +1,5 @@
 import React, { useState, useContext, useEffect } from 'react';
-import { View, StyleSheet, Text, Alert, ScrollView } from 'react-native';
+import { View, StyleSheet, Text, Alert, ScrollView, Pressable } from 'react-native';
 import { Button, TextInput, IconButton, Modal, Portal, Card, Provider, ActivityIndicator } from 'react-native-paper';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { FontAwesome } from '@expo/vector-icons';
@@ -155,6 +155,10 @@ const Profile = () => {
         }
     };
 
+    const handleNavigateToRemoveUser = () => {
+        navigation.navigate("RemoveUser");
+    };
+
     return (
         <PageDefault headerTitle="Perfil" navigation={navigation} loading={isLoading} backNavigation={"Perfil"}>
             <ScrollView>
@@ -207,6 +211,11 @@ const Profile = () => {
                                 </Card>
                             }
                         </View>
+                        <View style={styles.textAssociationContainer}>
+                            <Pressable hitSlop={20} onPress={handleNavigateToRemoveUser}>
+                                <Text style={styles.textAssociation}>Excluir conta</Text>
+                            </Pressable>
+                        </View>
                     </KeyboardAwareScrollView>
                 </ScrollView>
                 <ModalEditUser data={user} open={isModalVisibleUser} onClose={handleOpenModalUser} handleConfirm={handleUpdateUser}/>
@@ -236,6 +245,16 @@ const styles = StyleSheet.create({
         marginTop: 10,
         fontWeight: 'bold',
     },  
+    textAssociationContainer: {
+        width: "100%",
+        alignItems: "center"
+    },  
+    textAssociation: {
+        color: "#C36005",
+        fontWeight: "bold",
+        fontSize: 14,
+        textDecorationLine: "underline"
+    },
     content: {
         flex: 1,
         paddingHorizontal: 20,
