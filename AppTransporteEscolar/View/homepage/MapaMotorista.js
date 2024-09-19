@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef, useContext } from 'react';
-import { View, Image, Text, Alert, Linking, Pressable, FlatList } from 'react-native';
+import { GOOGLE_MAPS_API_KEY } from '@env';
+import { View, Image, Text, Alert, Linking, Pressable, FlatList, ActivityIndicator } from 'react-native';
 import MapView, { Marker, Polyline } from 'react-native-maps';
 import { Picker } from '@react-native-picker/picker';
 import * as Location from 'expo-location';
@@ -14,6 +15,7 @@ import FontAwesome from '@expo/vector-icons/FontAwesome';
 import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import { postDriverLocation, postRoutePoints } from '../../data/locationServices';
 import { AuthContext } from '../../providers/AuthProvider';
+import { throttle } from 'lodash';
 
 
 const MapaMotorista = ({ navigation }) => {
@@ -31,7 +33,7 @@ const MapaMotorista = ({ navigation }) => {
     const [encodedRoutePoints, setEncodedRoutePoints] = useState([]);
     const [optimizedWaypoints, setOptimizedWaypoints] = useState([]);
     const mapRef = useRef(null);
-    const apiKey = 'AIzaSyB65ouahlrzxKKS3X_VeMHKWZPYrJTJx6E';
+    const apiKey = GOOGLE_MAPS_API_KEY;
     const inactivityTimeout = useRef(null);
     const [isUserInteracting, setIsUserInteracting] = useState(false);
     const [totalDuration, setTotalDuration] = useState(null);
@@ -56,13 +58,24 @@ const MapaMotorista = ({ navigation }) => {
     const [apiCalls, setApiCalls] = useState(0)
     const [currentLeg, setCurrentLeg] = useState(1)
     const [routeLegs, setRouteLegs] = useState([]);
+    const [loadingRoute, setLoadingRoute] = useState(false);
     
     useEffect(() => {
         const initializeLocation = async () => {
             try {
                 let { status } = await Location.requestForegroundPermissionsAsync();
                 if (status !== 'granted') {
-                    console.log('Permission to access location was denied');
+                    Alert.alert(
+                        'Permissão Negada',
+                        'Precisamos da sua localização para fornecer o serviço. Por favor, habilite nas configurações.',
+                        [
+                            { text: 'Cancelar', style: 'cancel' },
+                            { 
+                                text: 'Abrir Configurações', 
+                                onPress: () => Linking.openSettings()
+                            },
+                        ]
+                    );
                     return;
                 }
 
@@ -131,7 +144,7 @@ const MapaMotorista = ({ navigation }) => {
                             const distanceToRoute = calculateDistanceToRoute(latitude, longitude);
                             console.log('Distância para a rota:', distanceToRoute);
                             if (distanceToRoute > recalculateThreshold) {
-                                calculateRoute(waypoints,{latitude, longitude});
+                                throttledCalculateRoute(waypoints,{latitude, longitude});
 
                             }
                         }
@@ -161,6 +174,7 @@ const MapaMotorista = ({ navigation }) => {
         const url = `https://maps.googleapis.com/maps/api/directions/json?origin=${origin}&destination=${destination}&waypoints=optimize:true|${waypointsString}&key=${apiKey}&overview=full`;
 
         try {
+            setLoadingRoute(true);
             const response = await axios.get(url);
             console.log('Chamou a API -----------------------------------------------------------------')
             if (response.data.routes && response.data.routes.length) {
@@ -208,8 +222,14 @@ const MapaMotorista = ({ navigation }) => {
             }
         } catch (error) {
             console.log(`Error fetching directions: ${error.message || error}`);
+        } finally {
+            setLoadingRoute(false);
         }
     };
+
+    // Controlar a quantidade de chamadas API com 'throttle'
+    const throttledCalculateRoute = throttle(calculateRoute, 30000);
+
 
     const updateNextWaypointDetails = (nextIndex) => {
         if (nextIndex < routeLegs.length) {
@@ -227,7 +247,7 @@ const MapaMotorista = ({ navigation }) => {
         if (routeType === 1){
             setShowDropdowns(false);
             // Chamada API ida (recebe do backend a lista de alunos de ida (waypoints))
-            calculateRoute(waypoints, userLocation); // os waypoints vem da API (backend)
+            throttledCalculateRoute(waypoints, userLocation); // os waypoints vem da API (backend)
             setRouteOngoing(true);
             setStartButton(false);
             console.log(`Rota de ida iniciada! Na ${selectedSchool} com o ${selectedCar}`)
@@ -235,7 +255,7 @@ const MapaMotorista = ({ navigation }) => {
         else if (routeType === 2){
             setShowDropdowns(false);
             // Chamada API volta (recebe do backend a lista de alunos de volta (waypoints))
-            calculateRoute(waypoints, userLocation); // os waypoints vem da API (backend)
+            throttledCalculateRoute(waypoints, userLocation); // os waypoints vem da API (backend)
             setRouteOngoing(true);
             setStartButton(false);
             console.log(`Rota de volta iniciada! Na ${selectedSchool} com o ${selectedCar}`)
@@ -485,6 +505,11 @@ const MapaMotorista = ({ navigation }) => {
     return (
         <View style={styles.view}>
             <View style={styles.content}>
+                {loadingRoute && (
+                    <View style={styles.loadingRouteStyle}>
+                        <ActivityIndicator size="large" color="#0000ff" />
+                    </View>
+                )}
                 {region && (
                     <MapView
                         ref={mapRef}
@@ -509,7 +534,8 @@ const MapaMotorista = ({ navigation }) => {
                             altitude: 0,
                             zoom: 18,
                         }}
-                    >
+                    >   
+                        
                         {userLocation && (
                             <Marker
                                 coordinate={userLocation}
