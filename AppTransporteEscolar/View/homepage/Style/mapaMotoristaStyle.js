@@ -224,6 +224,12 @@ export const styles = StyleSheet.create({
         shadowOffset: { width: 2, height: 2 },
         shadowOpacity: 0.4,
         shadowRadius: 5,
-    }
+    },
+    loadingRouteStyle: {
+        flex: 1,                 // Faz com que o componente ocupe toda a área disponível
+        justifyContent: 'center', // Centraliza verticalmente
+        alignItems: 'center',     // Centraliza horizontalmente
+        backgroundColor: 'rgba(0,0,0,0.5)', // Opcional: fundo semitransparente para destacar o loader
+    },
 
 });
