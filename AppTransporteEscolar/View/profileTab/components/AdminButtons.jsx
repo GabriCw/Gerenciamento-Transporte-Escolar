@@ -4,8 +4,8 @@ import ButtonDefault from "./ButtonDefault";
 import { FontAwesome, FontAwesome5, Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 
 const AdminButtons = ({navigation}) => {
-    const handleToDriverSchoolPage = () => {
-        navigation.navigate('DriverSchools');
+    const handleToParentNotifications = () => {
+        navigation.navigate('ParentNotifications');
     }
 
     const handleToStudentPage = () => {
@@ -51,6 +51,11 @@ const AdminButtons = ({navigation}) => {
                     icon={<Ionicons name="school" size={"30%"} color="#fff" />}
                     title={"Escolas"}
                     onClick={handleToSchoolsPage}
+                />
+                <ButtonDefault
+                    icon={<Ionicons name="alert" size={"30%"} color="#fff" />}
+                    title={"Ocorrências"}
+                    onClick={handleToParentNotifications}
                 />
             </View>
         </View>
