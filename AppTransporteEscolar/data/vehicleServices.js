@@ -5,7 +5,7 @@ const apiUrl = APP_URL;
 const _controller = apiUrl + '/vehicle';
 
 export const getVehicleByUser = async(id) => {
-    const _endpoint = `/get-by-driver?user_id=${id}`;
+    const _endpoint = `/get-list-by-driver?user_id=${id}`;
 
     try{
         const response  = await axios.get(_controller + _endpoint);

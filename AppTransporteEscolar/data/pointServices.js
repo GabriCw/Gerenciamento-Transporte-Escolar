@@ -83,3 +83,16 @@ export const getSchoolByUser = async(userId) => {
         return error.response;
     }
 };
+
+export const getSchoolByDriver = async(userId) => {
+    const _endpoint = `/get-school-by-driver?user_id=${userId}`;
+
+    try{
+        const response  = await axios.get(_controller + _endpoint);
+
+        return response;
+    }
+    catch(error){
+        return error.response;
+    }
+};

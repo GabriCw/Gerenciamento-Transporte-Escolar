@@ -13,9 +13,12 @@ import { Button } from 'react-native-paper';
 import { formatTime, formatDistance } from '../../utils/formatUtils';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
-import { postDriverLocation, postRoutePoints } from '../../data/locationServices';
+import { postDriverLocation, postRoutePoints, getDriverScheduleDetails, createSchedule, startSchedule, updateSchedulePoint, endSchedule } from '../../data/locationServices';
+import { getVehicleByUser } from '../../data/vehicleServices';
+import { getSchoolByDriver } from '../../data/pointServices';
 import { AuthContext } from '../../providers/AuthProvider';
 import { throttle } from 'lodash';
+
 
 
 const MapaMotorista = ({ navigation }) => {
@@ -59,6 +62,13 @@ const MapaMotorista = ({ navigation }) => {
     const [currentLeg, setCurrentLeg] = useState(1)
     const [routeLegs, setRouteLegs] = useState([]);
     const [loadingRoute, setLoadingRoute] = useState(false);
+    const [scheduleId, setScheduleId] = useState(null);
+    const [vehicleId, setVehicleId] = useState(null);
+    const [schoolId, setSchoolId] = useState(null);
+    const [schoolInfo, setSchoolInfo] = useState(null);
+    const [allVehicles, setAllVehicles] = useState([]);
+    const [allSchools, setAllSchools] = useState([]);
+    const [orderedPointIds, setOrderedPointIds] = useState([]);
     
     useEffect(() => {
         const initializeLocation = async () => {
@@ -163,60 +173,90 @@ const MapaMotorista = ({ navigation }) => {
     }, []);
 
     const calculateRoute = async (stateWaypoints, currentLocation) => {
-        const waypoints = [{ name: 'Felipe Matos Silvieri', latitude: currentLocation.latitude, longitude: currentLocation.longitude },...stateWaypoints] 
+        // Mapeia os waypoints com seus dados
+        const waypoints = stateWaypoints.map((wp) => {
+            const studentNames = wp.student.map(student => student.name).join(', ');
+            console.log('waipoints', wp);
+            return {
+                name: studentNames,
+                latitude: wp.point.lat,
+                longitude: wp.point.lng,
+                point_id: wp.point.id,  // Inclui o point_id
+            };
+        });
+    
         const origin = `${currentLocation.latitude},${currentLocation.longitude}`;
-        const destination = `${waypoints[waypoints.length - 1].latitude},${waypoints[waypoints.length - 1].longitude}`;
+        const destination = `${schoolInfo.lat},${schoolInfo.lng}`;
+    
+        // Cria a string de waypoints (sem origem e destino) para a API do Google
         const waypointsString = waypoints
-            .slice(0, -1)
             .map(point => `${point.latitude},${point.longitude}`)
             .join('|');
-
+    
+        console.log('waypointsString', waypointsString);
+    
         const url = `https://maps.googleapis.com/maps/api/directions/json?origin=${origin}&destination=${destination}&waypoints=optimize:true|${waypointsString}&key=${apiKey}&overview=full`;
-
+    
         try {
             setLoadingRoute(true);
             const response = await axios.get(url);
-            console.log('Chamou a API -----------------------------------------------------------------')
+            console.log('Chamou a API -----------------------------------------------------------------');
+    
             if (response.data.routes && response.data.routes.length) {
                 const route = response.data.routes[0];
+                console.log('antes de fazer decoded');
+                
                 const decodedPolyline = polyline.decode(route.overview_polyline.points).map(point => ({
                     latitude: point[0],
                     longitude: point[1],
                 }));
                 setEncodedRoutePoints(route.overview_polyline.points);
-                console.log('decodedpole', decodedPolyline.length)
+                console.log('decodedPolyline length:', decodedPolyline.length);
                 setRoutePoints(decodedPolyline);
                 setRouteLegs(route.legs);
-
-                const optimizedOrder = route.waypoint_order;
+    
+                const optimizedOrder = route.waypoint_order; // Ordem otimizada dos waypoints retornada pela API
                 setWaypointOrder(optimizedOrder);
-                
-                const orderedWaypoints = [waypoints[0], ...optimizedOrder.map(i => waypoints[i + 1]), waypoints[waypoints.length - 1]];
-                // console.log(decodedPolyline)
+    
+                // Reorganiza os waypoints otimizados, mantendo origem e destino fixos
+                const orderedWaypoints = [
+                    { name: 'Origem', latitude: currentLocation.latitude, longitude: currentLocation.longitude },  // Origem
+                    ...optimizedOrder.map(i => waypoints[i]), // Otimizados
+                    { name: 'Destino', latitude: schoolInfo.lat, longitude: schoolInfo.lng }  // Destino
+                ];
+    
+                // Extrai a lista de point_ids na ordem otimizada
+                const orderedPointIdsList = [
+                    waypoints[0].point_id,  // point_id da Origem
+                    ...optimizedOrder.map(i => waypoints[i].point_id),  // point_ids otimizados
+                    waypoints[waypoints.length - 1].point_id  // point_id do Destino
+                ];
+    
                 setOptimizedWaypoints(orderedWaypoints);
-                // console.log('orderedWaypoints', orderedWaypoints)
-
+                setOrderedPointIds(orderedPointIdsList);  // Atualiza o estado com a ordem dos point_id
+                console.log('orderedWaypoints', orderedWaypoints);
+                console.log('Ordered Point IDs:', orderedPointIdsList);
+    
                 setTotalDuration(route.legs.reduce((acc, leg) => acc + leg.duration.value, 0)); // duração em segundos
                 setTotalDistance(route.legs.reduce((acc, leg) => acc + leg.distance.value, 0)); // distância em metros
-
+    
                 if (route.legs.length > 0) {
                     const nextLeg = route.legs[currentLeg];
                     setNextWaypointDistance(nextLeg.distance.value); // distância em metros
                     setNextWaypointDuration(nextLeg.duration.value); // duração em segundos
-
+    
                     // Cálculo do ETA: hora atual + duração em segundos
                     const eta = new Date(Date.now() + nextLeg.duration.value * 1000); // Converte segundos para milissegundos
                     setEta(eta); // Define o ETA
                 }
-
+    
                 // Geração do link clicável para o Google Maps
                 const mapsUrll = `https://www.google.com/maps/dir/?api=1&origin=${origin}&destination=${destination}&waypoints=${waypointsString.replace(/\|/g, '%7C')}`;
-                // console.log('Link para Google Maps:', mapsUrll)
                 setMapsUrl(mapsUrll);
-
+    
                 // Define o ETA e a distância para o primeiro waypoint
                 updateNextWaypointDetails(currentStudentIndex);
-
+    
             } else {
                 console.log('No routes found');
             }
@@ -248,6 +288,7 @@ const MapaMotorista = ({ navigation }) => {
             setShowDropdowns(false);
             // Chamada API ida (recebe do backend a lista de alunos de ida (waypoints))
             throttledCalculateRoute(waypoints, userLocation); // os waypoints vem da API (backend)
+            handleStartSchedule();
             setRouteOngoing(true);
             setStartButton(false);
             console.log(`Rota de ida iniciada! Na ${selectedSchool} com o ${selectedCar}`)
@@ -256,6 +297,7 @@ const MapaMotorista = ({ navigation }) => {
             setShowDropdowns(false);
             // Chamada API volta (recebe do backend a lista de alunos de volta (waypoints))
             throttledCalculateRoute(waypoints, userLocation); // os waypoints vem da API (backend)
+            handleStartSchedule();
             setRouteOngoing(true);
             setStartButton(false);
             console.log(`Rota de volta iniciada! Na ${selectedSchool} com o ${selectedCar}`)
@@ -267,12 +309,13 @@ const MapaMotorista = ({ navigation }) => {
 
     const endRoute = (schedule) => {
         if (schedule === 0){
-            // Enviar info de fim de viagem pra API
+            handleEndSchedule()
             setRouteOngoing(false);
             setStartButton(true);
         }
         else if (schedule === 1){
             // Enviar info de fim de viagem pra API
+            handleEndSchedule()
             setRouteOngoing(false);
             setStartButton(true)
         }
@@ -346,6 +389,117 @@ const MapaMotorista = ({ navigation }) => {
         navigation.navigate('Home');
     }
 
+    const handleCreateSchedule = async () => {
+        const body = {
+            user_id: userData.id,
+            vehicle_id: vehicleId,
+            school_id: schoolId,
+            schedule_type: routeType
+        };
+    
+        const response = await createSchedule(body);
+    
+        if (response.status === 201) {
+            console.log('Schedule criado com sucesso');
+            const data = response.data;
+            setScheduleId(data.schedule_id);
+            setSchoolInfo(data.school);
+            setWaypoints(data.points);
+            console.log('Waypoints:', data.points);
+            console.log('School:', data.school);
+            setShowStudentList(true);
+            setShowDropdowns(false);
+        } else {
+            console.error('Erro ao criar o schedule:', response.data);
+        }
+    };
+
+    const fetchScheduleDetails = async () => {
+        const response = await getDriverScheduleDetails(scheduleId);
+    
+        if (response.status === 200) {
+            console.log('Detalhes do schedule obtidos com sucesso');
+            const data = response.data;
+            setWaypoints(data.waypoints); // Supondo que 'waypoints' seja o campo com os alunos
+            // Outros detalhes podem ser salvos conforme necessário
+        } else {
+            console.error('Erro ao obter detalhes do schedule:', response.data);
+        }
+    };
+
+    const handleStartSchedule = async () => {
+        const body = {
+            user_id: userData.id,
+            schedule_id: scheduleId,
+            school_id: schoolId,
+            end_date: Date.now(),
+            points: orderedPointIds,
+            encoded_points: encodedRoutePoints,
+            legs_info: routeLegs,
+            eta: eta,
+        };
+        
+        const response = await startSchedule(body);
+    
+        if (response.status === 200) {
+            console.log('Schedule iniciado com sucesso');
+        } else {
+            console.error('Erro ao iniciar o schedule:', response.data);
+        }
+    };
+
+    const handleStudentDelivered = async (schedulePointId) => {
+        const body = {
+            schedule_point_id: schedulePointId,
+            status: 'delivered'
+        };
+    
+        const response = await updateSchedulePoint(body);
+    
+        if (response.status === 200) {
+            console.log('Status do aluno atualizado com sucesso');
+        } else {
+            console.error('Erro ao atualizar status do aluno:', response.data);
+        }
+    };
+
+    const handleEndSchedule = async () => {
+        const body = {
+            schedule_id: scheduleId,
+            user_id: userData.id
+        };
+    
+        const response = await endSchedule(body);
+    
+        if (response.status === 200) {
+            console.log('Schedule encerrado com sucesso');
+        } else {
+            console.error('Erro ao encerrar o schedule:', response.data);
+        }
+    };
+
+    const handleUserVehiclesAndSchool = async () => {
+        const response = await getVehicleByUser(userData.id);
+
+        if (response.status === 200) {
+            console.log('Veículos obtidos com sucesso');
+            setAllVehicles(response.data);
+            console.log('Veículos:', response.data);
+        } else {
+            console.error('Erro ao obter veículos:', response.data);
+        }
+
+        const response2 = await getSchoolByDriver(userData.id);
+
+        if (response2.status === 200) {
+            console.log('Escolas obtidas com sucesso');
+            setAllSchools(response2.data);
+            setShowDropdowns(true);
+            console.log('Escolas:', response2.data);
+        } else {
+            console.error('Erro ao obter escolas:', response2.data);
+        }
+    }
 
     // ------------------------------------------------------------ //
     //                Gerencia a Entrega dos Alunos
@@ -594,14 +748,14 @@ const MapaMotorista = ({ navigation }) => {
                     <View style={styles.startContent}>
                       <Button
                         style={styles.startRouteButton}
-                        onPress={() => {setShowDropdowns(true), setRouteType(1)}} // Rota de ida
+                        onPress={() => {setRouteType(1), handleUserVehiclesAndSchool()}} // Rota de ida
                         title="IDA ESCOLA"
                       >
                         IDA ESCOLA
                       </Button>
                       <Button
                         style={styles.startRouteButton}
-                        onPress={() => {setShowDropdowns(true), setRouteType(2)}} // Rota de volta
+                        onPress={() => {setRouteType(2), handleUserVehiclesAndSchool()}} // Rota de volta
                         title="VOLTA ESCOLA"
                       >
                         VOLTA ESCOLA
@@ -616,32 +770,47 @@ const MapaMotorista = ({ navigation }) => {
                     <View style={styles.startDropdown}>
                         <Text>Escolha o carro:</Text>
                         <Picker
-                        selectedValue={selectedCar}
-                        onValueChange={(itemValue) => setSelectedCar(itemValue)}
+                        selectedValue={vehicleId}
+                        onValueChange={(itemValue) => {setVehicleId(itemValue), setSelectedCar(itemValue)}}
                         style={{width: 200}}
                         >
-                        <Picker.Item label="Selecione um carro" value="" />
-                        <Picker.Item label="Carro 1" value="carro1" />
-                        <Picker.Item label="Carro 2" value="carro2" />
-                        <Picker.Item label="Carro 3" value="carro3" />
+                            <Picker.Item label="Selecione um carro" value="" />
+                            {Array.isArray(allVehicles) && allVehicles.length > 0 ? (
+                            allVehicles.map(vehicle => (
+                                <Picker.Item
+                                key={vehicle.id}
+                                label={`${vehicle.model} - ${vehicle.plate}`}
+                                value={vehicle.id}
+                                />
+                            ))
+                            ): (
+                            <Picker.Item label="Nenhum veículo disponível" value="" />
+                            )}
                         </Picker>
             
                         <Text>Escolha a escola:</Text>
                         <Picker
-                        selectedValue={selectedSchool}
-                        onValueChange={(itemValue) => setSelectedSchool(itemValue)}
+                        selectedValue={schoolId}
+                        onValueChange={(itemValue) => {setSchoolId(itemValue), setSelectedSchool(itemValue)}}
                         style={{width: 200}}
                         >
                         <Picker.Item label="Selecione uma escola" value="" />
-                        <Picker.Item label="Escola A" value="escolaA" />
-                        <Picker.Item label="Escola B" value="escolaB" />
-                        <Picker.Item label="Escola C" value="escolaC" />
+                            {Array.isArray(allSchools) && allSchools.length > 0 ? (
+                            allSchools.map(school => (
+                                <Picker.Item
+                                key={school.point.id}
+                                label={`${school.point.name}`}
+                                value={school.point.id}
+                                />
+                            ))
+                            ) : (
+                            <Picker.Item label="Nenhuma escola disponível" value="" />
+                            )}
                         </Picker>
             
                         <Button title="Confirmar" onPress={() => {
                         if (selectedCar && selectedSchool) {
-                            setShowDropdowns(false);
-                            setShowStudentList(true);
+                            handleCreateSchedule();
                         } else {
                             alert("Por favor, selecione o carro e a escola.");
                         }
@@ -654,20 +823,15 @@ const MapaMotorista = ({ navigation }) => {
           
                 {/* Exibe a lista de alunos após a confirmação dos dropdowns */}
                 {showStudentList && (
-                <View style={styles.startButtonPos}>
-                    <View style={styles.startDropdown}>
+                    <View style={styles.startButtonPos}>
+                        <View style={styles.startDropdown}>
                         <FlatList
-                            data={[
-                            { id: '1', name: 'João da Silva', age: 10 },
-                            { id: '2', name: 'Maria Oliveira', age: 9 },
-                            { id: '3', name: 'Carlos Souza', age: 11 },
-                            { id: '4', name: 'Ana Santos', age: 10 },
-                            ]}
-                            keyExtractor={(item) => item.id}
+                            data={waypoints.reduce((acc, point) => acc.concat(point.student), [])}
+                            keyExtractor={(item) => item.id.toString()}
                             renderItem={({ item }) => (
                             <View style={styles.card}>
                                 <Text style={styles.studentName}>{item.name}</Text>
-                                <Text>Idade: {item.age}</Text>
+                                <Text>Idade: {item.year}</Text>
                             </View>
                             )}
                         />
@@ -677,8 +841,8 @@ const MapaMotorista = ({ navigation }) => {
                         >
                             Confirmar
                         </Button>
+                        </View>
                     </View>
-                </View>
                 )}
               </View>          
             )}
