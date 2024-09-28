@@ -6,6 +6,7 @@ import { getStudentsByResponsiblePoint } from "../../../data/studentServices";
 import { AuthContext } from "../../../providers/AuthProvider";
 import Toast from "react-native-toast-message";
 import PageDefault from "../../../components/pageDefault/PageDefault";
+import ModalSelectStudent from "./ModalSelectStudent";
 
 const CreateNotification = () => {
 
@@ -15,6 +16,7 @@ const CreateNotification = () => {
     const [loading, setLoading] = useState(false);
     const [students, setStudents] = useState([]);
     const [studentSelected, setStudentSelected] = useState(null);
+    const [openStudentModal, setOpenStudentModal] = useState(false);
     const [dateSelected, setDateSelected] = useState(null);
     const [periodSelected, setPeriodSelected] = useState(null);
     
@@ -45,6 +47,10 @@ const CreateNotification = () => {
         requestData();
     }, [userData]);
 
+    const handleOpenStudentModal = () => {
+        setOpenStudentModal(true);
+    };
+
     return <PageDefault headerTitle="Criar Ocorrência" loading={loading}>
         <View style={styles.viewContainter}>
             <View style={styles.cardContainer}>
@@ -71,7 +77,7 @@ const CreateNotification = () => {
                                     {/* <Text style={styles.text}>{data?.point?.name}</Text> */}
                                 </View>
                                 <Pressable
-                                    // onPress={handleOpenEditPointModal}
+                                    onPress={handleOpenStudentModal}
                                     style={styles.changeButtonContainer}
                                 >
                                     <Text style={styles.changeButtonText}>Escolher</Text>
@@ -82,11 +88,11 @@ const CreateNotification = () => {
                         <>
                             <View style={styles.pointContent}>
                                 <View style={styles.pointContent}>
-                                    <Text style={styles.colorBox}>Escolha o aluno</Text>
+                                    <Text style={styles.colorBox}>Aluno</Text>
                                     <Text style={styles.text}>{studentSelected?.name}</Text>
                                 </View>
                                 <Pressable
-                                    // onPress={handleOpenEditPointModal}
+                                    onPress={handleOpenStudentModal}
                                     style={styles.changeButtonContainer}
                                 >
                                     <Text style={styles.changeButtonText}>Trocar</Text>
@@ -94,7 +100,8 @@ const CreateNotification = () => {
                             </View>
 
                             <View>
-                                <Text style={styles.text}>{studentSelected?.age}</Text>
+                                <Text style={styles.text}>{studentSelected?.year} anos</Text>
+                                <Text style={styles.text}>{studentSelected?.code}</Text>
                             </View>
                         </> 
                     }
@@ -158,6 +165,8 @@ const CreateNotification = () => {
                 </Button>
             </View>
         </View>
+
+        <ModalSelectStudent open={openStudentModal} setOpen={setOpenStudentModal} setStudent={setStudentSelected} list={students}/>
     </PageDefault> 
 };
 
