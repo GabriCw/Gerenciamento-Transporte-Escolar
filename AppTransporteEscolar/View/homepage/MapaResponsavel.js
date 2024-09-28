@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useContext } from 'react';
 import { StyleSheet, View, Image, Text } from 'react-native';
 import MapView, { Marker, Polyline, AnimatedRegion, Animated } from 'react-native-maps';
 import * as Location from 'expo-location';
@@ -10,11 +10,16 @@ import { styles } from './Style/mapaResponsavelStyle';
 import { Button } from 'react-native-paper';
 import { formatTime, formatDistance } from '../../utils/formatUtils';
 import { FontAwesome5 } from '@expo/vector-icons';
-import { getDriverLocation } from '../../data/locationServices';
+import { getDriverLocation, getCurrentSchedules } from '../../data/locationServices';
+import { AuthContext } from '../../providers/AuthProvider';
 
 // Camera que nem a do uber (rota inteira, aumentando o zoom conforme diminuindo o tamanho)
 
 const MapaResponsavel = ({ navigation }) => {
+
+    const {userData} = useContext(AuthContext);
+    const scheduleInfoRef = useRef(null);
+    const [selectedScheduleId, setSelectedScheduleId] = useState(null);
 
     const [residenciaAtiva, setResidenciaAtiva] = useState(
         { name: 'Sacramento', latitude: -23.6579, longitude: -46.5744 }
@@ -30,7 +35,6 @@ const MapaResponsavel = ({ navigation }) => {
     const [nextWaypointDistance, setNextWaypointDistance] = useState(500);
 
     const mapRef = useRef(null);
-
     const [clock, setClock] = useState(true);
 
     // useEffect(() => {
@@ -62,6 +66,18 @@ const MapaResponsavel = ({ navigation }) => {
     //     initializeLocation();
     // }, []);
 
+    const handleGetScheduleInfo = async(user_id) => {
+        const getSchedules = await getCurrentSchedules(user_id)
+
+        if(getSchedules.status === 200){
+            console.log('Sucesso ao receber informações da viagem')
+            console.log(getSchedules.data)
+            return getSchedules.data
+        }
+        else{   
+            console.log('Erro ao receber informações da viagem')
+        }
+    } 
     
     const handleGetDriverLocation = async(schedule_id) => {
         const getLocation = await getDriverLocation(schedule_id)
@@ -75,10 +91,28 @@ const MapaResponsavel = ({ navigation }) => {
         }
     }
 
+    // ----------------------------------------------
+    // ---------- Pega info das Schedules -----------
+    // ----------------------------------------------
+
+    useEffect(() => {
+        const fetchScheduleInfo = async () => {
+            const scheduleInfoData = await handleGetScheduleInfo(userData.id);
+            scheduleInfoRef.current = scheduleInfoData;
+            console.log(scheduleInfoRef.current);
+        };
+
+        fetchScheduleInfo();
+    }, []);
+
+    const handlePickerChange = (itemValue) => {
+        setSelectedScheduleId(itemValue);
+    };
+        
 
     useEffect(() => {
         const requestLocation = async () => {
-            const locationResponse = await handleGetDriverLocation(1);
+            const locationResponse = await handleGetDriverLocation(selectedScheduleId);
             const lastCoordinate = locationResponse.coordinates[locationResponse.coordinates?.length - 1];
             console.log('last coord: ', lastCoordinate.lat, lastCoordinate.lng);
             return lastCoordinate;
@@ -203,6 +237,20 @@ const MapaResponsavel = ({ navigation }) => {
                         )}
                     </MapView>
                 )}
+            {scheduleInfoRef.current && (
+                <Picker
+                    selectedValue={selectedScheduleId}
+                    onValueChange={handlePickerChange}
+                >
+                    {scheduleInfoRef.current.map((schedule) => (
+                        <Picker.Item
+                            key={schedule.id}
+                            label={`Schedule ${schedule.id}`}
+                            value={schedule.id}
+                        />
+                    ))}
+                </Picker>
+            )}
             </View>
             <View style={styles.footer}>
                 <View style={styles.infoCard}>

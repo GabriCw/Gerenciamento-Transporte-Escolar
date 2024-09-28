@@ -34,6 +34,19 @@ export const getDriverLocation = async(schedule_id) => {
     }
 };
 
+// Função para obter informações da schedule (viagem)
+export const getCurrentSchedules = async(user_id) => {
+    const endpoint = 'get-current-schedules-by-user?user_id=${user_id}';
+
+    try{
+        const response  = await axios.get(scheduleController + endpoint);
+        return response;
+    }
+    catch(error){
+        return error.response;
+    }
+};
+
 // Função para criar um novo schedule
 export const createSchedule = async(body) => {
     const endpoint = '/create';
