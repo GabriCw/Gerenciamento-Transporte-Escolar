@@ -166,3 +166,16 @@ export const updateAddressByPoint = async(body) => {
         return error.response;
     }
 };
+
+export const getStudentsByResponsiblePoint = async(responsible_id) => {
+    const _endpoint = `/get-by-point-responsible?responsible_id=${responsible_id}`
+
+    try{
+        const response = await axios.get(_controller + _endpoint);
+
+        return response;
+    }
+    catch(error){
+        return error.response;
+    }
+};
