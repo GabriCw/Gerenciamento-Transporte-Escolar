@@ -7,6 +7,10 @@ import { AuthContext } from "../../../providers/AuthProvider";
 import Toast from "react-native-toast-message";
 import PageDefault from "../../../components/pageDefault/PageDefault";
 import ModalSelectStudent from "./ModalSelectStudent";
+import DateTimePickerModal from "react-native-modal-datetime-picker";
+import moment from "moment";
+import { getAllPeriodOptions } from "../../../data/parentNotificationsServices";
+import ModalSelectPeriod from "./ModalSelectPeriod";
 
 const CreateNotification = () => {
 
@@ -17,19 +21,22 @@ const CreateNotification = () => {
     const [students, setStudents] = useState([]);
     const [studentSelected, setStudentSelected] = useState(null);
     const [openStudentModal, setOpenStudentModal] = useState(false);
+    const [openDateModal, setOpenDateModal] = useState(false);
     const [dateSelected, setDateSelected] = useState(null);
+    
+    const [openPeriodModal, setOpenPeriodModal] = useState(false);
+    const [periods, setPeriods] = useState([]);
     const [periodSelected, setPeriodSelected] = useState(null);
     
     useEffect(() => {
         const requestData = async() => {
             setLoading(true);
 
-            const studentsList = await getStudentsByResponsiblePoint(userData.id);
-
-            console.log(studentsList.data);
+            const [studentsList, periodList] = await Promise.all([getStudentsByResponsiblePoint(userData.id), getAllPeriodOptions()]);
 
             if(studentsList.status === 200){
                 setStudents(studentsList.data);
+                setPeriods(periodList.data);
             }
             else{
                 Toast.show({
@@ -50,74 +57,37 @@ const CreateNotification = () => {
     const handleOpenStudentModal = () => {
         setOpenStudentModal(true);
     };
+    
+    const handleOpenDateModal = () => {
+        setOpenDateModal(true);
+    };
+
+    const handleConfirmDate = (e) => {
+        setDateSelected(e);
+        setOpenDateModal(false);
+    };
+
+    const handleOpenPeriodModal = () => {
+        setOpenPeriodModal(true);
+    };
 
     return <PageDefault headerTitle="Criar Ocorrência" loading={loading}>
         <View style={styles.viewContainter}>
             <View style={styles.cardContainer}>
-                {/* <View style={styles.mainInfosContainer}>
-                    <View style={styles.iconContent}>
-                        <FontAwesome name="child" color="black" style={styles.childIcon} />
-                    </View>
-                    <View style={styles.content}>
-                        <View style={styles.nameYearContent}>
-                            <Text style={styles.title}>{data?.student?.name}</Text>
-                            <Text style={styles.text}>{data?.student?.year} anos</Text>
-                        </View>
-                    </View>
-                </View> */}
-
-                {/* <View style={styles.lineSeparator}/> */}
-
-                <View style={styles.schoolContainer}>
-                    {
-                        !studentSelected ? <>
-                            <View style={styles.pointContent}>
-                                <View style={styles.pointContent}>
-                                    <Text style={styles.colorBox}>Escolha o aluno</Text>
-                                    {/* <Text style={styles.text}>{data?.point?.name}</Text> */}
-                                </View>
-                                <Pressable
-                                    onPress={handleOpenStudentModal}
-                                    style={styles.changeButtonContainer}
-                                >
-                                    <Text style={styles.changeButtonText}>Escolher</Text>
-                                </Pressable>
-                            </View>
-                        </>
-                        :
-                        <>
-                            <View style={styles.pointContent}>
-                                <View style={styles.pointContent}>
-                                    <Text style={styles.colorBox}>Aluno</Text>
-                                    <Text style={styles.text}>{studentSelected?.name}</Text>
-                                </View>
-                                <Pressable
-                                    onPress={handleOpenStudentModal}
-                                    style={styles.changeButtonContainer}
-                                >
-                                    <Text style={styles.changeButtonText}>Trocar</Text>
-                                </Pressable>
-                            </View>
-
-                            <View>
-                                <Text style={styles.text}>{studentSelected?.year} anos</Text>
-                                <Text style={styles.text}>{studentSelected?.code}</Text>
-                            </View>
-                        </> 
-                    }
-                </View>
-
-                <View style={styles.lineSeparator}/>
-
                 <View style={styles.schoolContainer}>
                     <View style={styles.pointContent}>
                         <View style={styles.pointContent}>
                             {
-                                !dateSelected ? <Text style={styles.colorBox}>Escolha a data</Text> : <Text style={styles.colorBox}>Data selecionada</Text>
+                                !studentSelected ? <Text style={styles.colorBox}>Escolha o aluno</Text> : <View>
+                                    <Text style={styles.colorBox}>Aluno selecionado</Text>
+                                    <View>
+                                        <Text>{studentSelected?.name} - {studentSelected.year} anos</Text>
+                                    </View>
+                                </View>
                             }
                         </View>
                         <Pressable
-                            // onPress={handleOpenEditPointModal}
+                            onPress={handleOpenStudentModal}
                             style={styles.changeButtonContainer}
                         >
                             {
@@ -136,11 +106,44 @@ const CreateNotification = () => {
                     <View style={styles.pointContent}>
                         <View style={styles.pointContent}>
                             {
-                                !periodSelected ? <Text style={styles.colorBox}>Escolha o período</Text> : <Text style={styles.colorBox}>Período selecionado</Text>
+                                !dateSelected ? <Text style={styles.colorBox}>Escolha a data</Text> : <View>
+                                    <Text style={styles.colorBox}>Data selecionada</Text>
+                                    <View>
+                                        <Text>{moment(dateSelected).format("DD/MM/YY HH:mm")}</Text>
+                                    </View>
+                                </View>
                             }
                         </View>
                         <Pressable
-                            // onPress={handleOpenEditPointModal}
+                            onPress={handleOpenDateModal}
+                            style={styles.changeButtonContainer}
+                        >
+                            {
+                                !dateSelected ?
+                                    <Text style={styles.changeButtonText}>Escolher</Text>
+                                :
+                                <Text style={styles.changeButtonText}>Trocar</Text>
+                            }
+                        </Pressable>
+                    </View>
+                </View>
+
+                <View style={styles.lineSeparator}/>
+
+                <View style={styles.schoolContainer}>
+                    <View style={styles.pointContent}>
+                        <View style={styles.pointContent}>
+                            {
+                                !periodSelected ? <Text style={styles.colorBox}>Escolha o período</Text> : <View>
+                                <Text style={styles.colorBox}>Período selecionado</Text>
+                                <View>
+                                    <Text>{periodSelected?.name}</Text>
+                                </View>
+                            </View>
+                            }
+                        </View>
+                        <Pressable
+                            onPress={handleOpenPeriodModal}
                             style={styles.changeButtonContainer}
                         >
                             {
@@ -160,6 +163,7 @@ const CreateNotification = () => {
                     mode="contained"
                     // onPress={handleOpenEditModal}
                     style={styles.button}
+                    disabled={!(studentSelected && dateSelected && periodSelected)}
                 >
                     Criar Ocorrência
                 </Button>
@@ -167,6 +171,8 @@ const CreateNotification = () => {
         </View>
 
         <ModalSelectStudent open={openStudentModal} setOpen={setOpenStudentModal} setStudent={setStudentSelected} list={students}/>
+        <ModalSelectPeriod open={openPeriodModal} setOpen={setOpenPeriodModal} setPeriod={setPeriodSelected} list={periods}/>
+        <DateTimePickerModal display="inline" mode="datetime" isVisible={openDateModal} onConfirm={(value) => handleConfirmDate(value)} onCancel={() => setOpenDateModal(false)}/>
     </PageDefault> 
 };
 

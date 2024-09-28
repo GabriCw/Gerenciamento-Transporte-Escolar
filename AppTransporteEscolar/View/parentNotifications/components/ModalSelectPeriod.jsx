@@ -1,23 +1,23 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import ModalDefault from "../../../components/modalDefault/ModalDefault";
 import { StyleSheet, View } from "react-native";
 import BouncyCheckbox from "react-native-bouncy-checkbox"
 import { Button } from "react-native-paper";
 
-const ModalSelectStudent = ({list, open, setOpen, setStudent}) => {
+const ModalSelectPeriod = ({list, open, setOpen, setPeriod}) => {
 
-    const [studentSelected, setStudentSelected] = useState(null);
+    const [periodSelected, setPeriodSelected] = useState(null);
 
-    const handleSelectStudent = (selected) => {
-        setStudentSelected(selected);
+    const handleSelectPeriod = (selected) => {
+        setPeriodSelected(selected);
     };
 
     const handleConfirmSelect = () => {
-        setStudent(studentSelected);
+        setPeriod(periodSelected);
         setOpen(false);
     };
     
-    return <ModalDefault title="Selecione um aluno" open={open} onClose={() => setOpen(false)}>
+    return <ModalDefault title="Selecione um período" open={open} onClose={() => setOpen(false)}>
         {
             list.map(item => {
                 return <View style={styles.container} key={item.id}>
@@ -30,7 +30,7 @@ const ModalSelectStudent = ({list, open, setOpen, setStudent}) => {
                         iconStyle={{ borderColor: "#C36005" }}
                         innerIconStyle={{ borderWidth: 1 }}
                         textStyle={{ textDecorationLine: "none", color: "white" }}
-                        onPress={() => handleSelectStudent(item)}
+                        onPress={() => handleSelectPeriod(item)}
                     />
                 </View>
             })
@@ -61,4 +61,4 @@ const styles = StyleSheet.create({
     },
 });
 
-export default ModalSelectStudent;
+export default ModalSelectPeriod;

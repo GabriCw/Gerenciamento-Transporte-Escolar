@@ -16,3 +16,16 @@ export const getActiveNotifications = async(user_id) => {
         return error.response;
     }
 };
+
+export const getAllPeriodOptions = async() => {
+    const _endpoint = "/get-period-options";
+
+    try{
+        const response  = await axios.get(_controller + _endpoint);
+
+        return response;
+    }
+    catch(error){
+        return error.response;
+    }
+};
