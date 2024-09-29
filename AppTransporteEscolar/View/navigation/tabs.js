@@ -22,6 +22,8 @@ import RemoveUser from '../profile/components/RemoveUser';
 import ParentNotifications from '../parentNotifications/ParentNotifications';
 import CreateNotification from '../parentNotifications/components/CreateNotification';
 import PastNotificationsList from '../parentNotifications/components/PastNotificationList';
+import CreateVehicle from '../vehicle/components/CreateVehicle';
+import VehicleDetails from '../vehicle/components/VehicleDetails';
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -54,6 +56,8 @@ const PerfilMotoStack = () => (
   <Stack.Navigator initialRouteName='Perfil'>
     <Stack.Screen name="Perfil" component={ProfileTab} options={{ headerShown: false }} />
     <Stack.Screen name="Veiculo" component={Vehicle} options={{ headerShown: false }} />
+    <Stack.Screen name="CreateVehicle" component={CreateVehicle} options={{ headerShown: false }} />
+    <Stack.Screen name="VehicleDetails" component={VehicleDetails} options={{ headerShown: false }} />
     <Stack.Screen name="VerPerfilMoto" component={Profile} options={{ headerShown: false }} />
     <Stack.Screen name="Schools" component={Schools} options={{ headerShown: false }} />
     <Stack.Screen name="AllSchoolsList" component={AllSchoolsList} options={{ headerShown: false }} />
@@ -66,6 +70,8 @@ const PerfilAdminStack = () => (
   <Stack.Navigator initialRouteName='Perfil'>
     <Stack.Screen name="Perfil" component={ProfileTab} options={{ headerShown: false }} />
     <Stack.Screen name="Veiculo" component={Vehicle} options={{ headerShown: false }} />
+    <Stack.Screen name="CreateVehicle" component={CreateVehicle} options={{ headerShown: false }} />
+    <Stack.Screen name="VehicleDetails" component={VehicleDetails} options={{ headerShown: false }} />
     <Stack.Screen name="Alunos" component={Students} options={{ headerShown: false }} />
     <Stack.Screen name="StudentDetail" component={StudentDetail} options={{ headerShown: false }} />
     <Stack.Screen name="VerPerfilMoto" component={Profile} options={{ headerShown: false }} />

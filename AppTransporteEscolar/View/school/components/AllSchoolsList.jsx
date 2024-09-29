@@ -53,7 +53,7 @@ const AllSchoolsList = ({route}) => {
         navigation.navigate("SchoolsDetails", {schoolData: item, isAssociation: true});
     };
 
-    return <PageDefault headerTitle="Escola a escola" loading={isLoading}>
+    return <PageDefault headerTitle="Todas Escolas" loading={isLoading}>
         <View style={styles.content}>
             <View style={styles.scrollContainer}>
                 <ScrollView contentContainerStyle={styles.scrollContent}>

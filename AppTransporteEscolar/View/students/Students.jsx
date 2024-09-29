@@ -90,8 +90,6 @@ const Students = () => {
 
         const studentDetails = await getStudentDetails(studentInfos.id);
 
-        console.log(studentDetails.data);
-
         if(studentDetails.status === 200){
             navigation.navigate("StudentDetail", {studentData: studentDetails.data});
         }
