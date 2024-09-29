@@ -3,9 +3,14 @@ import { useNavigation } from "@react-navigation/native";
 import moment from "moment";
 import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { Button, Card } from "react-native-paper";
+import { cancelParentNotification } from "../../../data/parentNotificationsServices";
+import { useContext } from "react";
+import { AuthContext } from "../../../providers/AuthProvider";
+import Toast from "react-native-toast-message";
 
-const NotificationsList = ({activeList, pastList}) => {
+const NotificationsList = ({activeList, pastList, setLoading}) => {
 
+    const { userData } = useContext(AuthContext);
     const navigation = useNavigation();
 
     const handleCancelNotification = (item) => {
@@ -18,12 +23,38 @@ const NotificationsList = ({activeList, pastList}) => {
         ]);
     };
 
-    const handleCancelNotificationConfirm = (item) => {
-        alert("cancelei")
+    const handleCancelNotificationConfirm = async(item) => {
+        setLoading(true);
+
+        const cancel = await cancelParentNotification(item.id, userData.id);
+
+        if (cancel.status === 200){
+            Toast.show({
+                type: 'success',
+                text1: 'Sucesso',
+                text2: "Ocorrência cancelada com sucesso",
+                visibilityTime: 3000,
+            });
+            navigation.navigate("Perfil");
+        }
+        else{
+            Toast.show({
+                type: 'error',
+                text1: 'Erro',
+                text2: "Erro ao cancelar ocorrência",
+                visibilityTime: 3000,
+            });
+        }
+
+        setLoading(false);
     };
 
     const handleGoToCreateNotification = () => {
         navigation.navigate("CreateNotification");
+    };
+
+    const handleGoToPastNotificationList = () => {
+        navigation.navigate("PastNotificationsList", {pastList});
     };
 
     return <View style={styles.content}>
@@ -35,7 +66,7 @@ const NotificationsList = ({activeList, pastList}) => {
                             <View style={styles.cardDetails}>
                                 <Text style={[styles.cardText, {marginTop:1, fontWeight: "bold"}]}>{item.student.name}</Text>
                                 <Text style={styles.cardText}>{moment(item.inative_day).format("DD/MM/YY HH:mm")}</Text>
-                                <Text style={styles.cardText}>{item.period}</Text>
+                                <Text style={[styles.cardText, {fontStyle: "italic"}]}>{item.period}</Text>
                             </View>
                             <Pressable
                                 onPress={() => handleCancelNotification(item)}
@@ -59,7 +90,7 @@ const NotificationsList = ({activeList, pastList}) => {
             </Button>
         </View>
 
-        <Pressable hitSlop={20} style={{position: "absolute", bottom: "5%"}} onPress={() => handleAssociationModalToggle()}>
+        <Pressable hitSlop={20} style={{position: "absolute", bottom: "5%"}} onPress={handleGoToPastNotificationList}>
             <Text style={styles.textAssociation}>Ver histórico de ocorrências ({pastList?.length})</Text>
         </Pressable>
 </View>
@@ -189,12 +220,9 @@ const styles = StyleSheet.create({
         borderRadius: 5,
         paddingVertical: "1.5%",
         paddingHorizontal: "3%",
-    },
-    changeButtonContainer: {
-        backgroundColor: '#D13A1D',
-        borderRadius: 5,
-        paddingVertical: "1.5%",
-        paddingHorizontal: "3%",
+        position: "absolute",
+        right: 10,
+        top: 10
     },
     changeButtonText: {
         fontSize: 15,

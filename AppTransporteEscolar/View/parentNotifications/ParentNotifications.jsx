@@ -35,7 +35,7 @@ const ParentNotifications = () => {
     return <PageDefault headerTitle="Ocorrências" loading={pageLoading}>
         {
             activeNotifications?.length > 0 ? 
-                <NotificationsList activeList={activeNotifications} pastList={pastNotifications}/>
+                <NotificationsList activeList={activeNotifications} pastList={pastNotifications} setLoading={setPageLoading}/>
                 :
                 <WithoutNotification/>
         }

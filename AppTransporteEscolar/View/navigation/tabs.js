@@ -21,6 +21,7 @@ import SchoolsDetails from '../school/components/SchoolsDetails';
 import RemoveUser from '../profile/components/RemoveUser';
 import ParentNotifications from '../parentNotifications/ParentNotifications';
 import CreateNotification from '../parentNotifications/components/CreateNotification';
+import PastNotificationsList from '../parentNotifications/components/PastNotificationList';
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -45,6 +46,7 @@ const PerfilRespStack = () => {
     <Stack.Screen name="RemoveUser" component={RemoveUser} options={{ headerShown: false }} />
     <Stack.Screen name="ParentNotifications" component={ParentNotifications} options={{ headerShown: false }} />
     <Stack.Screen name="CreateNotification" component={CreateNotification} options={{ headerShown: false }} />
+    <Stack.Screen name="PastNotificationsList" component={PastNotificationsList} options={{ headerShown: false }} />
   </Stack.Navigator>
 };
 
@@ -76,6 +78,7 @@ const PerfilAdminStack = () => (
     <Stack.Screen name="RemoveUser" component={RemoveUser} options={{ headerShown: false }} />
     <Stack.Screen name="ParentNotifications" component={ParentNotifications} options={{ headerShown: false }} />
     <Stack.Screen name="CreateNotification" component={CreateNotification} options={{ headerShown: false }} />
+    <Stack.Screen name="PastNotificationsList" component={PastNotificationsList} options={{ headerShown: false }} />
   </Stack.Navigator>
 );
 

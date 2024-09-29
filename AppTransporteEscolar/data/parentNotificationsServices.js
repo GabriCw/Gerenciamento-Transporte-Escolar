@@ -55,3 +55,21 @@ export const createParentNotification = async(body) => {
         return error.response;
     }
 };
+
+export const cancelParentNotification = async(id, user_id) => {
+    const _endpoint = "/cancel-by-id";
+
+    try{
+        const response  = await axios.put(_controller + _endpoint, {}, {
+            headers: {
+                id, 
+                "user-id":user_id
+            }
+        });
+
+        return response;
+    }
+    catch(error){
+        return error.response;
+    }
+};
