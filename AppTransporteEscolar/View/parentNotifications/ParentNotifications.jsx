@@ -32,7 +32,7 @@ const ParentNotifications = () => {
         requestData();
     }, [userData]);
 
-    return <PageDefault headerTitle="Ocorrências" loading={pageLoading}>
+    return <PageDefault headerTitle="Informe de Faltas" loading={pageLoading}>
         {
             activeNotifications?.length > 0 ? 
                 <NotificationsList activeList={activeNotifications} pastList={pastNotifications} setLoading={setPageLoading}/>

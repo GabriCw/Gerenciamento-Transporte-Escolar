@@ -68,7 +68,7 @@ const CreateNotification = () => {
             Toast.show({
                 type: 'error',
                 text1: 'Erro',
-                text2: "Erro ao registrar ocorrência",
+                text2: response.data.detail,
                 visibilityTime: 3000,
             });
         }

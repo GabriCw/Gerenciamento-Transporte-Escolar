@@ -86,7 +86,7 @@ const NotificationsList = ({activeList, pastList, setLoading}) => {
                 onPress={handleGoToCreateNotification}
                 style={styles.addButton}
             >
-                Criar Ocorrência
+                Nova Ocorrência
             </Button>
         </View>
 
