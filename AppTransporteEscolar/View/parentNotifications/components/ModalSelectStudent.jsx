@@ -1,15 +1,62 @@
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import ModalDefault from "../../../components/modalDefault/ModalDefault";
 import { StyleSheet, View } from "react-native";
 import BouncyCheckbox from "react-native-bouncy-checkbox"
 import { Button } from "react-native-paper";
+import { getStudentsByResponsiblePoint } from "../../../data/studentServices";
+import { AuthContext } from "../../../providers/AuthProvider";
+import Toast from "react-native-toast-message";
 
-const ModalSelectStudent = ({list, open, setOpen, setStudent}) => {
+const ModalSelectStudent = ({ open, setOpen, setStudent, selected}) => {
 
+    const { userData } = useContext(AuthContext);
     const [studentSelected, setStudentSelected] = useState(null);
+    const [studentList, setStudentList] = useState([]);
+    const [loading, setLoading] = useState(false);
+
+    useEffect(() => {
+        const requestData = async() => {
+            setLoading(true);
+
+            const response = await getStudentsByResponsiblePoint(userData.id);
+
+            if(response.status === 200){
+                const studentFormatted = response.data.map(item => {
+                    if(item?.id === selected?.id){
+                        return {...item, isChecked: true};
+                    }
+                    return {...item, isChecked: false};
+                });
+
+                setStudentList(studentFormatted);
+            }
+            else{
+                Toast.show({
+                    type: 'error',
+                    text1: 'Erro',
+                    text2: "Você não possuí alunos no seu endereço",
+                    visibilityTime: 3000,
+                });
+                setOpen(false);
+            }
+
+            setLoading(false);
+        };
+
+        if(open === true)
+            requestData();
+    }, [open, selected]);
 
     const handleSelectStudent = (selected) => {
+        const studentFormatted = studentList?.map(item => {
+            if(item?.id === selected?.id){
+                return {...item, isChecked: true};
+            }
+            return {...item, isChecked: false};
+        });
+
         setStudentSelected(selected);
+        setStudentList(studentFormatted);
     };
 
     const handleConfirmSelect = () => {
@@ -17,9 +64,9 @@ const ModalSelectStudent = ({list, open, setOpen, setStudent}) => {
         setOpen(false);
     };
     
-    return <ModalDefault title="Selecione um aluno" open={open} onClose={() => setOpen(false)}>
+    return <ModalDefault title="Selecione um aluno" loading={loading} open={open} onClose={() => setOpen(false)}>
         {
-            list.map(item => {
+            studentList?.map(item => {
                 return <View style={styles.container} key={item.id}>
                     <BouncyCheckbox
                         size={25}

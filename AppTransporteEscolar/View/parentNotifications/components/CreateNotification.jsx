@@ -9,7 +9,7 @@ import PageDefault from "../../../components/pageDefault/PageDefault";
 import ModalSelectStudent from "./ModalSelectStudent";
 import DateTimePickerModal from "react-native-modal-datetime-picker";
 import moment from "moment";
-import { getAllPeriodOptions } from "../../../data/parentNotificationsServices";
+import { createParentNotification, getAllPeriodOptions } from "../../../data/parentNotificationsServices";
 import ModalSelectPeriod from "./ModalSelectPeriod";
 
 const CreateNotification = () => {
@@ -18,41 +18,13 @@ const CreateNotification = () => {
     const {userData} = useContext(AuthContext);
 
     const [loading, setLoading] = useState(false);
-    const [students, setStudents] = useState([]);
     const [studentSelected, setStudentSelected] = useState(null);
     const [openStudentModal, setOpenStudentModal] = useState(false);
     const [openDateModal, setOpenDateModal] = useState(false);
     const [dateSelected, setDateSelected] = useState(null);
     
     const [openPeriodModal, setOpenPeriodModal] = useState(false);
-    const [periods, setPeriods] = useState([]);
     const [periodSelected, setPeriodSelected] = useState(null);
-    
-    useEffect(() => {
-        const requestData = async() => {
-            setLoading(true);
-
-            const [studentsList, periodList] = await Promise.all([getStudentsByResponsiblePoint(userData.id), getAllPeriodOptions()]);
-
-            if(studentsList.status === 200){
-                setStudents(studentsList.data);
-                setPeriods(periodList.data);
-            }
-            else{
-                Toast.show({
-                    type: 'error',
-                    text1: 'Erro',
-                    text2: "Você não possuí alunos no seu endereço",
-                    visibilityTime: 3000,
-                });
-                navigation.goBack();
-            }
-
-            setLoading(false);
-        };
-
-        requestData();
-    }, [userData]);
 
     const handleOpenStudentModal = () => {
         setOpenStudentModal(true);
@@ -69,6 +41,39 @@ const CreateNotification = () => {
 
     const handleOpenPeriodModal = () => {
         setOpenPeriodModal(true);
+    };
+
+    const handleCreateNotification = async() => {
+        setLoading(true);
+
+        const body = {
+            user_id: userData?.id,
+            student_id: studentSelected?.id,
+            inative_day: moment(dateSelected).format("YYYY-MM-DDTHH:mm"),
+            period_id: periodSelected?.id
+        };
+
+        const response = await createParentNotification(body);
+
+        if(response.status === 201){
+            Toast.show({
+                type: 'success',
+                text1: 'Sucesso',
+                text2: "Ocorrência registrada com sucesso",
+                visibilityTime: 3000,
+            });
+            navigation.navigate("Perfil");
+        }
+        else{
+            Toast.show({
+                type: 'error',
+                text1: 'Erro',
+                text2: "Erro ao registrar ocorrência",
+                visibilityTime: 3000,
+            });
+        }
+
+        setLoading(false);
     };
 
     return <PageDefault headerTitle="Criar Ocorrência" loading={loading}>
@@ -161,7 +166,7 @@ const CreateNotification = () => {
             <View style={styles.buttonContainer}>
                 <Button
                     mode="contained"
-                    // onPress={handleOpenEditModal}
+                    onPress={handleCreateNotification}
                     style={styles.button}
                     disabled={!(studentSelected && dateSelected && periodSelected)}
                 >
@@ -170,8 +175,8 @@ const CreateNotification = () => {
             </View>
         </View>
 
-        <ModalSelectStudent open={openStudentModal} setOpen={setOpenStudentModal} setStudent={setStudentSelected} list={students}/>
-        <ModalSelectPeriod open={openPeriodModal} setOpen={setOpenPeriodModal} setPeriod={setPeriodSelected} list={periods}/>
+        <ModalSelectStudent open={openStudentModal} setOpen={setOpenStudentModal} setStudent={setStudentSelected} selected={studentSelected}/>
+        <ModalSelectPeriod open={openPeriodModal} setOpen={setOpenPeriodModal} setPeriod={setPeriodSelected} selected={periodSelected}/>
         <DateTimePickerModal display="inline" mode="datetime" isVisible={openDateModal} onConfirm={(value) => handleConfirmDate(value)} onCancel={() => setOpenDateModal(false)}/>
     </PageDefault> 
 };

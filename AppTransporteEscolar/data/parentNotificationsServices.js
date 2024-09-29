@@ -17,11 +17,37 @@ export const getActiveNotifications = async(user_id) => {
     }
 };
 
+export const getPastNotifications = async(user_id) => {
+    const _endpoint = `/get-past-list-by-user?user_id=${user_id}`;
+
+    try{
+        const response  = await axios.get(_controller + _endpoint);
+
+        return response;
+    }
+    catch(error){
+        return error.response;
+    }
+};
+
 export const getAllPeriodOptions = async() => {
     const _endpoint = "/get-period-options";
 
     try{
         const response  = await axios.get(_controller + _endpoint);
+
+        return response;
+    }
+    catch(error){
+        return error.response;
+    }
+};
+
+export const createParentNotification = async(body) => {
+    const _endpoint = "/create";
+
+    try{
+        const response  = await axios.post(_controller + _endpoint, body);
 
         return response;
     }
