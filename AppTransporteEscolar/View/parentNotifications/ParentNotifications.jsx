@@ -1,7 +1,7 @@
 import { useContext, useEffect, useState } from "react";
 import PageDefault from "../../components/pageDefault/PageDefault";
 import { AuthContext } from "../../providers/AuthProvider";
-import { getActiveNotifications } from "../../data/parentNotificationsServices";
+import { getActiveNotifications, getPastNotifications } from "../../data/parentNotificationsServices";
 import { StyleSheet, Text, View } from "react-native";
 import NotificationsList from "./components/NotificationList";
 import { Button } from "react-native-paper";
@@ -13,14 +13,18 @@ const ParentNotifications = () => {
 
     const [pageLoading, setPageLoading] = useState(false);
     const [activeNotifications, setActiveNotifications] = useState([]);
+    const [pastNotifications, setPastNotifications] = useState([]);
 
     useEffect(() => {
         const requestData = async() => {
             setPageLoading(true);
 
-            const response = await getActiveNotifications(userData.id);
+            const [activeList, pastList] = await Promise.all([getActiveNotifications(userData.id), getPastNotifications(userData.id)]);
 
-            setActiveNotifications(response.data);
+            if(activeList.status === 200 && pastList.status === 200){
+                setActiveNotifications(activeList.data);
+                setPastNotifications(pastList.data);
+            }
 
             setPageLoading(false);
         };
@@ -28,10 +32,10 @@ const ParentNotifications = () => {
         requestData();
     }, [userData]);
 
-    return <PageDefault headerTitle="Notificações" loading={pageLoading}>
+    return <PageDefault headerTitle="Informe de Faltas" loading={pageLoading}>
         {
             activeNotifications?.length > 0 ? 
-                <NotificationsList/>
+                <NotificationsList activeList={activeNotifications} pastList={pastNotifications} setLoading={setPageLoading}/>
                 :
                 <WithoutNotification/>
         }

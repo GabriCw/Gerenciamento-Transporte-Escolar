@@ -10,6 +10,7 @@ import { FontAwesome } from '@expo/vector-icons';
 import Header from "../../components/header/Header";
 import PageDefault from '../../components/pageDefault/PageDefault';
 import { useNavigation } from '@react-navigation/native';
+import VehiclesAssociatedList from './components/VehiclesAssociatedList';
 
 const Vehicle = () => {
 
@@ -52,79 +53,35 @@ const Vehicle = () => {
         }
     }, [reload]);
 
-    const handleUpdate = async(vehicle) => {
-        if (vehicle?.model && vehicle?.color && vehicle?.plate && vehicle?.year) {
-            const body = {
-                id: vehicle.id,
-                plate: vehicle.plate,
-                model: vehicle.model,
-                color: vehicle.color,
-                year: vehicle.year,
-                user_id: userData.id
-            };
-
-            setIsLoading(true);
-
-            const response = await updateVehicle(body);
-
-            if(response.status === 200){
-                setReload(true);
-
-                Toast.show({
-                    type: 'success',
-                    text1: 'Sucesso',
-                    text2: "Edição realizada com sucesso!",
-                    visibilityTime: 3000,
-                });
-
-                setModalVisible(false);
-            }
-            else{
-                Toast.show({
-                    type: 'error',
-                    text1: 'Erro',
-                    text2: response.data.detail,
-                    visibilityTime: 3000,
-                });
-            }
-
-            setIsLoading(false);
-        } else {
-            // Handle error, e.g., show a message to the user
-            alert('Por favor, preencha todos os campos');
-        }
-    };
-
-    const handleOpenModalEdit = (vehicle) => {
-        setModalVisible(!modalVisible);
-        setVehicleSelect(vehicle);
+    const handleGoToCreateVehicle = () => {
+        navigation.navigate("CreateVehicle");
     };
 
     return  <PageDefault headerTitle="Meus Veículos" navigation={navigation} loading={isLoading} backNavigation={"Perfil"}>
         <View style={styles.content}>
             {
-                vehicles?.map((vehicle, index) => {
-                    return <View style={styles.card}>
-                        <View style={styles.iconEdit}>
-                            <IconButton 
-                                icon="pencil" 
-                                onPress={() => handleOpenModalEdit(vehicle)} 
-                            />
-                        </View>
-                        <View style={styles.cardContent} key={index}>
-                            <View style={styles.iconContent}>
-                                <FontAwesome name="bus" size={"40%"} color="black"/>
-                            </View>
-                            <View style={styles.textContent}>
-                                <Text style={styles.cardText}>Placa: {vehicle?.plate.toUpperCase()}</Text>
-                                <Text style={styles.cardText}>Modelo: {vehicle?.model ?? "Não informado"}</Text>
-                            </View>
+                vehicles?.length > 0 ?
+                    <VehiclesAssociatedList
+                        list={vehicles}
+                        setIsLoading={setIsLoading}
+                    />
+                :
+                <>
+                    <View style={styles.withoutAssociation}>
+                        <Text style={styles.withoutAssociationTitle}>Você não possui um veículo, vamos criar?</Text>
+                        <View style={styles.initialButtonContainer}>
+                            <Button
+                                mode="contained"
+                                onPress={handleGoToCreateVehicle}
+                                style={styles.addButton}
+                            >
+                                Criar Veículo
+                            </Button>
                         </View>
                     </View>
-                })
+                </>
             }
         </View>
-        <ModalEdit data={vehicleSelect} open={modalVisible} onClose={handleOpenModalEdit} handleConfirm={handleUpdate}/>
     </PageDefault> 
 };
 
@@ -221,6 +178,24 @@ const styles = StyleSheet.create({
         color: '#FFF',
         textAlign: 'center',
         marginBottom: 20,
+    },
+    withoutAssociation: {
+        textAlign: "center",
+        flex: 1,
+        justifyContent: "center",
+        alignItems: "center",
+        rowGap: 25,
+        width: "100%"
+    },
+    withoutAssociationTitle: {
+        color: "#fff",
+        fontSize: 20,
+        width: "80%",
+        textAlign: "center",
+        fontWeight: "bold"
+    },
+    addButton: {
+        backgroundColor: '#C36005',
     },
     loadingOverlay: {
         ...StyleSheet.absoluteFillObject,

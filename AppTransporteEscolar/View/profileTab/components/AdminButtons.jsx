@@ -54,7 +54,7 @@ const AdminButtons = ({navigation}) => {
                 />
                 <ButtonDefault
                     icon={<Ionicons name="alert" size={"30%"} color="#fff" />}
-                    title={"Ocorrências"}
+                    title={"Faltas"}
                     onClick={handleToParentNotifications}
                 />
             </View>

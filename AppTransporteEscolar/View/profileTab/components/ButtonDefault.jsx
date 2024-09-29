@@ -6,7 +6,7 @@ const ButtonDefault = ({icon, title, onClick}) => {
             <View style={styles.icon}>
                 {icon}
             </View>
-            <Text style={styles.title}>
+            <Text style={styles.title} numberOfLines={2}>
                 {title}
             </Text>
         </View>
@@ -31,8 +31,10 @@ const styles = StyleSheet.create({
     icon: {
     },
     title: {
-        color: "#fff"
-    }
+        color: "#fff",
+        textAlign: "center",
+        paddingHorizontal: 5,
+    },
 });
 
 export default ButtonDefault;

@@ -30,6 +30,32 @@ export const updateVehicle = async(body) => {
     }
 };
 
+export const createVehicle = async(body) => {
+    const _endpoint = '/create';
+
+    try{
+        const response  = await axios.post(_controller + _endpoint, body);
+
+        return response;
+    }
+    catch(error){
+        return error.response;
+    }
+};
+
+export const removeVehicle = async(id) => {
+    const _endpoint = `/delete?vehicle_id=${id}`;
+
+    try{
+        const response  = await axios.delete(_controller + _endpoint);
+
+        return response;
+    }
+    catch(error){
+        return error.response;
+    }
+};
+
 export const getVehicleListByUser = async(user_id) => {
     const _endpoint = `/get-list-by-driver?user_id=${user_id}`;
 
