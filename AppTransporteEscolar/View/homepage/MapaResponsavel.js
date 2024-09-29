@@ -4,13 +4,11 @@ import MapView, { Marker, Polyline, AnimatedRegion, Animated } from 'react-nativ
 import * as Location from 'expo-location';
 import axios from 'axios';
 import polyline from '@mapbox/polyline';
-import { getPinImage } from '../../utils/getPinImage';
-import { getDistance } from 'geolib';
 import { styles } from './Style/mapaResponsavelStyle';
 import { Button } from 'react-native-paper';
 import { formatTime, formatDistance } from '../../utils/formatUtils';
 import { FontAwesome5 } from '@expo/vector-icons';
-import { getDriverLocation, getCurrentSchedules } from '../../data/locationServices';
+import { getDriverLocation, getDriversLastPosition, getStudentPosition, getCurrentSchedules, getMapsInfos } from '../../data/locationServices';
 import { AuthContext } from '../../providers/AuthProvider';
 
 // Camera que nem a do uber (rota inteira, aumentando o zoom conforme diminuindo o tamanho)
@@ -33,6 +31,9 @@ const MapaResponsavel = ({ navigation }) => {
 
     const [nextWaypointDuration, setNextWaypointDuration] = useState(300);
     const [nextWaypointDistance, setNextWaypointDistance] = useState(500);
+
+    const [mapsInfos, setMapsInfos] = useState(null);
+    const [studentPosition, setStudentPosition] = useState(null);
 
     const mapRef = useRef(null);
     const [clock, setClock] = useState(true);
@@ -77,10 +78,10 @@ const MapaResponsavel = ({ navigation }) => {
         else{   
             console.log('Erro ao receber informações da viagem')
         }
-    } 
+    }
     
-    const handleGetDriverLocation = async(schedule_id) => {
-        const getLocation = await getDriverLocation(schedule_id)
+    const handleGetDriverLocation = async(schedule_id, user_id) => {
+        const getLocation = await getDriversLastPosition(schedule_id, user_id)
 
         if(getLocation.status === 200){
             console.log('Sucesso ao receber localização do motorista')
@@ -88,6 +89,30 @@ const MapaResponsavel = ({ navigation }) => {
         }
         else{   
             console.log('Erro ao receber localização do motorista')
+        }
+    }
+
+    const handleGetMapsInfos = async(schedule_id, user_id) => {
+        const getMapInfos = await getMapsInfos(schedule_id, user_id)
+
+        if(getMapInfos.status === 200){
+            console.log('Sucesso ao receber informações da rota')
+            return getMapInfos.data
+        }
+        else{   
+            console.log('Erro ao receber informações da rota')
+        }
+    }
+
+    const handleGetStudentPosition = async(schedule_id, user_id) => {
+        const studentPositionResponse = await getStudentPosition(schedule_id, user_id)
+
+        if(studentPositionResponse.status === 200){
+            console.log('Sucesso ao receber a posição na fila do aluno')
+            return studentPositionResponse.data
+        }
+        else{   
+            console.log('Erro ao receber a posição na fila do aluno')
         }
     }
 
@@ -108,26 +133,10 @@ const MapaResponsavel = ({ navigation }) => {
     const handlePickerChange = (itemValue) => {
         setSelectedScheduleId(itemValue);
     };
-        
 
-    useEffect(() => {
-        const requestLocation = async () => {
-            const locationResponse = await handleGetDriverLocation(selectedScheduleId);
-            const lastCoordinate = locationResponse.coordinates[locationResponse.coordinates?.length - 1];
-            console.log('last coord: ', lastCoordinate.lat, lastCoordinate.lng);
-            return lastCoordinate;
-        };
-    
-        const updateLocation = async () => {
-            const lastCoord = await requestLocation();
-            updateRegion({latitude: lastCoord.lat, longitude: lastCoord.lng}, residenciaAtiva, 1000);
-            setMotoristaLoc({latitude: lastCoord.lat, longitude: lastCoord.lng});
-        };
-    
-        updateLocation();
-    }, [clock]);
-
-
+    // ------------------------------------------
+    // ----------- Definindo o Clock  -----------
+    // ------------------------------------------
     useEffect(() => {
         let isMounted = true;
 
@@ -145,6 +154,73 @@ const MapaResponsavel = ({ navigation }) => {
             isMounted = false; // Limpar na desmontagem do componente
         };
     }, []);
+
+
+    // ------------------------------------------
+    // ---------- Pegando info da rota ----------
+    // ------------------------------------------
+
+    // useEffect(() => {
+    //     const requestLocation = async () => {
+    //         const locationResponse = await handleGetDriverLocation(selectedScheduleId);
+    //         const lastCoordinate = locationResponse.coordinates[locationResponse.coordinates?.length - 1];
+    //         console.log('last coord: ', lastCoordinate.lat, lastCoordinate.lng);
+    //         return lastCoordinate;
+    //     };
+    
+    //     const updateLocation = async () => {
+    //         const lastCoord = await requestLocation();
+    //         updateRegion({latitude: lastCoord.lat, longitude: lastCoord.lng}, residenciaAtiva, 1000);
+    //         setMotoristaLoc({latitude: lastCoord.lat, longitude: lastCoord.lng});
+    //     };
+    
+    //     updateLocation();
+    // }, [clock]);
+
+
+    useEffect(() => {
+        const requestLocation = async () => {
+            const lastCoordinate = await handleGetDriverLocation(selectedScheduleId, userData.id);
+            console.log('last coord: ', lastCoordinate.lat, lastCoordinate.lng);
+            return lastCoordinate;
+        };
+    
+        const updateLocation = async () => {
+            const lastCoord = await requestLocation();
+            updateRegion({latitude: lastCoord.lat, longitude: lastCoord.lng}, residenciaAtiva, 1000);
+            setMotoristaLoc({latitude: lastCoord.lat, longitude: lastCoord.lng});
+        };
+    
+        updateLocation();
+    }, [clock]);
+
+
+    // ------------------------------------------
+    // ---------- Pegando info da rota ----------
+    // ------------------------------------------
+    useEffect(() => {
+        const requestMapsInfos = async () => {
+            const mapsInfosData = await handleGetMapsInfos(selectedScheduleId, userData.id);
+            return mapsInfosData;
+        };
+        
+        const mapsInfosResponse = requestMapsInfos();
+        setMapsInfos(mapsInfosResponse);
+    }, [clock]);
+
+    
+    // ------------------------------------------------------
+    // ---------- Pegando posição na fila do aluno ----------
+    // ------------------------------------------------------
+    useEffect(() => {
+        const requestStudentPosition = async () => {
+            const studentPositionRes = await handleGetStudentPosition(selectedScheduleId, userData.id);
+            return studentPositionRes;
+        };
+        
+        const studentPositionData = requestStudentPosition();
+        setStudentPosition(studentPositionData);
+    }, [clock]);
 
 
     const updateRegion = (motoristaLoc, residenciaAtiva, time) => {
@@ -244,9 +320,9 @@ const MapaResponsavel = ({ navigation }) => {
                 >
                     {scheduleInfoRef.current.map((schedule) => (
                         <Picker.Item
-                            key={schedule.id}
-                            label={`Schedule ${schedule.id}`}
-                            value={schedule.id}
+                            key={schedule.schedule_id}
+                            label={`Schedule ${schedule.schedule_id}`}
+                            value={schedule.schedule_id}
                         />
                     ))}
                 </Picker>
