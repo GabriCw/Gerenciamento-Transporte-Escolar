@@ -255,31 +255,30 @@ const MapaMotorista = ({ navigation }) => {
                 let orderedPointIdsList = [];
 
                 if (routeType === 1) {
-                    // For routeType 1
-                    const waypointsOrder = optimizedOrder.map(i => waypoints[i]);
-                    orderedWaypoints = waypointsOrder;
-
-                    orderedPointIdsList = waypointsOrder.map(wp => wp.point_id);
-
-                    // Adiciona 'Origem' e 'Destino' separadamente
-                    setOriginPoint({ name: 'Origem', latitude: currentLocation.latitude, longitude: currentLocation.longitude });
-                    setDestinationPoint({ name: schoolInfo.name, latitude: schoolInfo.lat, longitude: schoolInfo.lng });
+                    // Para routeType 1 (Ida)
+                    orderedWaypoints = [
+                        ...optimizedOrder.map(i => waypoints[i]),
+                        { name: schoolInfo.name, latitude: schoolInfo.lat, longitude: schoolInfo.lng, isDestination: true }
+                    ];
+                
+                    orderedPointIdsList = [
+                        ...optimizedOrder.map(i => waypoints[i].point_id),
+                        null
+                    ];
 
                 } else if (routeType === 2) {
-                    // For routeType 2
-                    orderedWaypoints = [
-                        { name: schoolInfo.name ,latitude: schoolInfo.lat, longitude: schoolInfo.lng },
-                        ...optimizedOrder.map(i => waypoints[i]),
-                    ];
+                    // Para routeType 2 (Volta)
+                    const selectedWaypoints = waypoints; // waypoints já filtrados
+                    orderedWaypoints = optimizedOrder.map(i => selectedWaypoints[i]);
 
-                    orderedPointIdsList = [
-                        null,
-                        ...optimizedOrder.map(i => waypoints[i].point_id),
-                    ];
+                    orderedPointIdsList = orderedWaypoints.map(wp => wp.point_id);
                 }
 
                 setOptimizedWaypoints(orderedWaypoints);
                 setOrderedPointIds(orderedPointIdsList);
+
+                // Chamar updateNextWaypointDetails para o primeiro aluno
+                updateNextWaypointDetails(0);
 
                 // Generate ETAs for all legs
                 const allEtas = [];
@@ -308,6 +307,7 @@ const MapaMotorista = ({ navigation }) => {
                 console.log('Nenhuma rota encontrada.');
                 Alert.alert('Erro', 'Não foi possível calcular a rota.');
             }
+
         } catch (error) {
             console.error(`Erro ao buscar direções: ${error.message || error}`);
             Alert.alert('Erro', 'Não foi possível calcular a rota.');
@@ -388,7 +388,16 @@ const MapaMotorista = ({ navigation }) => {
     const startRoute = () => {
         if (routeType === 1 || (routeType === 2 && selectedStudents.length > 0)) {
             setShowDropdowns(false);
-            throttledCalculateRoute(waypoints, userLocation, routeType);
+    
+            let waypointsToUse = waypoints;
+            if (routeType === 2) {
+                // Filtrar waypoints com base nos alunos selecionados
+                waypointsToUse = waypoints.filter(wp => {
+                    return wp.student.some(student => selectedStudents.includes(student.id));
+                });
+            }
+    
+            throttledCalculateRoute(waypointsToUse, userLocation, routeType);
             handleStartSchedule();
             setRouteOngoing(true);
             setStartButton(false);
@@ -650,7 +659,7 @@ const MapaMotorista = ({ navigation }) => {
                 const newIndex = prevIndex + 1;
                 setWaypointProximity(true);
     
-                // Update next waypoint details
+                // Atualiza os detalhes do próximo waypoint
                 updateNextWaypointDetails(newIndex);
     
                 return newIndex;
@@ -658,10 +667,7 @@ const MapaMotorista = ({ navigation }) => {
         } else {
             console.log('Toda a fila de alunos foi percorrida.');
             setWaypointProximity(false);
-            setShowEndRouteButton(true); // Show end route button
-
-            // Atualiza os detalhes para 'Destino'
-            updateNextWaypointDetails('destination');
+            setShowEndRouteButton(true); // Exibe o botão para encerrar a rota
         }
     };
     
@@ -998,7 +1004,14 @@ const MapaMotorista = ({ navigation }) => {
                 <View style={styles.deliveredCardPosition}> 
                     <View style={styles.deliveredCardContent}>
                         <Text style={styles.deliveredCardText}>
-                            O ALUNO {optimizedWaypoints[currentStudentIndex]?.name?.toUpperCase() || 'NOME DESCONHECIDO'} FOI ENTREGUE?
+                            {optimizedWaypoints[currentStudentIndex]?.isDestination
+                                ? routeType === 1
+                                    ? `Chegou ao destino ${optimizedWaypoints[currentStudentIndex]?.name}?`
+                                    : `O aluno ${optimizedWaypoints[currentStudentIndex]?.name?.toUpperCase()} foi entregue?`
+                                : routeType === 1
+                                    ? `O aluno ${optimizedWaypoints[currentStudentIndex]?.name?.toUpperCase()} foi recebido?`
+                                    : `O aluno ${optimizedWaypoints[currentStudentIndex]?.name?.toUpperCase()} foi entregue?`
+                            }
                         </Text>
                         <View style={styles.deliveredCardButtons}>
                             <Button style={styles.deliveredCardButtonYes} mode="contained" onPress={() => handleEntrega(true)}>
