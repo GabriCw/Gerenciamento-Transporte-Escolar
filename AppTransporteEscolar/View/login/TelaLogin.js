@@ -11,8 +11,8 @@ import { AuthContext } from '../../providers/AuthProvider';
 const TelaLogin = ({ navigation }) => {
     const {handleGenerateToken, handleVerifyStudent, handleGetUserDetails} = useContext(AuthContext);
 
-    const [email, setEmail] = useState('gabricouto2305@gmail.com');
-    const [senha, setSenha] = useState('gabriel123');
+    const [email, setEmail] = useState('gilberto.motorista@gmail.com');
+    const [senha, setSenha] = useState('motorista123');
     const [isLoading, setIsLoading] = useState(false);
 
 

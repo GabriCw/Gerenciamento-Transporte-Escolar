@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef, useContext } from 'react';
 import { GOOGLE_MAPS_API_KEY } from '@env';
 import { View, Image, Text, Alert, Linking, Pressable, FlatList, ActivityIndicator } from 'react-native';
+import CheckBox from '@react-native-community/checkbox';
 import MapView, { Marker, Polyline } from 'react-native-maps';
 import { Picker } from '@react-native-picker/picker';
 import * as Location from 'expo-location';
@@ -69,6 +70,7 @@ const MapaMotorista = ({ navigation }) => {
     const [allVehicles, setAllVehicles] = useState([]);
     const [allSchools, setAllSchools] = useState([]);
     const [orderedPointIds, setOrderedPointIds] = useState([]);
+    const [selectedStudents, setSelectedStudents] = useState([]);
     
     useEffect(() => {
         const initializeLocation = async () => {
@@ -172,11 +174,10 @@ const MapaMotorista = ({ navigation }) => {
         };
     }, []);
 
-    const calculateRoute = async (stateWaypoints, currentLocation) => {
+    const calculateRoute = async (stateWaypoints, currentLocation, routeType) => {
         // Mapeia os waypoints com seus dados
         const waypoints = stateWaypoints.map((wp) => {
             const studentNames = wp.student.map(student => student.name).join(', ');
-            console.log('waipoints', wp);
             return {
                 name: studentNames,
                 latitude: wp.point.lat,
@@ -185,87 +186,144 @@ const MapaMotorista = ({ navigation }) => {
             };
         });
     
-        const origin = `${currentLocation.latitude},${currentLocation.longitude}`;
-        const destination = `${schoolInfo.lat},${schoolInfo.lng}`;
+        let origin, destination;
+        let waypointsString = waypoints.map(point => `${point.latitude},${point.longitude}`).join('|');
     
-        // Cria a string de waypoints (sem origem e destino) para a API do Google
-        const waypointsString = waypoints
-            .map(point => `${point.latitude},${point.longitude}`)
-            .join('|');
+        if (routeType === 1) {
+            // Origem é a localização atual do motorista e destino é a escola
+            origin = `${currentLocation.latitude},${currentLocation.longitude}`;
+            destination = `${schoolInfo.lat},${schoolInfo.lng}`;
     
-        console.log('waypointsString', waypointsString);
+            // Se houver apenas um waypoint, garanta que o ponto seja incluído corretamente
+            if (!waypoints.length) {
+                console.warn("Nenhum ponto de rota encontrado.");
+            } else if (waypoints.length === 1) {
+                // Tratar caso de apenas um aluno
+                waypointsString = `${waypoints[0].latitude},${waypoints[0].longitude}`;
+            }
+        } else if (routeType === 2) {
+            // Origem é a escola e o destino será o último waypoint otimizado
+            origin = `${schoolInfo.lat},${schoolInfo.lng}`;
+            destination = origin;  // Temporário, será ajustado após otimização
+        }
     
         const url = `https://maps.googleapis.com/maps/api/directions/json?origin=${origin}&destination=${destination}&waypoints=optimize:true|${waypointsString}&key=${apiKey}&overview=full`;
     
         try {
             setLoadingRoute(true);
             const response = await axios.get(url);
-            console.log('Chamou a API -----------------------------------------------------------------');
     
             if (response.data.routes && response.data.routes.length) {
                 const route = response.data.routes[0];
-                console.log('antes de fazer decoded');
-                
+    
                 const decodedPolyline = polyline.decode(route.overview_polyline.points).map(point => ({
                     latitude: point[0],
                     longitude: point[1],
                 }));
+    
                 setEncodedRoutePoints(route.overview_polyline.points);
-                console.log('decodedPolyline length:', decodedPolyline.length);
                 setRoutePoints(decodedPolyline);
                 setRouteLegs(route.legs);
     
-                const optimizedOrder = route.waypoint_order; // Ordem otimizada dos waypoints retornada pela API
+                const optimizedOrder = route.waypoint_order;
                 setWaypointOrder(optimizedOrder);
     
-                // Reorganiza os waypoints otimizados, mantendo origem e destino fixos
-                const orderedWaypoints = [
-                    { name: 'Origem', latitude: currentLocation.latitude, longitude: currentLocation.longitude },  // Origem
-                    ...optimizedOrder.map(i => waypoints[i]), // Otimizados
-                    { name: 'Destino', latitude: schoolInfo.lat, longitude: schoolInfo.lng }  // Destino
-                ];
+                let orderedWaypoints = [];
+                let orderedPointIdsList = [];
     
-                // Extrai a lista de point_ids na ordem otimizada
-                const orderedPointIdsList = [
-                    waypoints[0].point_id,  // point_id da Origem
-                    ...optimizedOrder.map(i => waypoints[i].point_id),  // point_ids otimizados
-                    waypoints[waypoints.length - 1].point_id  // point_id do Destino
-                ];
+                if (routeType === 1) {
+                    // Se routeType === 1, manter origem e destino fixos
+                    orderedWaypoints = [
+                        { name: 'Origem', latitude: currentLocation.latitude, longitude: currentLocation.longitude },  // Origem
+                        ...optimizedOrder.map(i => waypoints[i]),  // Otimizados
+                        { name: 'Destino', latitude: schoolInfo.lat, longitude: schoolInfo.lng }  // Destino
+                    ];
     
-                setOptimizedWaypoints(orderedWaypoints);
-                setOrderedPointIds(orderedPointIdsList);  // Atualiza o estado com a ordem dos point_id
-                console.log('orderedWaypoints', orderedWaypoints);
-                console.log('Ordered Point IDs:', orderedPointIdsList);
+                    orderedPointIdsList = [
+                        null,  // Origem não tem point_id
+                        ...optimizedOrder.map(i => waypoints[i].point_id),  // point_ids otimizados
+                        null  // Escola também não tem point_id
+                    ];
+                    console.log('orderedPointIdsList:', orderedPointIdsList);
+
+                    // Geração do link clicável para o Google Maps
+                    const mapsUrl = `https://www.google.com/maps/dir/?api=1&origin=${origin}&destination=${destination},${destination}&waypoints=${waypointsString.replace(/\|/g, '%7C')}`;
+                    setMapsUrl(mapsUrl);
+
+                    // Define o ETA e a distância para o primeiro waypoint
+                    updateNextWaypointDetails(currentStudentIndex);
+
+                } else if (routeType === 2) {
+                    // Se routeType === 2, o último ponto otimizado será o destino
+                    const lastWaypointIndex = optimizedOrder[optimizedOrder.length - 1];
+                    const lastWaypoint = waypoints[lastWaypointIndex];
     
-                setTotalDuration(route.legs.reduce((acc, leg) => acc + leg.duration.value, 0)); // duração em segundos
-                setTotalDistance(route.legs.reduce((acc, leg) => acc + leg.distance.value, 0)); // distância em metros
+                    // Segunda requisição com o destino correto (última casa)
+                    const finalUrl = `https://maps.googleapis.com/maps/api/directions/json?origin=${origin}&destination=${lastWaypoint.latitude},${lastWaypoint.longitude}&waypoints=optimize:true|${waypointsString}&key=${apiKey}&overview=full`;
+    
+                    const finalResponse = await axios.get(finalUrl);
+    
+                    if (finalResponse.data.routes && finalResponse.data.routes.length) {
+                        const finalRoute = finalResponse.data.routes[0];
+    
+                        const finalDecodedPolyline = polyline.decode(finalRoute.overview_polyline.points).map(point => ({
+                            latitude: point[0],
+                            longitude: point[1],
+                        }));
+    
+                        setEncodedRoutePoints(finalRoute.overview_polyline.points);
+                        setRoutePoints(finalDecodedPolyline);
+                        setRouteLegs(finalRoute.legs);
+    
+                        // Atualiza os waypoints e point_ids otimizados com o novo destino
+                        orderedWaypoints = [
+                            { name: 'Origem', latitude: schoolInfo.lat, longitude: schoolInfo.lng },  // Origem (Escola)
+                            ...optimizedOrder.map(i => waypoints[i]),  // Otimizados
+                            { name: 'Destino', latitude: lastWaypoint.latitude, longitude: lastWaypoint.longitude }  // Destino (último ponto otimizado)
+                        ];
+    
+                        orderedPointIdsList = [
+                            waypoints[0].point_id,  // point_id da Origem
+                            ...optimizedOrder.map(i => waypoints[i].point_id),  // point_ids otimizados
+                            lastWaypoint.point_id  // point_id do Destino (último ponto otimizado)
+                        ];
+    
+                        setOptimizedWaypoints(orderedWaypoints);
+                        setOrderedPointIds(orderedPointIdsList);
+    
+                        // Geração do link clicável para o Google Maps
+                        const mapsUrl = `https://www.google.com/maps/dir/?api=1&origin=${origin}&destination=${lastWaypoint.latitude},${lastWaypoint.longitude}&waypoints=${waypointsString.replace(/\|/g, '%7C')}`;
+                        setMapsUrl(mapsUrl);
+    
+                        // Define o ETA e a distância para o primeiro waypoint
+                        updateNextWaypointDetails(currentStudentIndex);
+                    }
+                }
+    
+                // Calcula a duração total para routeType 1 e 2
+                setTotalDuration(route.legs.reduce((acc, leg) => acc + leg.duration.value, 0)); // Duração em segundos
+    
+                // Calcula a distância total para routeType 1 e 2
+                setTotalDistance(route.legs.reduce((acc, leg) => acc + leg.distance.value, 0)); // Distância em metros
     
                 if (route.legs.length > 0) {
                     const nextLeg = route.legs[currentLeg];
-                    setNextWaypointDistance(nextLeg.distance.value); // distância em metros
-                    setNextWaypointDuration(nextLeg.duration.value); // duração em segundos
+                    setNextWaypointDistance(nextLeg.distance.value); // Distância em metros
+                    setNextWaypointDuration(nextLeg.duration.value); // Duração em segundos
     
                     // Cálculo do ETA: hora atual + duração em segundos
                     const eta = new Date(Date.now() + nextLeg.duration.value * 1000); // Converte segundos para milissegundos
                     setEta(eta); // Define o ETA
                 }
-    
-                // Geração do link clicável para o Google Maps
-                const mapsUrll = `https://www.google.com/maps/dir/?api=1&origin=${origin}&destination=${destination}&waypoints=${waypointsString.replace(/\|/g, '%7C')}`;
-                setMapsUrl(mapsUrll);
-    
-                // Define o ETA e a distância para o primeiro waypoint
-                updateNextWaypointDetails(currentStudentIndex);
-    
             } else {
-                console.log('No routes found');
+                console.log('Nenhuma rota encontrada.');
             }
         } catch (error) {
-            console.log(`Error fetching directions: ${error.message || error}`);
+            console.error(`Erro ao buscar direções: ${error.message || error}`);
         } finally {
             setLoadingRoute(false);
         }
-    };
+    };     
 
     // Controlar a quantidade de chamadas API com 'throttle'
     const throttledCalculateRoute = throttle(calculateRoute, 30000);
@@ -385,10 +443,6 @@ const MapaMotorista = ({ navigation }) => {
         inactivityTimeout.current = setTimeout(recenterMap, 5000); // 5 segundos de inatividade
     };
 
-    const handleNavigate = () => {
-        navigation.navigate('Home');
-    }
-
     const handleCreateSchedule = async () => {
         const body = {
             user_id: userData.id,
@@ -428,14 +482,18 @@ const MapaMotorista = ({ navigation }) => {
     };
 
     const handleStartSchedule = async () => {
+        const endDate = new Date(Date.now() + totalDuration * 1000);
+        const formattedEndDate = endDate.toISOString(); // Retorna no formato 'YYYY-MM-DDTHH:mm:ss.sssZ'
+        const formattedEndDateWithoutMilliseconds = formattedEndDate.split('.')[0];
+
         const body = {
             user_id: userData.id,
             schedule_id: scheduleId,
             school_id: schoolId,
-            end_date: Date.now(),
+            end_date: formattedEndDateWithoutMilliseconds,
             points: orderedPointIds,
-            encoded_points: encodedRoutePoints,
-            legs_info: routeLegs,
+            encoded_points: encodedRoutePoints.toString(),
+            legs_info: JSON.stringify(routeLegs),
             eta: eta,
         };
         
@@ -448,10 +506,12 @@ const MapaMotorista = ({ navigation }) => {
         }
     };
 
-    const handleStudentDelivered = async (schedulePointId) => {
+    const handleStudentDelivered = async (schedulePointId, embarkedInfo) => {
         const body = {
-            schedule_point_id: schedulePointId,
-            status: 'delivered'
+            schedule_id: scheduleId,
+            point_id: schedulePointId,
+            has_embarked: embarkedInfo,
+            user_id: userData.id
         };
     
         const response = await updateSchedulePoint(body);
@@ -501,6 +561,18 @@ const MapaMotorista = ({ navigation }) => {
         }
     }
 
+    const handleStudentSelect = (studentId) => {
+        setSelectedStudents((prevSelected) => {
+            if (prevSelected.includes(studentId)) {
+                // Se o aluno já está selecionado, remove-o
+                return prevSelected.filter((id) => id !== studentId);
+            } else {
+                // Se o aluno não está selecionado, adiciona-o
+                return [...prevSelected, studentId];
+            }
+        });
+    };
+
     // ------------------------------------------------------------ //
     //                Gerencia a Entrega dos Alunos
     // ------------------------------------------------------------ //
@@ -538,9 +610,10 @@ const MapaMotorista = ({ navigation }) => {
     // };
 
     // Atualização na função handleEntrega
-    const handleEntrega = (bool) => {
+    const handleEntrega = async (bool) => {
         if (bool) {
             console.log(`Aluno ${optimizedWaypoints[currentStudentIndex]?.name} Entregue!`);
+            await handleStudentDelivered(optimizedWaypoints[currentStudentIndex]?.point_id, true);
 
             // Vai pulando de aluno em aluno enquanto houver alunos na lista de orderedWaypoints
             if (currentStudentIndex < optimizedWaypoints.length - 1) {
@@ -558,6 +631,7 @@ const MapaMotorista = ({ navigation }) => {
                 setWaypointProximity(false);
             }
         } else {
+            await handleStudentDelivered(optimizedWaypoints[currentStudentIndex]?.point_id, false);
             if (currentStudentIndex < optimizedWaypoints.length - 1) {
                 console.log('Criança não entregue!');
                 setCurrentStudentIndex((prevIndex) => {
@@ -822,7 +896,7 @@ const MapaMotorista = ({ navigation }) => {
                 )}
           
                 {/* Exibe a lista de alunos após a confirmação dos dropdowns */}
-                {showStudentList && (
+                {showStudentList && routeType === 1 &&(
                     <View style={styles.startButtonPos}>
                         <View style={styles.startDropdown}>
                         <FlatList
@@ -841,6 +915,35 @@ const MapaMotorista = ({ navigation }) => {
                         >
                             Confirmar
                         </Button>
+                        </View>
+                    </View>
+                )}
+
+                {showStudentList && routeType === 2 && (
+                    <View style={styles.startButtonPos}>
+                        <View style={styles.startDropdown}>
+                            <FlatList
+                                data={waypoints.reduce((acc, point) => acc.concat(point.student), [])}
+                                keyExtractor={(item) => item.id.toString()}
+                                renderItem={({ item }) => (
+                                    <View style={styles.card}>
+                                        <Text style={styles.studentName}>{item.name}</Text>
+                                        <Text>Idade: {item.year}</Text>
+
+                                        {/* Checkbox para selecionar ou desselecionar o aluno */}
+                                        <CheckBox
+                                            value={selectedStudents.includes(item.id)} // Checa se o aluno está selecionado
+                                            onValueChange={() => handleStudentSelect(item.id)} // Alterna a seleção
+                                        />
+                                    </View>
+                                )}
+                            />
+                            <Button
+                                title="Confirmar"
+                                onPress={startRoute} // Inicia a rota com os alunos selecionados
+                            >
+                                Confirmar
+                            </Button>
                         </View>
                     </View>
                 )}
