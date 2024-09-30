@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef, useContext } from 'react';
 import { GOOGLE_MAPS_API_KEY } from '@env';
 import { View, Image, Text, Alert, Linking, Pressable, FlatList, ActivityIndicator } from 'react-native';
-import CheckBox from '@react-native-community/checkbox';
 import MapView, { Marker, Polyline } from 'react-native-maps';
 import { Picker } from '@react-native-picker/picker';
 import * as Location from 'expo-location';
@@ -10,7 +9,7 @@ import polyline from '@mapbox/polyline';
 import { getPinImage } from '../../utils/getPinImage';
 import { getDistance } from 'geolib';
 import { styles } from './Style/mapaMotoristaStyle';
-import { Button } from 'react-native-paper';
+import { Button, Checkbox } from 'react-native-paper';
 import { formatTime, formatDistance } from '../../utils/formatUtils';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
@@ -52,7 +51,8 @@ const MapaMotorista = ({ navigation }) => {
     const {userData} = useContext(AuthContext);
     const [clock, setClock] = useState(true);
     const [mapsUrl, setMapsUrl] = useState('');
-    const [currentStudentIndex, setCurrentStudentIndex] = useState(1); // ìndice do aluno atual (na lista de orderedWaypoints)
+    const [currentStudentIndex, setCurrentStudentIndex] = useState(0); // ìndice do aluno atual (na lista de orderedWaypoints)
+    const [currentLeg, setCurrentLeg] = useState(0);
     const [eta, setEta] = useState(null);
     const [etas, setEtas] = useState([]); // Stores ETAs for all legs
     const [showDropdowns, setShowDropdowns] = useState(false);
@@ -61,7 +61,6 @@ const MapaMotorista = ({ navigation }) => {
     const [routeType, setRouteType] = useState('');
     const [showStudentList, setShowStudentList] = useState(false);
     const [apiCalls, setApiCalls] = useState(0)
-    const [currentLeg, setCurrentLeg] = useState(1)
     const [routeLegs, setRouteLegs] = useState([]);
     const [loadingRoute, setLoadingRoute] = useState(false);
     const [scheduleId, setScheduleId] = useState(null);
@@ -471,15 +470,36 @@ const MapaMotorista = ({ navigation }) => {
     
     const throttledCalculateRoute = throttle(calculateRoute, 30000);
 
+    // const updateNextWaypointDetails = (nextIndex) => {
+    //     if (nextIndex < routeLegs.length) {
+    //         const nextLeg = routeLegs[nextIndex];
+    //         setNextWaypointDistance(nextLeg.distance.value); // Distância em metros
+    //         setNextWaypointDuration(nextLeg.duration.value); // Duração em segundos
+    
+    //         // Atualiza o ETA com base no tempo atual e na duração do próximo leg
+    //         const eta = new Date(Date.now() + nextLeg.duration.value * 1000); // Converte segundos para milissegundos
+    //         setEta(eta);
+    //     }
+    // };
+
     const updateNextWaypointDetails = (nextIndex) => {
+        console.log('updateNextWaypointDetails called with nextIndex:', nextIndex);
         if (nextIndex < routeLegs.length) {
             const nextLeg = routeLegs[nextIndex];
-            setNextWaypointDistance(nextLeg.distance.value); // Distância em metros
-            setNextWaypointDuration(nextLeg.duration.value); // Duração em segundos
+            setNextWaypointDistance(nextLeg.distance.value); // Distance in meters
+            setNextWaypointDuration(nextLeg.duration.value); // Duration in seconds
     
-            // Atualiza o ETA com base no tempo atual e na duração do próximo leg
-            const eta = new Date(Date.now() + nextLeg.duration.value * 1000); // Converte segundos para milissegundos
+            // Update ETA based on current time and cumulative duration
+            const cumulativeDuration = routeLegs
+                .slice(0, nextIndex + 1)
+                .reduce((acc, leg) => acc + leg.duration.value, 0);
+            const eta = new Date(Date.now() + cumulativeDuration * 1000); // Convert seconds to milliseconds
             setEta(eta);
+        } else {
+            console.log('nextIndex is out of bounds:', nextIndex);
+            setNextWaypointDistance(null);
+            setNextWaypointDuration(null);
+            setEta(null);
         }
     };
 
@@ -496,28 +516,31 @@ const MapaMotorista = ({ navigation }) => {
             Alert.alert('Aviso', 'Por favor, selecione pelo menos um aluno para a rota de volta.');
         }
     };
-
+    
     const endRoute = (schedule) => {
-        if (schedule === 1){
-            handleEndSchedule()
+        if (schedule === 1 || schedule === 2) {
+            handleEndSchedule();
             setRouteOngoing(false);
             setShowStudentList(false);
-            setShowEndRouteButton(false);
             setStartButton(true);
-
+            setRoutePoints([]);
+            setOptimizedWaypoints([]);
+            setRouteLegs([]);
+            setEta(null);
+            setNextWaypointDistance(null);
+            setNextWaypointDuration(null);
+            setCurrentStudentIndex(0);
+            setShowEndRouteButton(false);
+            setWaypointProximity(false);
+            setSelectedStudents([]);
+            setEncodedRoutePoints([]);
+            setMapsUrl('');
+            setTotalDuration(null);
+            setTotalDistance(null);
+        } else {
+            console.log('Erro no tipo da schedule.');
         }
-        else if (schedule === 2){
-            // Enviar info de fim de viagem pra API
-            handleEndSchedule()
-            setRouteOngoing(false);
-            setShowStudentList(false);
-            setShowEndRouteButton(false);   
-            setStartButton(true)
-        }
-        else {
-            console.log('Erro no tipo da schedule.')
-        }       
-    }
+    };
 
     const calculateDistanceToRoute = (latitude, longitude) => {
 
@@ -714,91 +737,41 @@ const MapaMotorista = ({ navigation }) => {
     //                Gerencia a Entrega dos Alunos
     // ------------------------------------------------------------ //
 
-    // const handleEntrega = (bool) => {
-    //     if (bool) {
-    //         console.log(`Aluno ${optimizedWaypoints[currentStudentIndex]?.name} Entregue!`);
-            
-    //         // Vai pulando de aluno em aluno enquanto houver alunos na lista de orderedWaypoints
-    //         if (currentStudentIndex < optimizedWaypoints.length - 1) {
-    //             setCurrentStudentIndex(currentStudentIndex + 1);
-    //             setWaypointProximity(true);
-    //             // Espaço para enviar pro backend \/
-    //             //
-    //             //
-    //         } else {
-    //             console.log('Toda a fila de alunos foi percorrida.');
-    //             setWaypointProximity(false);
-    //         }
-
-    //     } else {
-    //         if (currentStudentIndex < optimizedWaypoints.length - 1) {
-    //             console.log('Criança não entregue!');
-    //             setCurrentStudentIndex(currentStudentIndex + 1);
-    //             setWaypointProximity(true);
-    //             // Espaço para enviar pro backend \/
-    //             //
-    //             //
-    //         }
-    //         else {
-    //             console.log('Toda a fila de alunos foi percorrida.');
-    //             setWaypointProximity(false);
-    //         }
-    //     }
-    // };
-
-    // Atualização na função handleEntrega
     // const handleEntrega = async (bool) => {
-    //     if (bool) {
-    //         console.log(`Aluno ${optimizedWaypoints[currentStudentIndex]?.name} Entregue!`);
-    //         await handleStudentDelivered(optimizedWaypoints[currentStudentIndex]?.point_id, true);
+    //     if (optimizedWaypoints[currentStudentIndex]?.point_id) {
+    //         await handleStudentDelivered(optimizedWaypoints[currentStudentIndex]?.point_id, bool);
+    //     }
 
-    //         // Vai pulando de aluno em aluno enquanto houver alunos na lista de orderedWaypoints
-    //         if (currentStudentIndex < optimizedWaypoints.length - 1) {
-    //             setCurrentStudentIndex((prevIndex) => {
-    //                 const newIndex = prevIndex + 1;
-    //                 setWaypointProximity(true);
+    //     if (currentStudentIndex < optimizedWaypoints.length - 1) {
+    //         setCurrentStudentIndex((prevIndex) => {
+    //             const newIndex = prevIndex + 1;
+    //             setWaypointProximity(true);
 
-    //                 // Atualiza os detalhes do próximo waypoint usando as legs da rota
-    //                 updateNextWaypointDetails(newIndex);
+    //             // Update next waypoint details
+    //             updateNextWaypointDetails(newIndex);
 
-    //                 return newIndex;
-    //             });
-    //         } else {
-    //             console.log('Toda a fila de alunos foi percorrida.');
-    //             setWaypointProximity(false);
-    //         }
+    //             return newIndex;
+    //         });
     //     } else {
-    //         await handleStudentDelivered(optimizedWaypoints[currentStudentIndex]?.point_id, false);
-    //         if (currentStudentIndex < optimizedWaypoints.length - 1) {
-    //             console.log('Criança não entregue!');
-    //             setCurrentStudentIndex((prevIndex) => {
-    //                 const newIndex = prevIndex + 1;
-    //                 setWaypointProximity(true);
-
-    //                 // Atualiza os detalhes do próximo waypoint usando as legs da rota
-    //                 updateNextWaypointDetails(newIndex);
-
-    //                 return newIndex;
-    //             });
-    //         } else {
-    //             console.log('Toda a fila de alunos foi percorrida.');
-    //             setWaypointProximity(false);
-    //         }
+    //         console.log('Toda a fila de alunos foi percorrida.');
+    //         setWaypointProximity(false);
+    //         setShowEndRouteButton(true); // Show end route button
     //     }
     // };
+
     const handleEntrega = async (bool) => {
         if (optimizedWaypoints[currentStudentIndex]?.point_id) {
             await handleStudentDelivered(optimizedWaypoints[currentStudentIndex]?.point_id, bool);
         }
-
+    
         if (currentStudentIndex < optimizedWaypoints.length - 1) {
             setCurrentStudentIndex((prevIndex) => {
                 const newIndex = prevIndex + 1;
                 setWaypointProximity(true);
-
+    
                 // Update next waypoint details
                 updateNextWaypointDetails(newIndex);
-
+    
                 return newIndex;
             });
         } else {
@@ -807,7 +780,6 @@ const MapaMotorista = ({ navigation }) => {
             setShowEndRouteButton(true); // Show end route button
         }
     };
-
     
 
     // ------------------------------------------------------------ //
@@ -1090,9 +1062,9 @@ const MapaMotorista = ({ navigation }) => {
                                         <Text>Idade: {item.year}</Text>
 
                                         {/* Checkbox to select/deselect the student */}
-                                        <CheckBox
-                                            value={selectedStudents.includes(item.id)}
-                                            onValueChange={() => handleStudentSelect(item.id)}
+                                        <Checkbox
+                                            status={selectedStudents.includes(item.id) ? 'checked' : 'unchecked'}
+                                            onPress={() => handleStudentSelect(item.id)}
                                         />
                                     </View>
                                 )}
