@@ -72,7 +72,10 @@ const MapaMotorista = ({ navigation }) => {
     const [orderedPointIds, setOrderedPointIds] = useState([]);
     const [selectedStudents, setSelectedStudents] = useState([]);
     const [showEndRouteButton, setShowEndRouteButton] = useState(false); // Controls visibility of "End Route" button
-    
+    const [originPoint, setOriginPoint] = useState(null);
+    const [destinationPoint, setDestinationPoint] = useState(null);
+    const [nextStopName, setNextStopName] = useState('');
+
     useEffect(() => {
         const initializeLocation = async () => {
             try {
@@ -253,21 +256,19 @@ const MapaMotorista = ({ navigation }) => {
 
                 if (routeType === 1) {
                     // For routeType 1
-                    orderedWaypoints = [
-                        { name: 'Origem', latitude: currentLocation.latitude, longitude: currentLocation.longitude },
-                        ...optimizedOrder.map(i => waypoints[i]),
-                        { name: 'Destino', latitude: schoolInfo.lat, longitude: schoolInfo.lng }
-                    ];
+                    const waypointsOrder = optimizedOrder.map(i => waypoints[i]);
+                    orderedWaypoints = waypointsOrder;
 
-                    orderedPointIdsList = [
-                        null,
-                        ...optimizedOrder.map(i => waypoints[i].point_id),
-                        null
-                    ];
+                    orderedPointIdsList = waypointsOrder.map(wp => wp.point_id);
+
+                    // Adiciona 'Origem' e 'Destino' separadamente
+                    setOriginPoint({ name: 'Origem', latitude: currentLocation.latitude, longitude: currentLocation.longitude });
+                    setDestinationPoint({ name: schoolInfo.name, latitude: schoolInfo.lat, longitude: schoolInfo.lng });
+
                 } else if (routeType === 2) {
                     // For routeType 2
                     orderedWaypoints = [
-                        { name: 'Origem', latitude: schoolInfo.lat, longitude: schoolInfo.lng },
+                        { name: schoolInfo.name ,latitude: schoolInfo.lat, longitude: schoolInfo.lng },
                         ...optimizedOrder.map(i => waypoints[i]),
                     ];
 
@@ -314,158 +315,7 @@ const MapaMotorista = ({ navigation }) => {
             setLoadingRoute(false);
         }
     };
-
-    // const calculateRoute = async (stateWaypoints, currentLocation, routeType) => {
-    //     // Mapeia os waypoints com seus dados
-    //     const waypoints = stateWaypoints.map((wp) => {
-    //         const studentNames = wp.student.map(student => student.name).join(', ');
-    //         return {
-    //             name: studentNames,
-    //             latitude: wp.point.lat,
-    //             longitude: wp.point.lng,
-    //             point_id: wp.point.id,  // Inclui o point_id
-    //         };
-    //     });
-    
-    //     let origin, destination;
-    //     let waypointsString = waypoints.map(point => `${point.latitude},${point.longitude}`).join('|');
-    
-    //     if (routeType === 1) {
-    //         // Origem é a localização atual do motorista e destino é a escola
-    //         origin = `${currentLocation.latitude},${currentLocation.longitude}`;
-    //         destination = `${schoolInfo.lat},${schoolInfo.lng}`;
-    
-    //         // Se houver apenas um waypoint, garanta que o ponto seja incluído corretamente
-    //         if (!waypoints.length) {
-    //             console.warn("Nenhum ponto de rota encontrado.");
-    //         } else if (waypoints.length === 1) {
-    //             // Tratar caso de apenas um aluno
-    //             waypointsString = `${waypoints[0].latitude},${waypoints[0].longitude}`;
-    //         }
-    //     } else if (routeType === 2) {
-    //         // Origem é a escola e o destino será o último waypoint otimizado
-    //         origin = `${schoolInfo.lat},${schoolInfo.lng}`;
-    //         destination = origin;  // Temporário, será ajustado após otimização
-    //     }
-    
-    //     const url = `https://maps.googleapis.com/maps/api/directions/json?origin=${origin}&destination=${destination}&waypoints=optimize:true|${waypointsString}&key=${apiKey}&overview=full`;
-    
-    //     try {
-    //         setLoadingRoute(true);
-    //         const response = await axios.get(url);
-    
-    //         if (response.data.routes && response.data.routes.length) {
-    //             const route = response.data.routes[0];
-    
-    //             const decodedPolyline = polyline.decode(route.overview_polyline.points).map(point => ({
-    //                 latitude: point[0],
-    //                 longitude: point[1],
-    //             }));
-    
-    //             setEncodedRoutePoints(route.overview_polyline.points);
-    //             setRoutePoints(decodedPolyline);
-    //             setRouteLegs(route.legs);
-    
-    //             const optimizedOrder = route.waypoint_order;
-    //             setWaypointOrder(optimizedOrder);
-    
-    //             let orderedWaypoints = [];
-    //             let orderedPointIdsList = [];
-    
-    //             if (routeType === 1) {
-    //                 // Se routeType === 1, manter origem e destino fixos
-    //                 orderedWaypoints = [
-    //                     { name: 'Origem', latitude: currentLocation.latitude, longitude: currentLocation.longitude },  // Origem
-    //                     ...optimizedOrder.map(i => waypoints[i]),  // Otimizados
-    //                     { name: 'Destino', latitude: schoolInfo.lat, longitude: schoolInfo.lng }  // Destino
-    //                 ];
-    
-    //                 orderedPointIdsList = [
-    //                     null,  // Origem não tem point_id
-    //                     ...optimizedOrder.map(i => waypoints[i].point_id),  // point_ids otimizados
-    //                     null  // Escola também não tem point_id
-    //                 ];
-    //                 console.log('orderedPointIdsList:', orderedPointIdsList);
-
-    //                 // Geração do link clicável para o Google Maps
-    //                 const mapsUrl = `https://www.google.com/maps/dir/?api=1&origin=${origin}&destination=${destination},${destination}&waypoints=${waypointsString.replace(/\|/g, '%7C')}`;
-    //                 setMapsUrl(mapsUrl);
-
-    //                 // Define o ETA e a distância para o primeiro waypoint
-    //                 updateNextWaypointDetails(currentStudentIndex);
-
-    //             } else if (routeType === 2) {
-    //                 // Se routeType === 2, o último ponto otimizado será o destino
-    //                 const lastWaypointIndex = optimizedOrder[optimizedOrder.length - 1];
-    //                 const lastWaypoint = waypoints[lastWaypointIndex];
-    
-    //                 // Segunda requisição com o destino correto (última casa)
-    //                 const finalUrl = `https://maps.googleapis.com/maps/api/directions/json?origin=${origin}&destination=${lastWaypoint.latitude},${lastWaypoint.longitude}&waypoints=optimize:true|${waypointsString}&key=${apiKey}&overview=full`;
-    
-    //                 const finalResponse = await axios.get(finalUrl);
-    
-    //                 if (finalResponse.data.routes && finalResponse.data.routes.length) {
-    //                     const finalRoute = finalResponse.data.routes[0];
-    
-    //                     const finalDecodedPolyline = polyline.decode(finalRoute.overview_polyline.points).map(point => ({
-    //                         latitude: point[0],
-    //                         longitude: point[1],
-    //                     }));
-    
-    //                     setEncodedRoutePoints(finalRoute.overview_polyline.points);
-    //                     setRoutePoints(finalDecodedPolyline);
-    //                     setRouteLegs(finalRoute.legs);
-    
-    //                     // Atualiza os waypoints e point_ids otimizados com o novo destino
-    //                     orderedWaypoints = [
-    //                         { name: 'Origem', latitude: schoolInfo.lat, longitude: schoolInfo.lng },  // Origem (Escola)
-    //                         ...optimizedOrder.map(i => waypoints[i]),  // Otimizados
-    //                         { name: 'Destino', latitude: lastWaypoint.latitude, longitude: lastWaypoint.longitude }  // Destino (último ponto otimizado)
-    //                     ];
-    
-    //                     orderedPointIdsList = [
-    //                         waypoints[0].point_id,  // point_id da Origem
-    //                         ...optimizedOrder.map(i => waypoints[i].point_id),  // point_ids otimizados
-    //                         lastWaypoint.point_id  // point_id do Destino (último ponto otimizado)
-    //                     ];
-    
-    //                     setOptimizedWaypoints(orderedWaypoints);
-    //                     setOrderedPointIds(orderedPointIdsList);
-    
-    //                     // Geração do link clicável para o Google Maps
-    //                     const mapsUrl = `https://www.google.com/maps/dir/?api=1&origin=${origin}&destination=${lastWaypoint.latitude},${lastWaypoint.longitude}&waypoints=${waypointsString.replace(/\|/g, '%7C')}`;
-    //                     setMapsUrl(mapsUrl);
-    
-    //                     // Define o ETA e a distância para o primeiro waypoint
-    //                     updateNextWaypointDetails(currentStudentIndex);
-    //                 }
-    //             }
-    
-    //             // Calcula a duração total para routeType 1 e 2
-    //             setTotalDuration(route.legs.reduce((acc, leg) => acc + leg.duration.value, 0)); // Duração em segundos
-    
-    //             // Calcula a distância total para routeType 1 e 2
-    //             setTotalDistance(route.legs.reduce((acc, leg) => acc + leg.distance.value, 0)); // Distância em metros
-    
-    //             if (route.legs.length > 0) {
-    //                 const nextLeg = route.legs[currentLeg];
-    //                 setNextWaypointDistance(nextLeg.distance.value); // Distância em metros
-    //                 setNextWaypointDuration(nextLeg.duration.value); // Duração em segundos
-    
-    //                 // Cálculo do ETA: hora atual + duração em segundos
-    //                 const eta = new Date(Date.now() + nextLeg.duration.value * 1000); // Converte segundos para milissegundos
-    //                 setEta(eta); // Define o ETA
-    //             }
-    //         } else {
-    //             console.log('Nenhuma rota encontrada.');
-    //         }
-    //     } catch (error) {
-    //         console.error(`Erro ao buscar direções: ${error.message || error}`);
-    //     } finally {
-    //         setLoadingRoute(false);
-    //     }
-    // };     
-
+   
     // Controlar a quantidade de chamadas API com 'throttle'
     
     const throttledCalculateRoute = throttle(calculateRoute, 30000);
@@ -482,25 +332,56 @@ const MapaMotorista = ({ navigation }) => {
     //     }
     // };
 
-    const updateNextWaypointDetails = (nextIndex) => {
-        console.log('updateNextWaypointDetails called with nextIndex:', nextIndex);
-        if (nextIndex < routeLegs.length) {
-            const nextLeg = routeLegs[nextIndex];
-            setNextWaypointDistance(nextLeg.distance.value); // Distance in meters
-            setNextWaypointDuration(nextLeg.duration.value); // Duration in seconds
+    // const updateNextWaypointDetails = (nextIndex) => {
+    //     console.log('updateNextWaypointDetails called with nextIndex:', nextIndex);
+    //     if (nextIndex < routeLegs.length) {
+    //         const nextLeg = routeLegs[nextIndex];
+    //         setNextWaypointDistance(nextLeg.distance.value); // Distance in meters
+    //         setNextWaypointDuration(nextLeg.duration.value); // Duration in seconds
     
-            // Update ETA based on current time and cumulative duration
-            const cumulativeDuration = routeLegs
-                .slice(0, nextIndex + 1)
-                .reduce((acc, leg) => acc + leg.duration.value, 0);
-            const eta = new Date(Date.now() + cumulativeDuration * 1000); // Convert seconds to milliseconds
-            setEta(eta);
+    //         // Update ETA based on current time and cumulative duration
+    //         const cumulativeDuration = routeLegs
+    //             .slice(0, nextIndex + 1)
+    //             .reduce((acc, leg) => acc + leg.duration.value, 0);
+    //         const eta = new Date(Date.now() + cumulativeDuration * 1000); // Convert seconds to milliseconds
+    //         setEta(eta);
+    //     } else {
+    //         console.log('nextIndex is out of bounds:', nextIndex);
+    //         setNextWaypointDistance(null);
+    //         setNextWaypointDuration(null);
+    //         setEta(null);
+    //     }
+    // };
+
+    const updateNextWaypointDetails = (nextIndex) => {
+        let nextLeg;
+        let nextStopName;
+    
+        if (nextIndex === 'destination') {
+            // Caso especial para o destino final
+            nextLeg = routeLegs[routeLegs.length - 1]; // Último trecho
+            nextStopName = destinationPoint.name;
+        } else if (nextIndex < routeLegs.length) {
+            nextLeg = routeLegs[nextIndex];
+            nextStopName = optimizedWaypoints[nextIndex]?.name;
         } else {
-            console.log('nextIndex is out of bounds:', nextIndex);
+            console.log('nextIndex está fora dos limites:', nextIndex);
             setNextWaypointDistance(null);
             setNextWaypointDuration(null);
             setEta(null);
+            return;
         }
+    
+        setNextWaypointDistance(nextLeg.distance.value);
+        setNextWaypointDuration(nextLeg.duration.value);
+    
+        // Atualiza o ETA
+        const cumulativeDuration = routeLegs
+            .slice(0, nextIndex + 1)
+            .reduce((acc, leg) => acc + leg.duration.value, 0);
+        const eta = new Date(Date.now() + cumulativeDuration * 1000);
+        setEta(eta);
+        setNextStopName(nextStopName); // Novo estado para o nome da próxima parada
     };
 
     // Updated student selection for return route
@@ -778,6 +659,9 @@ const MapaMotorista = ({ navigation }) => {
             console.log('Toda a fila de alunos foi percorrida.');
             setWaypointProximity(false);
             setShowEndRouteButton(true); // Show end route button
+
+            // Atualiza os detalhes para 'Destino'
+            updateNextWaypointDetails('destination');
         }
     };
     
@@ -1088,10 +972,10 @@ const MapaMotorista = ({ navigation }) => {
               </View>          
             )}
 
-            {!startButton && eta && nextWaypointDistance && (
+            {!startButton && eta && nextWaypointDistance !== null && (
                 <View style={styles.footer}>
                     <View style={styles.infoCard}>
-                        <Text style={styles.infoCardTitle}>Até próxima parada ({optimizedWaypoints[currentStudentIndex]?.name})</Text>
+                        <Text style={styles.infoCardTitle}>Próxima parada: {nextStopName}</Text>
                         <View style={styles.infoCardContent}>
                             <View style={styles.infoCardLeft}>
                                 <Text>ETA</Text>
@@ -1117,10 +1001,10 @@ const MapaMotorista = ({ navigation }) => {
                             O ALUNO {optimizedWaypoints[currentStudentIndex]?.name?.toUpperCase() || 'NOME DESCONHECIDO'} FOI ENTREGUE?
                         </Text>
                         <View style={styles.deliveredCardButtons}>
-                            <Button style={styles.deliveredCardButtonYes} mode="contained" onPress={() => handleEntrega(optimizedWaypoints[currentStudentIndex].id, true)}>
+                            <Button style={styles.deliveredCardButtonYes} mode="contained" onPress={() => handleEntrega(true)}>
                                 SIM
                             </Button>
-                            <Button style={styles.deliveredCardButtonNo} mode="contained" onPress={() => handleEntrega(optimizedWaypoints[currentStudentIndex].id, false)}>
+                            <Button style={styles.deliveredCardButtonNo} mode="contained" onPress={() => handleEntrega(false)}>
                                 NÃO
                             </Button>
                         </View>
