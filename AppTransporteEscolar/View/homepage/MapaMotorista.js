@@ -1123,13 +1123,13 @@ const MapaMotorista = ({ navigation }) => {
                         <View style={styles.infoCardContent}>
                             <View style={styles.infoCardLeft}>
                                 <Text>ETA</Text>
-                                {/* <Text style={styles.infoCardText}>
+                                <Text style={styles.infoCardText}>
                                     {eta ? eta.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''}
-                                </Text> */}
+                                </Text>
                             </View>
                             <View style={styles.infoCardRight}>
                                 <Text>Distância</Text>
-                                {/* <Text style={styles.infoCardText}>{formatDistance(nextWaypointDistance)}</Text> */}
+                                <Text style={styles.infoCardText}>{formatDistance(nextWaypointDistance)}</Text>
                             </View>
                         </View>
                     </View>
