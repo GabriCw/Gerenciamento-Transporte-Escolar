@@ -488,6 +488,7 @@ const MapaMotorista = ({ navigation }) => {
         if (routeType === 1 || (routeType === 2 && selectedStudents.length > 0)) {
             setShowDropdowns(false);
             throttledCalculateRoute(waypoints, userLocation, routeType);
+            handleStartSchedule();
             setRouteOngoing(true);
             setStartButton(false);
             console.log(`Rota iniciada! Na escola ${selectedSchool} com o veículo ${selectedCar}`);
@@ -497,15 +498,20 @@ const MapaMotorista = ({ navigation }) => {
     };
 
     const endRoute = (schedule) => {
-        if (schedule === 0){
+        if (schedule === 1){
             handleEndSchedule()
             setRouteOngoing(false);
+            setShowStudentList(false);
+            setShowEndRouteButton(false);
             setStartButton(true);
+
         }
-        else if (schedule === 1){
+        else if (schedule === 2){
             // Enviar info de fim de viagem pra API
             handleEndSchedule()
             setRouteOngoing(false);
+            setShowStudentList(false);
+            setShowEndRouteButton(false);   
             setStartButton(true)
         }
         else {
@@ -625,7 +631,7 @@ const MapaMotorista = ({ navigation }) => {
             points: orderedPointIds,
             encoded_points: encodedRoutePoints.toString(),
             legs_info: JSON.stringify(routeLegs),
-            eta: etas,
+            eta: etas.toString(),
         };
         
         const response = await startSchedule(body);
@@ -1110,20 +1116,20 @@ const MapaMotorista = ({ navigation }) => {
               </View>          
             )}
 
-            {!startButton && eta && totalDistance && (
+            {!startButton && (
                 <View style={styles.footer}>
                     <View style={styles.infoCard}>
                         <Text style={styles.infoCardTitle}>Até próxima parada ({optimizedWaypoints[currentStudentIndex]?.name})</Text>
                         <View style={styles.infoCardContent}>
                             <View style={styles.infoCardLeft}>
                                 <Text>ETA</Text>
-                                <Text style={styles.infoCardText}>
-                                    {eta ? eta.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''} {/* Verifica se eta não é null */}
-                                </Text>
+                                {/* <Text style={styles.infoCardText}>
+                                    {eta ? eta.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''}
+                                </Text> */}
                             </View>
                             <View style={styles.infoCardRight}>
                                 <Text>Distância</Text>
-                                <Text style={styles.infoCardText}>{formatDistance(nextWaypointDistance)}</Text>
+                                {/* <Text style={styles.infoCardText}>{formatDistance(nextWaypointDistance)}</Text> */}
                             </View>
                         </View>
                     </View>
@@ -1139,10 +1145,10 @@ const MapaMotorista = ({ navigation }) => {
                             O ALUNO {optimizedWaypoints[currentStudentIndex]?.name?.toUpperCase() || 'NOME DESCONHECIDO'} FOI ENTREGUE?
                         </Text>
                         <View style={styles.deliveredCardButtons}>
-                            <Button style={styles.deliveredCardButtonYes} mode="contained" onPress={() => handleEntrega(true)}>
+                            <Button style={styles.deliveredCardButtonYes} mode="contained" onPress={() => handleEntrega(optimizedWaypoints[currentStudentIndex].id, true)}>
                                 SIM
                             </Button>
-                            <Button style={styles.deliveredCardButtonNo} mode="contained" onPress={() => handleEntrega(false)}>
+                            <Button style={styles.deliveredCardButtonNo} mode="contained" onPress={() => handleEntrega(optimizedWaypoints[currentStudentIndex].id, false)}>
                                 NÃO
                             </Button>
                         </View>
