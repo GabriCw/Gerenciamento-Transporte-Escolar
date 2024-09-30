@@ -1116,7 +1116,7 @@ const MapaMotorista = ({ navigation }) => {
               </View>          
             )}
 
-            {!startButton && (
+            {!startButton && eta && nextWaypointDistance && (
                 <View style={styles.footer}>
                     <View style={styles.infoCard}>
                         <Text style={styles.infoCardTitle}>Até próxima parada ({optimizedWaypoints[currentStudentIndex]?.name})</Text>
