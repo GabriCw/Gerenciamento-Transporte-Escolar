@@ -17,6 +17,19 @@ export const getStudentByResponsible = async(userId) => {
     }
 };
 
+export const createStudent = async(body) => {
+    const _endpoint = `/create`;
+
+    try{
+        const response  = await axios.post(_controller + _endpoint, body);
+
+        return response;
+    }
+    catch(error){
+        return error.response;
+    }
+};
+
 export const createStudentList = async(body) => {
     const _endpoint = `/create-list`;
 
@@ -74,6 +87,91 @@ export const associationStudent = async(body) => {
 
     try{
         const response  = await axios.post(_controller + _endpoint, body);
+
+        return response;
+    }
+    catch(error){
+        return error.response;
+    }
+};
+
+export const disassociationStudent = async(body) => {
+    const _endpoint = `/disassociation`;
+
+    try{
+        const response  = await axios.post(_controller + _endpoint, body);
+
+        return response;
+    }
+    catch(error){
+        return error.response;
+    }
+};
+
+export const getStudentDetails = async(student_id) => {
+    const _endpoint = `/details?student_id=${student_id}`;
+
+    try{
+        const response  = await axios.get(_controller + _endpoint);
+
+        return response;
+    }
+    catch(error){
+        return error.response;
+    }
+};
+
+export const getListAllHomes = async(student_id, user_id) => {
+    const _endpoint = "/list-all-homes";
+    
+    const headerBody = {
+        'student-id': student_id,
+        'user-id': user_id
+    };
+
+    try{
+        const response = await axios.get(_controller + _endpoint, {
+            headers: headerBody
+        });
+
+        return response;
+    }
+    catch(error){
+        return error.response;
+    }
+};
+
+export const updateAddress = async(body) => {
+    const _endpoint = "/update-address";
+
+    try{
+        const response = await axios.put(_controller + _endpoint, body);
+
+        return response;
+    }
+    catch(error){
+        return error.response;
+    }
+};
+
+export const updateAddressByPoint = async(body) => {
+    const _endpoint = "/update-address-by-point";
+
+    try{
+        const response = await axios.put(_controller + _endpoint, body);
+
+        return response;
+    }
+    catch(error){
+        return error.response;
+    }
+};
+
+export const getStudentsByResponsiblePoint = async(responsible_id) => {
+    const _endpoint = `/get-by-point-responsible?responsible_id=${responsible_id}`
+
+    try{
+        const response = await axios.get(_controller + _endpoint);
 
         return response;
     }

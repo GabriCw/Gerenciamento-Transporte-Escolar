@@ -1,10 +1,14 @@
 import { TextInput, Button } from "react-native-paper";
 import ModalDefault from "../../../components/modalDefault/ModalDefault";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { StyleSheet } from "react-native";
 
 const ModalAssociation = ({open, onClose, handleConfirm}) => {
     const [studentCode, setStudentCode] = useState("");
+
+    useEffect(() => {
+        setStudentCode("");
+    }, [open]);
 
     return <ModalDefault title="Associar Aluno" open={open} onClose={onClose}>
         <>

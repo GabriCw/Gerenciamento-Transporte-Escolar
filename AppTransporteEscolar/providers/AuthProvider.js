@@ -13,7 +13,8 @@ const defaultAuthProvider = {
     handleGenerateToken: async() => {},
     handleVerifyStudent: async(data) => {},
     handleUpdateUserdata: async() => {},
-    handleGetUserDetails: async(id) => {}
+    handleGetUserDetails: async(id) => {},
+    handleRemoveUserFromFirebase: async() => {},
 };
 
 export const AuthContext = createContext(defaultAuthProvider);
@@ -27,7 +28,6 @@ export function AuthProvider({children}) {
 
     const handleGetUserDetails = async(id) => {
         const response = await getUserDetails(id);
-        console.log(response)
 
         if(response.status === 200){
             setUserData(response.data.user);
@@ -42,8 +42,9 @@ export function AuthProvider({children}) {
     };
 
     const handleVerifyStudent = async(data) => {
-        if(data.user_type_id === userTypeEnum.RESPONSAVEL){
-            const response = await getStudentByResponsible(data.id);
+        const user = data !== undefined ? data : userData;
+        if(user?.user_type_id !== userTypeEnum.MOTORISTA){
+            const response = await getStudentByResponsible(user.id);
 
             if(response.status === 200){
                 setHasStudent(true);
@@ -74,6 +75,20 @@ export function AuthProvider({children}) {
         }
     };
 
+    const handleRemoveUserFromFirebase = async() => {
+        const currentUser = auth.currentUser;
+
+        if(currentUser){
+            try{
+                await currentUser.delete();
+                await signOut(auth);
+            }
+            catch(e){
+                console.log("erro: ", e)
+            }
+        }
+    };
+
     const handleUpdateUserdata = async() => {
         const response = await handleGetUserDetails(userData.id);
 
@@ -91,7 +106,8 @@ export function AuthProvider({children}) {
             handleGenerateToken,
             handleVerifyStudent,
             handleUpdateUserdata,
-            handleGetUserDetails
+            handleGetUserDetails,
+            handleRemoveUserFromFirebase
         }}>
             {children}
         </AuthContext.Provider>

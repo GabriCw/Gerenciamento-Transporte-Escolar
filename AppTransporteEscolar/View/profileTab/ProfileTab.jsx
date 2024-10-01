@@ -1,15 +1,31 @@
 import React, { useState, useEffect, useContext } from 'react';
-import { View, StyleSheet, Text, Image } from 'react-native';
+import { View, StyleSheet, Text, Image, Pressable } from 'react-native';
 import { AuthContext } from '../../providers/AuthProvider';
-import { FontAwesome } from '@expo/vector-icons';
+import { FontAwesome, Ionicons } from '@expo/vector-icons';
 import { userTypeEnum } from '../../utils/userTypeEnum';
 import DriverButtons from './components/DriverButtons';
 import ResponsibleButtons from './components/ResponsibleButtons';
 import AdminButtons from './components/AdminButtons';
+import { onAuthStateChanged, signOut } from 'firebase/auth';
+import { auth } from '../../firebase/firebase';
+import { useNavigation } from '@react-navigation/native';
 
-const ProfileTab = ({navigation}) => {
+const ProfileTab = () => {
 
+    const navigation = useNavigation();
     const {userData} = useContext(AuthContext);
+
+    useEffect(() => {
+        const monitorAuthState = () => {
+          onAuthStateChanged(auth, user => {
+            if (!user) {
+              navigation.navigate("Login");
+            }
+          });
+        };
+        
+        monitorAuthState();
+      }, [navigation]);
 
     const userTypeConfig = {
         [userTypeEnum.ADMINISTRADOR]: {
@@ -17,7 +33,7 @@ const ProfileTab = ({navigation}) => {
             buttons: <AdminButtons navigation={navigation}/>
         },
         [userTypeEnum.MOTORISTA]: {
-            subtitle: userData.code ? `Cód. ${userData.code}` : "Motorista",
+            subtitle: "Motorista",
             buttons: <DriverButtons navigation={navigation}/>
         },
         [userTypeEnum.RESPONSAVEL]: {
@@ -27,6 +43,10 @@ const ProfileTab = ({navigation}) => {
     };
 
     const currentUserConfig = userTypeConfig[userData.user_type_id] || {};
+
+    const handleLogout = async () => {
+        await signOut(auth);
+    };
 
     return (
         <View style={styles.view}>
@@ -38,6 +58,9 @@ const ProfileTab = ({navigation}) => {
                             <Text style={[styles.text, {marginLeft:5}]}>{userData.name}</Text>
                             <Text style={[styles.subtext, {marginLeft:5}]}>{currentUserConfig?.subtitle}</Text>
                         </View>
+                        <Pressable style={styles.leaveIconContainer} onPress={handleLogout}>
+                            <Ionicons style={styles.leaveIcon} name="exit-outline"  color="#090833" />
+                        </Pressable>
                     </View>
                 </View>
                 {currentUserConfig?.buttons}
@@ -81,6 +104,13 @@ const styles = StyleSheet.create({
         borderRadius: 5,
         width: '80%',
     },
+    leaveIconContainer: {
+        position: "absolute",
+        right: 20,
+    },
+    leaveIcon: {
+        fontSize: 28,
+    },  
     button: {
         width: '80%',
         backgroundColor: '#C36005',

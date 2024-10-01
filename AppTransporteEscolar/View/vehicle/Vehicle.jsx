@@ -3,23 +3,32 @@ import { View, StyleSheet, Text } from 'react-native';
 import { Button, IconButton, ActivityIndicator } from 'react-native-paper';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import ModalEdit from './components/ModalEdit';
-import { getVehicleByUser, updateVehicle } from '../../data/vehicleServices';
+import { getVehicleByUser, getVehicleListByUser, updateVehicle } from '../../data/vehicleServices';
 import { AuthContext } from '../../providers/AuthProvider';
 import Toast from 'react-native-toast-message';
 import { FontAwesome } from '@expo/vector-icons';
+import Header from "../../components/header/Header";
+import PageDefault from '../../components/pageDefault/PageDefault';
+import { useNavigation } from '@react-navigation/native';
+import VehiclesAssociatedList from './components/VehiclesAssociatedList';
 
-const Vehicle = ({ navigation }) => {
+const Vehicle = () => {
+
+    const navigation = useNavigation();
     const { userData } = useContext(AuthContext);
     const [modalVisible, setModalVisible] = useState(false);
-    const [vehicle, setVehicle] = useState(null);
+    const [vehicles, setVehicles] = useState(null);
+    const [vehicleSelect, setVehicleSelect] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
     const [reload, setReload] = useState(false);
 
     const requestData = async() => {
-        const response = await getVehicleByUser(userData.id) ;
+        setIsLoading(true);
+        
+        const response = await getVehicleListByUser(userData.id) ;
 
         if(response.status === 200){
-            setVehicle(response.data);
+            setVehicles(response.data);
         }
         else{
             navigation.goBack();
@@ -40,99 +49,40 @@ const Vehicle = ({ navigation }) => {
 
     useEffect(() => {
         if(reload === true){
-            setTimeout(async() => {
-                requestData();
-            }, 1000);
+            requestData();
         }
     }, [reload]);
 
-    const handleUpdate = async(vehicle) => {
-        if (vehicle?.model && vehicle?.color && vehicle?.plate && vehicle?.year) {
-            const body = {
-                id: vehicle.id,
-                plate: vehicle.plate,
-                model: vehicle.model,
-                color: vehicle.color,
-                year: vehicle.year,
-                user_id: userData.id
-            };
-
-            setIsLoading(true);
-
-            const response = await updateVehicle(body);
-
-            if(response.status === 200){
-                setReload(true);
-
-                Toast.show({
-                    type: 'success',
-                    text1: 'Sucesso',
-                    text2: "Edição realizada com sucesso!",
-                    visibilityTime: 3000,
-                });
-
-                setModalVisible(false);
-            }
-            else{
-                console.log(response.data)
-                Toast.show({
-                    type: 'error',
-                    text1: 'Erro',
-                    text2: response.data.detail,
-                    visibilityTime: 3000,
-                });
-            }
-
-            setIsLoading(false);
-        } else {
-            // Handle error, e.g., show a message to the user
-            alert('Por favor, preencha todos os campos');
-        }
+    const handleGoToCreateVehicle = () => {
+        navigation.navigate("CreateVehicle");
     };
 
-    const handleOpenModalEdit = () => {
-        setModalVisible(!modalVisible);
-    };
-
-    return <View style={styles.view}>
-        <View style={styles.header}>
-            <Button
-                onPress={() => navigation.goBack()}
-                style={styles.buttonBack}
-                labelStyle={styles.buttonLabel}
-            >
-                <Text>Voltar</Text>
-            </Button>
+    return  <PageDefault headerTitle="Meus Veículos" navigation={navigation} loading={isLoading} backNavigation={"Perfil"}>
+        <View style={styles.content}>
+            {
+                vehicles?.length > 0 ?
+                    <VehiclesAssociatedList
+                        list={vehicles}
+                        setIsLoading={setIsLoading}
+                    />
+                :
+                <>
+                    <View style={styles.withoutAssociation}>
+                        <Text style={styles.withoutAssociationTitle}>Você não possui um veículo, vamos criar?</Text>
+                        <View style={styles.initialButtonContainer}>
+                            <Button
+                                mode="contained"
+                                onPress={handleGoToCreateVehicle}
+                                style={styles.addButton}
+                            >
+                                Criar Veículo
+                            </Button>
+                        </View>
+                    </View>
+                </>
+            }
         </View>
-        <KeyboardAwareScrollView>
-            <View style={styles.content}>
-                <Text style={styles.text}>Seu Veículo Registrado</Text>
-                <View style={styles.card}>
-                    <View style={styles.iconEdit}>
-                        <IconButton 
-                            icon="pencil" 
-                            onPress={handleOpenModalEdit} 
-                        />
-                    </View>
-                    <View style={styles.cardContent}>
-                        <View style={styles.iconContent}>
-                            <FontAwesome name="bus" size={"40%"} color="black"/>
-                        </View>
-                        <View style={styles.textContent}>
-                            <Text style={styles.cardText}>Placa: {vehicle?.plate.toUpperCase()}</Text>
-                            <Text style={styles.cardText}>Modelo: {vehicle?.model ?? "Não informado"}</Text>
-                        </View>
-                    </View>
-                </View>
-            </View>
-        </KeyboardAwareScrollView>
-        <ModalEdit data={vehicle} open={modalVisible} onClose={handleOpenModalEdit} handleConfirm={handleUpdate}/>
-        {isLoading && (
-            <View style={styles.loadingOverlay}>
-                <ActivityIndicator size="large" color="#C36005" />
-            </View>
-        )}
-    </View>  
+    </PageDefault> 
 };
 
 const styles = StyleSheet.create({
@@ -156,6 +106,8 @@ const styles = StyleSheet.create({
     content: {
         flex: 1,
         justifyContent: 'center',
+        rowGap: 10,
+        width: "100%",
         alignItems: 'center',
     },
     card: {
@@ -226,6 +178,24 @@ const styles = StyleSheet.create({
         color: '#FFF',
         textAlign: 'center',
         marginBottom: 20,
+    },
+    withoutAssociation: {
+        textAlign: "center",
+        flex: 1,
+        justifyContent: "center",
+        alignItems: "center",
+        rowGap: 25,
+        width: "100%"
+    },
+    withoutAssociationTitle: {
+        color: "#fff",
+        fontSize: 20,
+        width: "80%",
+        textAlign: "center",
+        fontWeight: "bold"
+    },
+    addButton: {
+        backgroundColor: '#C36005',
     },
     loadingOverlay: {
         ...StyleSheet.absoluteFillObject,

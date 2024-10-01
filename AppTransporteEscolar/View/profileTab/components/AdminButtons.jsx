@@ -1,11 +1,11 @@
 import { StyleSheet, View } from "react-native";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 import ButtonDefault from "./ButtonDefault";
-import { FontAwesome, FontAwesome5 } from "@expo/vector-icons";
+import { FontAwesome, FontAwesome5, Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 
 const AdminButtons = ({navigation}) => {
-    const handleToDriverSchoolPage = () => {
-        navigation.navigate('DriverSchools');
+    const handleToParentNotifications = () => {
+        navigation.navigate('ParentNotifications');
     }
 
     const handleToStudentPage = () => {
@@ -20,6 +20,10 @@ const AdminButtons = ({navigation}) => {
         navigation.navigate('VerPerfilMoto');
     }
 
+    const handleToSchoolsPage = () => {
+        navigation.navigate('Schools');
+    }
+
     return <KeyboardAwareScrollView
         contentContainerStyle={styles.container}
         enableOnAndroid={true}
@@ -30,23 +34,28 @@ const AdminButtons = ({navigation}) => {
             <View style={styles.buttonsContent}>
                 <ButtonDefault
                     icon={<FontAwesome name="user" size={"30%"} color="#fff"  />}
-                    title={"Ver Perfil"}
+                    title={"Perfil"}
                     onClick={handleToProfilePage}
                 />
                 <ButtonDefault
                     icon={<FontAwesome name="bus" size={"30%"} color="#fff"/>}
-                    title={"Ver Veículo"}
+                    title={"Veículos"}
                     onClick={handleToVehiclePage}
                 />
                 <ButtonDefault
                     icon={<FontAwesome name="child" size={"30%"} color="#fff"/>}
-                    title={"Ver Alunos"}
+                    title={"Alunos"}
                     onClick={handleToStudentPage}
                 />
                 <ButtonDefault
-                    icon={<FontAwesome5 name="school" size={"30%"} color="#fff"/>}
-                    title={"Minha Escola"}
-                    onClick={handleToDriverSchoolPage}
+                    icon={<Ionicons name="school" size={"30%"} color="#fff" />}
+                    title={"Escolas"}
+                    onClick={handleToSchoolsPage}
+                />
+                <ButtonDefault
+                    icon={<Ionicons name="alert" size={"30%"} color="#fff" />}
+                    title={"Faltas"}
+                    onClick={handleToParentNotifications}
                 />
             </View>
         </View>

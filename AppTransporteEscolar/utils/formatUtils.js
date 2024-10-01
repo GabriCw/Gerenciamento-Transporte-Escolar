@@ -21,7 +21,6 @@ export const formatRG = (rg) => {
 
 export const getAddress = async(street = "") => {
     const point = street?.split(",");
-    console.log(point);
 
     return await{
         address: point[0],

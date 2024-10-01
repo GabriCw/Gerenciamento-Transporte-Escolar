@@ -5,6 +5,7 @@ import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view
 import Toast from 'react-native-toast-message';
 import { sendPasswordResetEmail } from 'firebase/auth';
 import {auth} from "../../firebase/firebase";
+import PageDefault from '../../components/pageDefault/PageDefault';
 
 const ForgotPasswordScreen = ({ navigation }) => {
     const [email, setEmail] = useState('');
@@ -35,17 +36,8 @@ const ForgotPasswordScreen = ({ navigation }) => {
     };
 
     return (
+    <PageDefault headerTitle="Esqueci minha senha">
         <View style={styles.view}>
-            <View style={styles.header}>
-                <Button 
-                    mode="contained" 
-                    onPress={() => navigation.navigate('Login')} 
-                    style={styles.buttonBack}
-                    labelStyle={styles.buttonLabel}
-                >
-                    Voltar
-                </Button>
-            </View>
             <KeyboardAwareScrollView
                 contentContainerStyle={styles.container}
                 enableOnAndroid={true}
@@ -53,7 +45,6 @@ const ForgotPasswordScreen = ({ navigation }) => {
                 keyboardShouldPersistTaps="handled"
             >
                 <View style={styles.container2}>
-                    <Text style={styles.title}>Esqueci Minha Senha</Text>
                     <TextInput
                         style={styles.input}
                         label="Email Para Recuperação"
@@ -61,7 +52,7 @@ const ForgotPasswordScreen = ({ navigation }) => {
                         activeOutlineColor='#EF7D14'
                         keyboardAppearance='dark'
                         value={email}
-                        onChangeText={text => setEmail(text)}
+                        onChangeText={text => setEmail(text.toLowerCase())}
                         keyboardType="email-address"
                     />
                     <Button 
@@ -75,7 +66,7 @@ const ForgotPasswordScreen = ({ navigation }) => {
                 </View>
             </KeyboardAwareScrollView>
         </View>
-        
+    </PageDefault>
     );
 };
 
@@ -83,6 +74,7 @@ const styles = StyleSheet.create({
     view: {
         flex: 1,
         backgroundColor: '#090833',
+        width: "100%"
     },
     header: {
         alignSelf: 'stretch',

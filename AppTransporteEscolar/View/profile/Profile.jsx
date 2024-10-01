@@ -1,5 +1,5 @@
 import React, { useState, useContext, useEffect } from 'react';
-import { View, StyleSheet, Text, Alert, ScrollView } from 'react-native';
+import { View, StyleSheet, Text, Alert, ScrollView, Pressable } from 'react-native';
 import { Button, TextInput, IconButton, Modal, Portal, Card, Provider, ActivityIndicator } from 'react-native-paper';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { FontAwesome } from '@expo/vector-icons';
@@ -11,8 +11,12 @@ import { getPointByUser, updatePoint } from '../../data/pointServices';
 import { pointTypeEnum } from '../../utils/pointTypeEnum';
 import ModalEditUser from './components/ModalEditUser';
 import ModalEditPoint from './components/ModalEditPoint';
+import Header from '../../components/header/Header';
+import PageDefault from '../../components/pageDefault/PageDefault';
+import { useNavigation } from '@react-navigation/native';
 
-const Profile = ({ navigation }) => {
+const Profile = () => {
+    const navigation = useNavigation();
     const { userData } = useContext(AuthContext);
 
     const [user, setUser] = useState(null);
@@ -151,19 +155,13 @@ const Profile = ({ navigation }) => {
         }
     };
 
+    const handleNavigateToRemoveUser = () => {
+        navigation.navigate("RemoveUser");
+    };
+
     return (
-        <Provider>
-            <View style={styles.view}>
-                <View style={styles.header}>
-                    <Button
-                        onPress={() => navigation.goBack()}
-                        style={styles.buttonBack}
-                        labelStyle={styles.buttonLabel}
-                    >
-                        <Text>Voltar</Text>
-                    </Button>
-                </View>
-                <ScrollView>
+        <PageDefault headerTitle="Perfil" navigation={navigation} loading={isLoading} backNavigation={"Perfil"}>
+            <ScrollView>
                     <KeyboardAwareScrollView
                         contentContainerStyle={styles.container}
                         enableOnAndroid={true}
@@ -213,18 +211,16 @@ const Profile = ({ navigation }) => {
                                 </Card>
                             }
                         </View>
-
-                        {isLoading && (
-                                <View style={styles.loadingOverlay}>
-                                    <ActivityIndicator size="large" color="#C36005" />
-                                </View>
-                            )}
+                        <View style={styles.textAssociationContainer}>
+                            <Pressable hitSlop={20} onPress={handleNavigateToRemoveUser}>
+                                <Text style={styles.textAssociation}>Excluir conta</Text>
+                            </Pressable>
+                        </View>
                     </KeyboardAwareScrollView>
                 </ScrollView>
                 <ModalEditUser data={user} open={isModalVisibleUser} onClose={handleOpenModalUser} handleConfirm={handleUpdateUser}/>
                 <ModalEditPoint data={point} open={isModalVisible} address={address} onClose={handleOpenModalPoint} handleConfirm={handleUpdatePoint}/>
-            </View>
-        </Provider>
+        </PageDefault>
     );
 };
 
@@ -249,6 +245,16 @@ const styles = StyleSheet.create({
         marginTop: 10,
         fontWeight: 'bold',
     },  
+    textAssociationContainer: {
+        width: "100%",
+        alignItems: "center"
+    },  
+    textAssociation: {
+        color: "#C36005",
+        fontWeight: "bold",
+        fontSize: 14,
+        textDecorationLine: "underline"
+    },
     content: {
         flex: 1,
         paddingHorizontal: 20,

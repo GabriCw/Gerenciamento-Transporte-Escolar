@@ -1,7 +1,7 @@
 import { ScrollView, StyleSheet, Text, View } from "react-native";
-import { Portal, Modal, Button } from "react-native-paper";
+import { Portal, Modal, Button, ActivityIndicator } from "react-native-paper";
 
-const ModalDefault = ({open, onClose, title, children}) => {
+const ModalDefault = ({open, onClose, title, children, loading}) => {
     return <Portal>
                 <Modal visible={open} onDismiss={onClose} contentContainerStyle={styles.modalContainer}>
                     <View style={styles.headerContent}>
@@ -9,7 +9,14 @@ const ModalDefault = ({open, onClose, title, children}) => {
                         <Text style={styles.closeButton} onPress={onClose}>X</Text>
                     </View>
                     <ScrollView>
-                        {children}
+                        {
+                            !loading ? 
+                                children 
+                                :
+                                <View style={styles.loadingOverlay}>
+                                    <ActivityIndicator size="large" color="#C36005" />
+                                </View>
+                        }
                     </ScrollView>
                 </Modal>
         </Portal> 
@@ -37,6 +44,12 @@ const styles = StyleSheet.create({
     closeButton: {
         color: "#fff",
         fontSize: 20
+    },
+    loadingOverlay: {
+        backgroundColor: '#090833',
+        justifyContent: 'center',
+        height: "100%",
+        alignItems: 'center',
     }
 });
 

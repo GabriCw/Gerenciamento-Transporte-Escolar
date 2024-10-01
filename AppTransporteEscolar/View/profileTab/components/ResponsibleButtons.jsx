@@ -22,12 +22,12 @@ const ResponsibleButtons = ({navigation}) => {
             <View style={styles.buttonsContent}>
                 <ButtonDefault
                     icon={<FontAwesome name="user" size={"30%"} color="#fff"  />}
-                    title={"Ver Perfil"}
+                    title={"Perfil"}
                     onClick={handleToProfilePage}
                 />
                 <ButtonDefault
                     icon={<FontAwesome name="child" size={"30%"} color="#fff"/>}
-                    title={"Ver Alunos"}
+                    title={"Alunos"}
                     onClick={handleToStudentPage}
                 />
             </View>

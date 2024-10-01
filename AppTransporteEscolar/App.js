@@ -27,7 +27,7 @@ const App = () => {
             <Stack.Screen name="Students" component={Students} options={{ headerShown: false }}/>
             <Stack.Screen name="Homepage" component={Tabs} options={{ headerShown: false }}/>
           </Stack.Navigator>
-          <Toast ref={(ref) => Toast.setRef(ref)} />
+          <Toast/>
         </NavigationContainer>
       </PaperProvider>
     </AuthProvider>

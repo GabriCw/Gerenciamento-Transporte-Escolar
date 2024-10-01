@@ -23,16 +23,13 @@ const Homepage = ({ navigation }) => {
   }, [navigation]);
 
   useEffect(() => {
-    setTimeout(() => {     
-      if(!hasStudent){
-        navigation.navigate("Students");
-      }
-    }, 1500);
+    if(!hasStudent){
+      navigation.navigate("Perfil", { screen: 'Alunos' });
+    }
+    else{
+      navigation.navigate("Perfil");
+    }
   }, [navigation, hasStudent]);
-  
-  const handleLogout = async () => {
-    await signOut(auth);
-  };
 
   const handleMapaMotorista = () => {
     navigation.navigate("MapaMotorista");
@@ -44,16 +41,6 @@ const Homepage = ({ navigation }) => {
 
   return (
     <View style={styles.view}>
-      <View style={styles.header}>
-        <Button 
-          mode="contained" 
-          onPress={handleLogout}
-          style={styles.buttonBack}
-          labelStyle={styles.buttonLabel}
-        >
-          Sair
-        </Button>
-      </View>
       <KeyboardAwareScrollView
         contentContainerStyle={styles.container}
         enableOnAndroid={true}
@@ -122,7 +109,7 @@ const styles = StyleSheet.create({
   },
   text: {
     fontSize: 20,
-    color: '#FFF',
+    color: '#FFF'
   }
 });
 

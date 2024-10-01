@@ -5,10 +5,14 @@ import { StyleSheet } from "react-native";
 
 const ModalEdit = ({data, open, onClose, handleConfirm}) => {
     useEffect(() => {
+        const studentData = data?.student;
+        const driverData = data?.driver;
+
         setStudent({
-            id: data?.id,
-            name: data?.name,
-            year: data?.year
+            id: studentData?.id,
+            name: studentData?.name,
+            year: studentData?.year,
+            driverCode: driverData?.code
         });
     }, [data]);
 
@@ -27,12 +31,22 @@ const ModalEdit = ({data, open, onClose, handleConfirm}) => {
         />
         <TextInput
             label="Idade"
-            value={student?.year}
+            value={`${student?.year}`}
             mode="outlined"
             activeOutlineColor="#C36005"
             keyboardAppearance="dark"
             keyboardType="numeric"
             onChangeText={(text) => setStudent({ ...student, year: text })}
+            style={styles.input}
+        />
+        <TextInput
+            label="Código Motorista"
+            value={student?.driverCode}
+            mode="outlined"
+            activeOutlineColor="#C36005"
+            keyboardAppearance="dark"
+            keyboardType="numeric"
+            onChangeText={(text) => setStudent({ ...student, driverCode: text })}
             style={styles.input}
         />
         <Button mode="contained" onPress={() => handleConfirm(student)} style={styles.saveButton}>

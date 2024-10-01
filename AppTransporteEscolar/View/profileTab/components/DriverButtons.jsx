@@ -1,11 +1,15 @@
 import { StyleSheet, View } from "react-native";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 import ButtonDefault from "./ButtonDefault";
-import { FontAwesome, FontAwesome5 } from "@expo/vector-icons";
+import { FontAwesome, FontAwesome5, Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 
 const DriverButtons = ({navigation}) => {
     const handleToDriverSchoolPage = () => {
         navigation.navigate('DriverSchools');
+    }
+
+    const handleToSchoolsPage = () => {
+        navigation.navigate('Schools');
     }
 
     const handleToVehiclePage = () => {
@@ -26,18 +30,18 @@ const DriverButtons = ({navigation}) => {
             <View style={styles.buttonsContent}>
                 <ButtonDefault
                     icon={<FontAwesome name="user" size={"30%"} color="#fff"  />}
-                    title={"Ver Perfil"}
+                    title={"Perfil"}
                     onClick={handleToProfilePage}
                 />
                 <ButtonDefault
                     icon={<FontAwesome name="bus" size={"30%"} color="#fff"/>}
-                    title={"Ver Veículo"}
+                    title={"Veículos"}
                     onClick={handleToVehiclePage}
                 />
                 <ButtonDefault
-                    icon={<FontAwesome5 name="school" size={"30%"} color="#fff"/>}
-                    title={"Minha Escola"}
-                    onClick={handleToDriverSchoolPage}
+                    icon={<Ionicons name="school" size={"30%"} color="#fff" />}
+                    title={"Escolas"}
+                    onClick={handleToSchoolsPage}
                 />
             </View>
         </View>

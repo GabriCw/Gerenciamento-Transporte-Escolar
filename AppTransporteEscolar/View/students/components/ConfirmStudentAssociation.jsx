@@ -5,12 +5,14 @@ import { ActivityIndicator, Button, Card, Portal, Provider } from "react-native-
 import { associationStudent } from "../../../data/studentServices";
 import { AuthContext } from "../../../providers/AuthProvider";
 import Toast from "react-native-toast-message";
+import Header from "../../../components/header/Header";
+import PageDefault from "../../../components/pageDefault/PageDefault";
 
 const ConfirmStudentAssociation = ({route, navigation}) => {
     const [isLoading, setIsLoading] = useState(false);
 
     const {studentData} = route.params;
-    const {userData} = useContext(AuthContext);
+    const {userData, handleVerifyStudent} = useContext(AuthContext);
     
     const handleCancel = () => {
         navigation.goBack();
@@ -21,7 +23,7 @@ const ConfirmStudentAssociation = ({route, navigation}) => {
 
         const associationBody = {
             responsible_id: userData.id,
-            student_id: studentData.id
+            student_id: studentData?.student?.id
         };
 
         const association = await associationStudent(associationBody);
@@ -34,7 +36,8 @@ const ConfirmStudentAssociation = ({route, navigation}) => {
                 visibilityTime: 3000,
             });
 
-            navigation.navigate("Alunos");
+            await handleVerifyStudent();
+            navigation.navigate("Perfil");
         }
         else{
             Toast.show({
@@ -48,62 +51,75 @@ const ConfirmStudentAssociation = ({route, navigation}) => {
         setIsLoading(false);
     };
 
-    return <Provider>
-    <Portal.Host>
-        <View style={styles.view}>
-            <View style={styles.header}>
-                <Button
-                    onPress={() => navigation.goBack()}
-                    style={styles.buttonBack}
-                    labelStyle={styles.buttonLabel}
-                >
-                    <Text>Voltar</Text>
-                </Button>
-            </View>
+    return <PageDefault headerTitle="Aluno identificado!" loading={isLoading} navigation={navigation}>
             <View style={styles.content}>
-                <Text style={styles.text}>Aluno identificado!</Text>
-                <Text style={styles.subtext}>Caso queira se associar, confirme abaixo</Text>
-                <View style={styles.scrollContainer}>
-                    <ScrollView contentContainerStyle={styles.scrollContent}>
-                        <Card style={styles.card}>
-                            <Card.Content style={styles.cardContent}>
-                                <View style={styles.iconContainer}>
-                                    <FontAwesome name="child" size={45} color="black" style={styles.icon} />
+                <View style={styles.viewContainter}>
+                    <View style={styles.cardContainer}>
+                        <View style={styles.mainInfosContainer}>
+                            <View style={styles.iconContent}>
+                                <FontAwesome name="child" color="black" style={styles.childIcon} />
+                            </View>
+                            <View style={styles.content}>
+                                <View style={styles.nameYearContent}>
+                                    <Text style={styles.title}>{studentData?.student?.name}</Text>
+                                    <Text style={styles.text}>{studentData?.student?.year} anos</Text>
                                 </View>
-                                <View style={styles.cardDetails}>
-                                    <Text style={[styles.cardText, {marginTop:1, fontWeight: "bold"}]}>{studentData.name}</Text>
-                                    <Text style={styles.cardText}>{studentData.year} anos</Text>
-                                    <Text style={styles.codeText}>{studentData.code}</Text>
+                                <View style={styles.codeContent}>
+                                    <Text style={styles.codeText}>Código:</Text>
+                                    <Text style={styles.colorBox}>{studentData?.student?.code}</Text>
                                 </View>
-                            </Card.Content>
-                        </Card>
-                    </ScrollView>
-                </View>
-                <View style={styles.buttonContainer}>
-                    <Button
-                        mode="contained"
-                        onPress={handleConfirmAssociation}
-                        style={styles.addButton}
-                    >
-                        Confirmar
-                    </Button>
-                    <Button
-                        mode="contained"
-                        onPress={handleCancel}
-                        style={styles.addButton}
-                    >
-                        Cancelar
-                    </Button>
-                </View>
-                {isLoading && (
-                    <View style={styles.loadingOverlay}>
-                        <ActivityIndicator size="large" color="#C36005" />
+                            </View>
+                        </View>
+
+                        <View style={styles.lineSeparator}/>
+
+                        <View style={styles.schoolContainer}>
+                            <View style={styles.schoolContent}>
+                                <Text style={styles.colorBox}>Escola</Text>
+                                <Text style={styles.text}>{studentData?.school?.name}</Text>
+                            </View>
+                            <View>
+                                <Text style={styles.text}>{studentData?.school?.name}</Text>
+                                <Text style={styles.text}>{studentData?.school?.neighborhood} - {studentData?.school?.city}/{studentData?.school?.state}</Text>
+                            </View>
+                        </View>
+
+                        <View style={styles.lineSeparator}/>
+
+                        <View style={styles.driverContainer}>
+                            <View style={styles.driverContent}>
+                                <Text style={styles.colorBox}>Motorista</Text>
+                                <Text style={styles.text}>{studentData?.driver?.name}</Text>
+                            </View>
+                            {
+                                studentData?.driver?.phones?.map(item => {
+                                    return <View style={styles.driverContent} key={item.id}>
+                                        <FontAwesome name="phone" size={24} color="black" />
+                                        <Text style={styles.text}>{item.phone}</Text>
+                                    </View>
+                                })
+                            }
+                        </View>
                     </View>
-                )}
+                    <View style={styles.buttonContainer}>
+                        <Button
+                            mode="contained"
+                            onPress={handleCancel}
+                            style={styles.button}
+                        >
+                            Cancelar
+                        </Button>
+                        <Button
+                            mode="contained"
+                            onPress={handleConfirmAssociation}
+                            style={styles.button}
+                        >
+                            Associar
+                        </Button>
+                    </View>
+                </View> 
             </View>
-        </View>
-    </Portal.Host>
-</Provider>
+        </PageDefault>
 };
 
 const styles = StyleSheet.create({
@@ -111,27 +127,19 @@ const styles = StyleSheet.create({
         flex: 1,
         backgroundColor: '#090833',
     },
-    text: {
-        fontSize: 25,
-        color: '#FFF',
-        textAlign: 'center',
-        fontWeight: 'bold',
-    },
-    subtext: {
-        fontSize: 20,
-        color: '#FFF',
-        margin: 30,
-        textAlign: 'center',
-        fontWeight: 'bold',
-    },
-    content: {
+    viewContainter: {
         flex: 1,
-        marginTop: 30,
-        alignItems: 'center',
+        display: "flex",
+        justifyContent: "center",
+        marginBottom: "12%",
+        alignItems: "center",
+        rowGap: 20,
+        padding: "5%"
     },
-    scrollContainer: {
-        width: '90%',
-        height: "50%",
+    cardContainer: {
+        width: '100%',
+        height: "auto",
+        marginHorizontal: "auto",
         maxHeight: 400,
         backgroundColor: '#f0f0f0',
         borderColor: '#d0d0d0',
@@ -140,99 +148,108 @@ const styles = StyleSheet.create({
         padding: 10,
         overflow: 'hidden',
     },
-    scrollContent: {
+    mainInfosContainer: {
+        display: 'flex',
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: "center",
+        paddingBottom: 10
+    },
+    iconContent: {
+        justifyContent: 'center',
         alignItems: 'center',
+        borderRadius: 30,
+        paddingLeft: 1,
     },
-    card: {
-        width: '95%',
-        marginVertical: 8,
-    },
-    icon: {
+    childIcon: {
         marginRight: 10,
         marginBottom: 8,
+        fontSize: 60
     },
-    modalContainer: {
-        backgroundColor: '#090833',
-        padding: 20,
-        margin: 20,
-        borderRadius: 10,
+    content: {
+        flex: 1,
+        paddingHorizontal: 5,
+        width: "100%",
+        display: "flex",
+        rowGap: 5
     },
-    input: {
-        marginBottom: 10,
-        fontSize: 20,
-        color: '#FFF',
+    nameYearContent: {
+        display: "flex",
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "space-between"
     },
-    saveButton: {
-        backgroundColor: '#C36005',
-        marginTop: 20,
-    },
-    addButton: {
-        backgroundColor: '#C36005',
-    },
-    cardText: {
+    title: {
+        color: '#000',
+        fontSize: 22,
+        marginBottom: 5,
+        fontWeight: "bold",
+        maxWidth: "70%",
+    },  
+    text: {
         color: '#000',
         fontSize: 18,
         marginBottom: 5,
     },
-    codeText: {
+    codeContent: {
+        display: "flex",
+        flexDirection: "row",
+        columnGap: 5,
+        alignItems: "center"
+    },
+    colorBox: {
         color: '#fff',
         fontSize: 16,
         marginBottom: 5,
         backgroundColor: "#090833",
         textAlign: "center",
-        width: "70%"
+        paddingVertical: 2,
+        borderRadius: 5,
+        paddingHorizontal: 10,
+        fontWeight: "bold"
     },
-    cardTitle: {
+    codeText: {
         color: '#000',
-        fontSize: 20,
-        fontWeight: 'bold',
+        fontSize: 16,
+        marginBottom: 5,
     },
-    header: {
-        alignSelf: 'stretch',
-        alignItems: 'flex-start',
-        marginLeft: 20,
-        marginTop: 50,
-        backgroundColor: '#090833',
+    lineSeparator: {
+        height: 1,
+        backgroundColor: "#d0d0d0"
     },
-    buttonBack: {
-        width: 90,
-        backgroundColor: '#C36005',
-        marginVertical: 10,
+    schoolContainer:{
+        paddingVertical: 10,
+        rowGap: 3,
+        display: "flex",
     },
-    buttonLabel: {
-        color: 'white',
-        fontWeight: 'bold',
+    schoolContent: {
+        display: "flex",
+        flexDirection: "row",
+        alignItems: "center",
+        columnGap: 10
     },
-    modalTitle: {
-        fontSize: 20,
-        color: '#FFF',
-        textAlign: 'center',
-        marginBottom: 20,
+    driverContainer:{
+        paddingTop: 10,
+        paddingBottom: 5,
+        rowGap: 3,
+        display: "flex",
     },
-    cardContent: {
-        display: 'flex',
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-    },
-    iconContainer: {
-        alignItems: 'center',
-    },
-    cardDetails: {
-        flex: 1,
-    },
-    iconActions: {
-        flexDirection: 'row',
-        alignItems: 'center',
+    driverContent: {
+        display: "flex",
+        flexDirection: "row",
+        alignItems: "center",
+        columnGap: 10
     },
     buttonContainer: {
-        marginTop: 10,
-        width: "100%",
-        flexWrap: "wrap",
-        justifyContent: "center",
-        gap: 10,
-        display: "flex",
-        flexDirection: "row"
+        display : "flex",
+        flexDirection: "row",
+        justifyContent: "space-between",
+        width: "100%"
+    },
+    button: {
+        backgroundColor: '#C36005',
+        width: "40%",
+        display: "flex"
     },
     loadingOverlay: {
         ...StyleSheet.absoluteFillObject,
@@ -241,6 +258,5 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
 });
-
 
 export default ConfirmStudentAssociation;

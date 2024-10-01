@@ -1,26 +1,24 @@
 import React, { useContext, useEffect, useState } from 'react';
-import { View, StyleSheet, Text, ScrollView, Alert } from 'react-native';
-import { Button, Card, Portal, TextInput, Provider, IconButton, ActivityIndicator } from 'react-native-paper';
-import { FontAwesome } from '@expo/vector-icons'; // Importa o FontAwesome
-import { createStudentList, deleteStudent, getStudentByCode, getStudentByResponsible, updateStudent } from '../../data/studentServices';
+import { View, StyleSheet, Text, ScrollView, Pressable } from 'react-native';
+import { Button, Card, ActivityIndicator } from 'react-native-paper';
+import { AntDesign, FontAwesome } from '@expo/vector-icons';
+import { getStudentByCode, getStudentByResponsible, getStudentDetails } from '../../data/studentServices';
 import { AuthContext } from '../../providers/AuthProvider';
 import Toast from 'react-native-toast-message';
-import ModalDefault from '../../components/modalDefault/ModalDefault';
-import ModalRegister from './components/ModalRegister';
-import ModalEdit from './components/ModalEdit';
 import ModalAssociation from './components/ModalAssociation';
+import Header from '../../components/header/Header';
+import PageDefault from '../../components/pageDefault/PageDefault';
+import { useNavigation } from '@react-navigation/native';
 
-const Students = ({ navigation }) => {
-    const { userData } = useContext(AuthContext);
+const Students = () => {
+    const { userData, hasStudent } = useContext(AuthContext);
 
-    const [modalVisible, setModalVisible] = useState(false);
-    const [editModalVisible, setEditModalVisible] = useState(false);
+    const navigation = useNavigation();
+
     const [associationModalVisible, setAssociationModalVisible] = useState(false);
-    const [alunos, setAlunos] = useState([]);
-    const [tempAluno, setTempAluno] = useState({ name: '', year: '' });
-    const [selectedAluno, setSelectedAluno] = useState(null);
-    const [reload, setReload] = useState(false);
-    const [isLoading, setIsLoading] = useState(false);
+    const [students, setStudents] = useState([]);
+    const [loading, setLoading] = useState(false);
+    const [headerTitle, setHeaderTitle] = useState("Meus Alunos");
 
     const requestData = async() => {
         const response = await getStudentByResponsible(userData.id);
@@ -33,177 +31,41 @@ const Students = ({ navigation }) => {
                 code: item.code
             }));
             
-            setAlunos(studentFormat);
-        }
-        else{
-            setAlunos([]);
-        }
-
-        setReload(false);
-        setIsLoading(false);
-    };
-
-    useEffect(() => {
-        setIsLoading(true);
-        
-        requestData();
-    }, []);
-
-    useEffect(() => {
-        if(reload){
-            setTimeout(() => {
-                requestData();
-            }, 1000);
-        }
-    }, [reload]);
-
-    const handleModalToggle = () => {
-        setModalVisible(!modalVisible);
-    };
-
-    const handleAssociationModalToggle = () => {
-        setAssociationModalVisible(!associationModalVisible);
-    };
-
-    const handleEditModalToggle = () => {
-        setEditModalVisible(!editModalVisible);
-    };
-
-    const handleSave = (student) => {
-        if (student.name && student.year) {
-            setAlunos([...alunos, { ...student, year: parseInt(student.year, 10) }]);
-            setModalVisible(false);
-        } else {
-            alert('Por favor, preencha todos os campos');
-        }
-    };
-
-    const handleAddStudent = async() => {
-        const studentsBody = alunos.map(item => ({
-            id: item.id ?? null,
-            name: item.name,
-            year: item.year,
-            responsible_id: userData.id
-        }));
-
-        setIsLoading(true);
-
-        const response = await createStudentList(studentsBody);
-
-        if(response.status === 201){
-            Toast.show({
-                type: 'success',
-                text1: 'Sucesso',
-                text2: 'Cadastro realizado com sucesso!',
-                visibilityTime: 3000,
-            });
-            navigation.goBack();
-        }
-        else{
-            Toast.show({
-                type: 'error',
-                text1: 'Erro',
-                text2: 'Erro ao cadastrar',
-                visibilityTime: 3000,
-            });
-        }
-    };
-
-    const handleEdit = (aluno) => {
-        setSelectedAluno(aluno);
-        setTempAluno({ id: aluno?.id, name: aluno.name, year: aluno.year.toString() }); // Converta idade para string
-        handleEditModalToggle();
-    };
-
-    const handleUpdate = async(student) => {
-        if (student.name && student.year) {
-            if(student?.id !== undefined){
-                const response = await updateStudent(student);
-
-                setIsLoading(true);
-
-                if(response.status === 200){
-                    Toast.show({
-                        type: 'success',
-                        text1: 'Sucesso',
-                        text2: 'Edição realizada com sucesso!',
-                        visibilityTime: 3000,
-                    });
-
-                    setEditModalVisible(false);
-                    setReload(true);
-                }
-                else{
-                    Toast.show({
-                    type: 'error',
-                    text1: 'Erro',
-                    text2: 'Erro ao editar',
-                    visibilityTime: 3000,
-                    });
-                }
+            if(studentFormat?.length == 0){
+                setHeaderTitle("Primeira Etapa!");
             }
             else{
-                const updatedAlunos = alunos.map(aluno =>
-                    aluno === selectedAluno ? { ...tempAluno, year: parseInt(tempAluno.year, 10) } : aluno
-                );
-                setAlunos(updatedAlunos);
-                setTempAluno({ name: '', year: '' });
-                setEditModalVisible(false);
+                setHeaderTitle("Meus Alunos");
             }
-        } else {
-            alert('Por favor, preencha todos os campos');
+
+            setStudents(studentFormat);
         }
+        else{
+            setStudents([]);
+            setHeaderTitle("Primeira Etapa!");
+        }
+
+        setLoading(false);
     };
 
-    const handleDelete = (alunoToDelete) => {
-        Alert.alert(
-            'Confirmar Exclusão',
-            'Você tem certeza que deseja excluir este aluno?',
-            [
-                { text: 'Cancelar', style: 'cancel' },
-                {
-                    text: 'Excluir',
-                    onPress: async() => {
-                        if(alunoToDelete?.id !== undefined){
-
-                            setIsLoading(true);
-                            
-                            const response = await deleteStudent(alunoToDelete?.id)
-                            
-                            if(response.status === 200){
-                                setReload(true);
-                                Toast.show({
-                                    type: 'success',
-                                    text1: 'Sucesso',
-                                    text2: 'Remoção realizada com sucesso!',
-                                    visibilityTime: 3000,
-                                });
-                            }
-                            else{
-                                Toast.show({
-                                    type: 'error',
-                                    text1: 'Sucesso',
-                                    text2: 'Erro ao remover',
-                                    visibilityTime: 3000,
-                                });
-                            }
-                        }
-                        else{
-                            setAlunos(alunos.filter(aluno => aluno !== alunoToDelete));
-                        }
-                    },
-                },
-            ]
-        );
-    };
-
+    useEffect(() => {
+        setLoading(true);
+        
+        requestData();
+    }, [userData, hasStudent]);
+    
     const handleVerifyStudentByCode = async(studentCode) => {
+        setLoading(true);
+        setAssociationModalVisible(false);
+
         const student = await getStudentByCode(studentCode);
 
         if(student.status === 200){
             navigation.navigate("StudentAssociation", {studentData: student.data});
         }
         else{
+            setAssociationModalVisible(true);
+
             Toast.show({
                 type: 'error',
                 text1: 'Erro',
@@ -211,119 +73,142 @@ const Students = ({ navigation }) => {
                 visibilityTime: 3000,
             });
         }
+
+        setLoading(false);
+    };
+
+    const handleAssociationModalToggle = () => {
+        setAssociationModalVisible(!associationModalVisible);
+    };
+
+    const handleToCreateStudentPage = () => {
+        navigation.navigate("CreateStudent");
+    };
+
+    const handleSelectStudent = async(studentInfos) => {
+        setLoading(true);
+
+        const studentDetails = await getStudentDetails(studentInfos.id);
+
+        if(studentDetails.status === 200){
+            navigation.navigate("StudentDetail", {studentData: studentDetails.data});
+        }
+        else{
+            Toast.show({
+                type: 'error',
+                text1: 'Erro',
+                text2:"Erro ao trazer detalhes do aluno",
+                visibilityTime: 3000,
+            });
+        }
+
+        setLoading(false);
     };
 
     return (
-        <View style={styles.view}>
-            <View style={styles.header}>
-                <Button
-                    onPress={() => navigation.goBack()}
-                    style={styles.buttonBack}
-                    labelStyle={styles.buttonLabel}
-                >
-                    <Text>Voltar</Text>
-                </Button>
-            </View>
-            <View style={styles.content}>
-                <Text style={styles.text}>Seus Alunos</Text>
-                <View style={styles.scrollContainer}>
-                    <ScrollView contentContainerStyle={styles.scrollContent}>
-                        {alunos.map((aluno, index) => (
-                            <Card key={index} style={styles.card}>
-                                <Card.Content style={styles.cardContent}>
-                                    <View style={styles.iconContainer}>
-                                        <FontAwesome name="child" size={45} color="black" style={styles.icon} />
-                                    </View>
-                                    <View style={styles.cardDetails}>
-                                        <Text style={[styles.cardText, {marginTop:1, fontWeight: "bold"}]}>{aluno.name}</Text>
-                                        <Text style={styles.cardText}>{aluno.year} anos</Text>
-                                        {aluno.code && <Text style={styles.codeText}>{aluno.code}</Text>}
-                                    </View>
-                                    <IconButton  icon="pencil" size={20} onPress={() => handleEdit(aluno)}>
-                                    </IconButton>
-                                    <IconButton icon="trash-can" size={20} onPress={() => handleDelete(aluno)}>
-                                    </IconButton>
-                                </Card.Content>
-                            </Card>
-                        ))}
-                    </ScrollView>
-                </View>
-                <View style={styles.buttonContainer}>
-                    <Button
-                        mode="contained"
-                        onPress={handleModalToggle}
-                        style={styles.addButton}
-                    >
-                        Cadastrar Aluno
-                    </Button>
-                    <Button
-                        mode="contained"
-                        onPress={handleAssociationModalToggle}
-                        style={styles.addButton}
-                    >
-                        Associar Aluno
-                    </Button>
-                    {
-                        alunos?.length > 0 &&
-                        <Button
-                            mode="contained"
-                            onPress={handleAddStudent}
-                            style={styles.addButton}
-                        >
-                            Salvar
-                        </Button>
-                    }
-                </View>
-                {isLoading && (
-                    <View style={styles.loadingOverlay}>
-                        <ActivityIndicator size="large" color="#C36005" />
+        <PageDefault headerTitle={headerTitle} loading={loading} navigation={navigation} backNavigation={"Perfil"}>
+            {
+                students.length > 0 ? <>
+                    <View style={styles.content}>
+                        <View style={styles.scrollContainer}>
+                            <ScrollView contentContainerStyle={styles.scrollContent}>
+                                {students.map((student, index) => (
+                                    <Card key={index} style={styles.card} onPress={() => handleSelectStudent(student)}>
+                                        <Card.Content style={styles.cardContent}>
+                                            <View style={styles.iconContainer}>
+                                                <FontAwesome name="child" size={45} color="black" style={styles.icon} />
+                                            </View>
+                                            <View style={styles.cardDetails}>
+                                                <Text style={[styles.cardText, {marginTop:1, fontWeight: "bold"}]}>{student.name}</Text>
+                                                <Text style={styles.cardText}>{student.year} anos</Text>
+                                            </View>
+                                            <AntDesign name="rightcircle" size={24} color="black"/>
+                                        </Card.Content>
+                                    </Card>
+                                ))}
+                            </ScrollView>
+                        </View>
+                        <View style={styles.buttonContainer}>
+                            <Button
+                                mode="contained"
+                                onPress={handleToCreateStudentPage}
+                                style={styles.addButton}
+                            >
+                                Criar Aluno
+                            </Button>
+                        </View>
+                        <Pressable hitSlop={20} style={{position: "absolute", bottom: "5%"}} onPress={() => handleAssociationModalToggle()}>
+                            <Text style={styles.textAssociation}>Já existe aluno criado? Clique aqui!</Text>
+                        </Pressable>
                     </View>
-                )}
-            </View>
-            
-            <ModalRegister
-                open={modalVisible}
-                onClose={handleModalToggle}
-                handleConfirm={handleSave}
-            />
-
-            <ModalEdit
-                data={tempAluno}
-                open={editModalVisible}
-                onClose={handleEditModalToggle}
-                handleConfirm={handleUpdate}
-            />
+                </>
+                :
+                <>
+                    <View style={styles.withoutStudent}>
+                        <Text style={styles.withoutStudentTitle}>Crie ou se associe a um aluno já existente</Text>
+                        <View style={styles.initialButtonContainer}>
+                            <Button
+                                mode="contained"
+                                onPress={handleAssociationModalToggle}
+                                style={styles.addButton}
+                            >
+                                Associar Aluno
+                            </Button>
+                            <Button
+                                mode="contained"
+                                onPress={handleToCreateStudentPage}
+                                style={styles.addButton}
+                            >
+                                Criar Aluno
+                            </Button>
+                        </View>
+                    </View>
+                </>
+            }
 
             <ModalAssociation
                 open={associationModalVisible}
                 onClose={handleAssociationModalToggle}
                 handleConfirm={handleVerifyStudentByCode}
             />
-        </View>
+        </PageDefault>
     );
 };
 
 const styles = StyleSheet.create({
-    view: {
+    withoutStudent: {
+        textAlign: "center",
         flex: 1,
-        backgroundColor: '#090833',
+        justifyContent: "center",
+        alignItems: "center",
+        rowGap: 25,
+        width: "100%"
     },
-    text: {
-        fontSize: 25,
-        color: '#FFF',
-        margin: 20,
-        marginBottom: 40,
-        textAlign: 'center',
-        fontWeight: 'bold',
+    withoutStudentTitle: {
+        color: "#fff",
+        fontSize: 20,
+        width: "80%",
+        textAlign: "center",
+        fontWeight: "bold"
     },
+    initialButtonContainer: {
+        display: "flex",
+        flexDirection: "row",
+        justifyContent: "center",
+        columnGap: 15,
+        width: "100%"
+    },  
     content: {
         flex: 1,
-        marginTop: 30,
+        width: "100%",
         alignItems: 'center',
+        zIndex: 1,
+        position: "relative"
     },
     scrollContainer: {
         width: '90%',
-        height: "50%",
+        marginTop: 10,
+        flex: 3,
         maxHeight: 400,
         backgroundColor: '#f0f0f0',
         borderColor: '#d0d0d0',
@@ -380,16 +265,14 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
     },
     header: {
-        alignSelf: 'stretch',
-        alignItems: 'flex-start',
+        position: "absolute",
         marginLeft: 20,
-        marginTop: 50,
         backgroundColor: '#090833',
+        top: 50
     },
     buttonBack: {
-        width: 90,
         backgroundColor: '#C36005',
-        marginVertical: 10,
+        zIndex: 2
     },
     buttonLabel: {
         color: 'white',
@@ -420,17 +303,25 @@ const styles = StyleSheet.create({
     buttonContainer: {
         marginTop: 10,
         width: "100%",
+        flex: 1,
         flexWrap: "wrap",
         justifyContent: "center",
         gap: 10,
         display: "flex",
         flexDirection: "row"
     },
+    textAssociation: {
+        color: "#C36005",
+        fontWeight: "bold",
+        fontSize: 14,
+        textDecorationLine: "underline"
+    },
     loadingOverlay: {
         ...StyleSheet.absoluteFillObject,
         backgroundColor: '#090833',
         justifyContent: 'center',
         alignItems: 'center',
+        zIndex: 5
     },
 });
 
