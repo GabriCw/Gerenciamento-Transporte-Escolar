@@ -248,6 +248,8 @@ const MapaMotorista = ({ navigation }) => {
                 setRoutePoints(decodedPolyline);
                 setRouteLegs(route.legs);
 
+                console.log('Route:');
+                console.log(route);
                 const optimizedOrder = route.waypoint_order;
                 setWaypointOrder(optimizedOrder);
 
@@ -260,11 +262,14 @@ const MapaMotorista = ({ navigation }) => {
                         ...optimizedOrder.map(i => waypoints[i]),
                         { name: schoolInfo.name, latitude: schoolInfo.lat, longitude: schoolInfo.lng, isDestination: true }
                     ];
-                
-                    orderedPointIdsList = [
-                        ...optimizedOrder.map(i => waypoints[i].point_id),
-                        null
-                    ];
+
+                    console.log(orderedWaypoints);
+                    
+                    console.log('optimizerOrder:', optimizedOrder);
+                    console.log(optimizedOrder);
+                    orderedPointIdsList = optimizedOrder.map(i => waypoints[i].point_id)
+                    console.log(waypoints);
+                    console.log('orderedPointIdsList:', orderedPointIdsList);
 
                 } else if (routeType === 2) {
                     // Para routeType 2 (Volta)
@@ -302,6 +307,8 @@ const MapaMotorista = ({ navigation }) => {
                 // Generate Google Maps URL
                 const mapsUrl = `https://www.google.com/maps/dir/?api=1&origin=${origin}&destination=${destination || origin}&waypoints=${waypointsString.replace(/\|/g, '%7C')}`;
                 setMapsUrl(mapsUrl);
+
+                return orderedPointIdsList;
 
             } else {
                 console.log('Nenhuma rota encontrada.');
@@ -385,7 +392,7 @@ const MapaMotorista = ({ navigation }) => {
     };
 
     // Updated student selection for return route
-    const startRoute = () => {
+    const startRoute = async () => {
         if (routeType === 1 || (routeType === 2 && selectedStudents.length > 0)) {
             setShowDropdowns(false);
     
@@ -396,9 +403,9 @@ const MapaMotorista = ({ navigation }) => {
                     return wp.student.some(student => selectedStudents.includes(student.id));
                 });
             }
-    
-            throttledCalculateRoute(waypointsToUse, userLocation, routeType);
-            handleStartSchedule();
+            
+            const list = await throttledCalculateRoute(waypointsToUse, userLocation, routeType);
+            await handleStartSchedule(list);
             setRouteOngoing(true);
             setStartButton(false);
             console.log(`Rota iniciada! Na escola ${selectedSchool} com o veículo ${selectedCar}`);
@@ -502,6 +509,8 @@ const MapaMotorista = ({ navigation }) => {
         };
     
         const response = await createSchedule(body);
+
+        console.log('Response Create Schedule:', response.data);
     
         if (response.status === 201) {
             console.log('Schedule criado com sucesso');
@@ -531,22 +540,31 @@ const MapaMotorista = ({ navigation }) => {
         }
     };
 
-    const handleStartSchedule = async () => {
+    useEffect(() => {
+        console.log('aaaaaa');
+        console.log(orderedPointIds);
+    }, [orderedPointIds]);
+
+    const handleStartSchedule = async (list) => {
         const endDate = new Date(Date.now() + totalDuration * 1000);
         const formattedEndDate = endDate.toISOString(); // Retorna no formato 'YYYY-MM-DDTHH:mm:ss.sssZ'
         const formattedEndDateWithoutMilliseconds = formattedEndDate.split('.')[0];
+
+        console.log('List:');
+        console.log(list);
 
         const body = {
             user_id: userData.id,
             schedule_id: scheduleId,
             school_id: schoolId,
             end_date: formattedEndDateWithoutMilliseconds,
-            points: orderedPointIds,
+            points: list,
             encoded_points: encodedRoutePoints.toString(),
             legs_info: JSON.stringify(routeLegs),
             eta: etas.toString(),
         };
-        
+        console.log('Body:', body);
+
         const response = await startSchedule(body);
     
         if (response.status === 200) {
@@ -563,6 +581,8 @@ const MapaMotorista = ({ navigation }) => {
             has_embarked: embarkedInfo,
             user_id: userData.id
         };
+
+        console.log('Body:', body);
     
         const response = await updateSchedulePoint(body);
     
