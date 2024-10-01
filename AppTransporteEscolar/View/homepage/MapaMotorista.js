@@ -304,7 +304,7 @@ const MapaMotorista = ({ navigation }) => {
                 setOrderedPointIds(orderedPointIdsList);
 
                 // Chamar updateNextWaypointDetails para o primeiro aluno
-                // updateNextWaypointDetails(1);
+                updateNextWaypointDetails(currentStudentIndex, route.legs, orderedWaypoints);
 
                 // Generate ETAs for all legs
                 const allEtas = [];
@@ -322,7 +322,7 @@ const MapaMotorista = ({ navigation }) => {
 
                 // Set next waypoint details
                 if (route.legs.length >= 0) {
-                    updateNextWaypointDetails(currentStudentIndex);                  
+                    updateNextWaypointDetails(currentStudentIndex, route.legs, orderedWaypoints);                        
                 }
                 
                 
@@ -350,29 +350,31 @@ const MapaMotorista = ({ navigation }) => {
     const throttledCalculateRoute = throttle(calculateRoute, 30000);
 
 
-    const updateNextWaypointDetails = (nextIndex) => {
+    const updateNextWaypointDetails = (nextIndex, legs, waypoints) => {
+        const currentRouteLegs = legs || routeLegs;
+        const currentOptimizedWaypoints = waypoints || optimizedWaypoints;
+    
         console.log('updateNextWaypointDetails called with nextIndex:', nextIndex);
-        console.log('Route Legs:', routeLegs);
-        console.log('Number of Legs:', routeLegs.length);
-
-        if (!routeLegs || routeLegs.length === 0) {
+        console.log('Route Legs:', currentRouteLegs);
+        console.log('Number of Legs:', currentRouteLegs.length);
+    
+        if (!currentRouteLegs || currentRouteLegs.length === 0) {
             console.log('No route legs available.');
             setNextWaypointDistance(null);
             setNextWaypointDuration(null);
             setEta(null);
             return;
         }
-        
+    
         let nextLeg;
         let nextStopName;
     
         if (nextIndex === 'destination') {
-            // Caso especial para o destino final
-            nextLeg = routeLegs[routeLegs.length - 1]; // Último trecho
+            nextLeg = currentRouteLegs[currentRouteLegs.length - 1];
             nextStopName = destinationPoint.name;
-        } else if (nextIndex < routeLegs.length) {
-            nextLeg = routeLegs[nextIndex];
-            nextStopName = optimizedWaypoints[nextIndex]?.name;
+        } else if (nextIndex < currentRouteLegs.length) {
+            nextLeg = currentRouteLegs[nextIndex];
+            nextStopName = currentOptimizedWaypoints[nextIndex]?.name;
         } else {
             console.log('nextIndex está fora dos limites:', nextIndex);
             setNextWaypointDistance(null);
@@ -380,7 +382,7 @@ const MapaMotorista = ({ navigation }) => {
             setEta(null);
             return;
         }
-
+    
         if (!nextLeg) {
             console.log('No next leg found for index:', nextIndex);
             setNextWaypointDistance(null);
@@ -392,15 +394,14 @@ const MapaMotorista = ({ navigation }) => {
         setNextWaypointDistance(nextLeg.distance.value);
         setNextWaypointDuration(nextLeg.duration.value);
     
-        // Atualiza o ETA
-        const cumulativeDuration = routeLegs
+        // Update ETA
+        const cumulativeDuration = currentRouteLegs
             .slice(0, nextIndex + 1)
             .reduce((acc, leg) => acc + leg.duration.value, 0);
         const eta_inside = new Date(Date.now() + cumulativeDuration * 1000);
         setEta(eta_inside);
-        setNextStopName(nextStopName); // Novo estado para o nome da próxima parada
-
-
+        setNextStopName(nextStopName); // Update next stop name
+    
         console.log('Current Student NextWaypointsDetails:')
         console.log(nextWaypointDistance, '------', nextLeg.distance.value)
         console.log('Current Student ETA:')
@@ -422,6 +423,8 @@ const MapaMotorista = ({ navigation }) => {
             
             console.log('waypointsToUse:');
             console.log(waypointsToUse);
+
+            setCurrentStudentIndex(0);
             const list = await throttledCalculateRoute(waypointsToUse, userLocation, routeType);
             await handleStartSchedule(list);
             setRouteOngoing(true);
