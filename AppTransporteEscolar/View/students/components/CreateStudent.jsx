@@ -69,7 +69,6 @@ const CreateStudent = ({navigation}) => {
                 mode="outlined"
                 activeOutlineColor="#C36005"
                 keyboardAppearance="dark"
-                keyboardType="numeric"
                 onChangeText={(text) => setStudent({ ...student, driverCode: text })}
                 style={styles.input}
             />
