@@ -235,6 +235,7 @@ const MapaMotorista = ({ navigation }) => {
         try {
             setLoadingRoute(true);
             const response = await axios.get(url);
+            console.log('Response:', response.data);
 
             if (response.data.routes && response.data.routes.length) {
                 const route = response.data.routes[0];
@@ -404,6 +405,8 @@ const MapaMotorista = ({ navigation }) => {
                 });
             }
             
+            console.log('waypointsToUse:');
+            console.log(waypointsToUse);
             const list = await throttledCalculateRoute(waypointsToUse, userLocation, routeType);
             await handleStartSchedule(list);
             setRouteOngoing(true);
@@ -1011,7 +1014,7 @@ const MapaMotorista = ({ navigation }) => {
                             </View>
                             <View style={styles.infoCardRight}>
                                 <Text>Distância</Text>
-                                <Text style={styles.infoCardText}>{formatDistance(nextWaypointDistance)}</Text>
+                                <Text style={styles.infoCardText}>{nextWaypointDistance? formatDistance(nextWaypointDistance) : ''}</Text>
                             </View>
                         </View>
                     </View>
