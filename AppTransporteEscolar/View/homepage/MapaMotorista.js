@@ -325,9 +325,7 @@ const MapaMotorista = ({ navigation }) => {
    
     // Controlar a quantidade de chamadas API com 'throttle'
     
-    const throttledCalculateRoute = throttle(async (...args) => {
-        await calculateRoute(...args);
-    }, 30000);
+    const throttledCalculateRoute = throttle(calculateRoute, 30000);
 
     // const updateNextWaypointDetails = (nextIndex) => {
     //     if (nextIndex < routeLegs.length) {
@@ -405,11 +403,8 @@ const MapaMotorista = ({ navigation }) => {
                     return wp.student.some(student => selectedStudents.includes(student.id));
                 });
             }
-
-            // Reset currentStudentIndex
-            setCurrentStudentIndex(0);
             
-            const list = await calculateRoute(waypointsToUse, userLocation, routeType);
+            const list = await throttledCalculateRoute(waypointsToUse, userLocation, routeType);
             await handleStartSchedule(list);
             setRouteOngoing(true);
             setStartButton(false);
