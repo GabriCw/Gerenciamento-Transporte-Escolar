@@ -14,6 +14,7 @@ import { formatTime, formatDistance } from '../../utils/formatUtils';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import { postDriverLocation, postRoutePoints, getDriverScheduleDetails, createSchedule, startSchedule, updateSchedulePoint, endSchedule } from '../../data/locationServices';
+import { getUserDetails } from '../../data/userServices';
 import { getVehicleByUser } from '../../data/vehicleServices';
 import { getSchoolByDriver } from '../../data/pointServices';
 import { AuthContext } from '../../providers/AuthProvider';
@@ -75,6 +76,27 @@ const MapaMotorista = ({ navigation }) => {
     const [originPoint, setOriginPoint] = useState(null);
     const [destinationPoint, setDestinationPoint] = useState(null);
     const [nextStopName, setNextStopName] = useState('');
+    const [driverPoints, setDriverPoints] = useState([]);
+    const [destinationOptions, setDestinationOptions] = useState([]);
+    const [selectedDestination, setSelectedDestination] = useState('');
+    const [selectedDestinationPoint, setSelectedDestinationPoint] = useState(null);
+    const [showDestinationSelection, setShowDestinationSelection] = useState(false);
+
+    useEffect(() => {
+        const fetchUserDetails = async () => {
+            const response = await getUserDetails(userData.id);
+            if (response.status === 200) {
+                const userDetails = response.data;
+                if (userDetails.points && userDetails.points.length > 0) {
+                    setDriverPoints(userDetails.points);
+                }
+            } else {
+                console.error('Erro ao obter detalhes do usuário:', response.data);
+            }
+        };
+    
+        fetchUserDetails();
+    }, []);
 
     useEffect(() => {
         const initializeLocation = async () => {
@@ -211,6 +233,13 @@ const MapaMotorista = ({ navigation }) => {
             // Origin is the school, destination is the last student's location
             origin = `${schoolInfo.lat},${schoolInfo.lng}`;
 
+            if (!selectedDestinationPoint) {
+                Alert.alert('Erro', 'Destino não selecionado.');
+                setLoadingRoute(false);
+                return;
+            }
+            destination = `${selectedDestinationPoint.latitude},${selectedDestinationPoint.longitude}`;        
+
             // Filter waypoints for selected students
             const selectedWaypoints = waypoints.filter(wp => selectedStudents.includes(wp.point_id));
 
@@ -292,10 +321,26 @@ const MapaMotorista = ({ navigation }) => {
 
                 } else if (routeType === 2) {
                     if (waypoints.length > 1) {
-                        orderedWaypoints = optimizedOrder.map(i => waypoints[i]);
+                        orderedWaypoints = [
+                            ...optimizedOrder.map(i => waypoints[i]),
+                            {
+                                name: selectedDestinationPoint.name,
+                                latitude: selectedDestinationPoint.latitude,
+                                longitude: selectedDestinationPoint.longitude,
+                                isDestination: true,
+                            },
+                        ];
                         orderedPointIdsList = orderedWaypoints.map(wp => wp.point_id);
                     } else {
-                        orderedWaypoints = waypoints;
+                        orderedWaypoints = [
+                            ...waypoints,
+                            {
+                                name: selectedDestinationPoint.name,
+                                latitude: selectedDestinationPoint.latitude,
+                                longitude: selectedDestinationPoint.longitude,
+                                isDestination: true,
+                            },
+                        ];
                         orderedPointIdsList = waypoints.map(wp => wp.point_id);
                     }
                 }
@@ -324,8 +369,6 @@ const MapaMotorista = ({ navigation }) => {
                 if (route.legs.length >= 0) {
                     updateNextWaypointDetails(currentStudentIndex, route.legs, orderedWaypoints);                        
                 }
-                
-                
 
                 // Generate Google Maps URL
                 const mapsUrl = `https://www.google.com/maps/dir/?api=1&origin=${origin}&destination=${destination || origin}&waypoints=${waypointsString.replace(/\|/g, '%7C')}`;
@@ -410,7 +453,7 @@ const MapaMotorista = ({ navigation }) => {
 
     // Updated student selection for return route
     const startRoute = async () => {
-        if (routeType === 1 || (routeType === 2 && selectedStudents.length > 0)) {
+        if (routeType === 1 || (routeType === 2 && selectedStudents.length > 0 && selectedDestinationPoint)) {
             setShowDropdowns(false);
     
             let waypointsToUse = waypoints;
@@ -740,6 +783,43 @@ const MapaMotorista = ({ navigation }) => {
 
 
     // ------------------------------------------------------------ //
+    //                  Opções destino viagem volta
+    // ------------------------------------------------------------ //
+    useEffect(() => {
+    const options = [];
+
+    if (schoolInfo) {
+        options.push({
+            id: 'school',
+            name: 'Escola',
+            description: schoolInfo.name,
+            latitude: schoolInfo.lat,
+            longitude: schoolInfo.lng,
+        });
+    }
+
+    if (driverPoints && driverPoints.length > 0) {
+        driverPoints.forEach(point => {
+            // Check if the point is the same as the school only if schoolInfo is available
+            const isSameAsSchool = schoolInfo && point.lat === schoolInfo.lat && point.lng === schoolInfo.lng;
+
+            if (!isSameAsSchool) {
+                options.push({
+                    id: point.id,
+                    name: point.name,
+                    description: point.description,
+                    latitude: point.lat,
+                    longitude: point.lng,
+                });
+            }
+        });
+    }
+
+    setDestinationOptions(options);
+}, [driverPoints, schoolInfo]);
+
+
+    // ------------------------------------------------------------ //
     //        Envio da Rota pro Backend (Sempre que att a rota)
     // ------------------------------------------------------------ //
     const handlePostRoute = async(body) => {
@@ -983,7 +1063,8 @@ const MapaMotorista = ({ navigation }) => {
                                 mode="contained"
                                 onPress={() => {
                                     if (selectedStudents.length > 0) {
-                                        startRoute();
+                                        setShowStudentList(false);
+                                        setShowDestinationSelection(true);
                                     } else {
                                         Alert.alert('Aviso', 'Por favor, selecione pelo menos um aluno.');
                                     }
@@ -991,6 +1072,41 @@ const MapaMotorista = ({ navigation }) => {
                             >
                                 Confirmar
                             </Button>
+                        </View>
+                    </View>
+                )}
+
+                {showDestinationSelection && (
+                    <View style={styles.startButtonPos}>
+                        <View style={styles.startDropdown}>
+                            <Text>Escolha o destino:</Text>
+                            {destinationOptions.length > 0 ? (
+                                <FlatList
+                                    data={destinationOptions}
+                                    keyExtractor={(item) => item.id.toString()}
+                                    renderItem={({ item }) => (
+                                        <View style={styles.card}>
+                                            <Text style={styles.title}>{item.name}</Text>
+                                            {item.description && item.description.trim() !== '' && (
+                                                <Text style={styles.description}>{item.description}</Text>
+                                            )}
+                                            <Button
+                                                mode="contained"
+                                                onPress={() => {
+                                                    setSelectedDestination(item.id);
+                                                    setSelectedDestinationPoint(item);
+                                                    setShowDestinationSelection(false);
+                                                    startRoute();
+                                                }}
+                                            >
+                                                Selecionar
+                                            </Button>
+                                        </View>
+                                    )}
+                                />
+                            ) : (
+                                <Text>Nenhum destino disponível.</Text>
+                            )}
                         </View>
                     </View>
                 )}
