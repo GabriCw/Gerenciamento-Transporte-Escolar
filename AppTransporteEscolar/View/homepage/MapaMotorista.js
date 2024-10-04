@@ -584,8 +584,14 @@ const MapaMotorista = ({ navigation }) => {
             setWaypoints(data.points);
             console.log('Waypoints:', data.points);
             console.log('School:', data.school);
-            setShowStudentList(true);
+            
             setShowDropdowns(false);
+
+            if (routeType === 2) {
+                setShowDestinationSelection(true); // Show destination selection for return trip
+            } else {
+                setShowStudentList(true); // For routeType === 1 (Ida), show student list
+            }
         } else {
             console.error('Erro ao criar o schedule:', response.data);
         }
@@ -937,181 +943,187 @@ const MapaMotorista = ({ navigation }) => {
             {/* ---------- CARD IDA VOLTA ---------- */}
             {startButton && region && (
                 <View>
-                {/* Exibe os botões "IDA ESCOLA" e "VOLTA ESCOLA" se os dropdowns ainda não estiverem visíveis */}
-                {!showDropdowns && !showStudentList && (
-                  <View style={styles.startButtonPos}>
-                    <View style={styles.startContent}>
-                      <Button
-                        style={styles.startRouteButton}
-                        onPress={() => {setRouteType(1), handleUserVehiclesAndSchool()}} // Rota de ida
-                        title="IDA ESCOLA"
-                      >
-                        IDA ESCOLA
-                      </Button>
-                      <Button
-                        style={styles.startRouteButton}
-                        onPress={() => {setRouteType(2), handleUserVehiclesAndSchool()}} // Rota de volta
-                        title="VOLTA ESCOLA"
-                      >
-                        VOLTA ESCOLA
-                    </Button>
-                    </View>
-                  </View>
-                )}
-          
-                {/* Exibe os dropdowns se um dos botões tiver sido clicado */}
-                {showDropdowns && (
-                  <View style={styles.startButtonPos}>
-                    <View style={styles.startDropdown}>
-                        <Text>Escolha o carro:</Text>
-                        <Picker
-                        selectedValue={vehicleId}
-                        onValueChange={(itemValue) => {setVehicleId(itemValue), setSelectedCar(itemValue)}}
-                        style={{width: 200}}
-                        >
-                            <Picker.Item label="Selecione um carro" value="" />
-                            {Array.isArray(allVehicles) && allVehicles.length > 0 ? (
-                            allVehicles.map(vehicle => (
-                                <Picker.Item
-                                key={vehicle.id}
-                                label={`${vehicle.model} - ${vehicle.plate}`}
-                                value={vehicle.id}
-                                />
-                            ))
-                            ): (
-                            <Picker.Item label="Nenhum veículo disponível" value="" />
-                            )}
-                        </Picker>
-            
-                        <Text>Escolha a escola:</Text>
-                        <Picker
-                        selectedValue={schoolId}
-                        onValueChange={(itemValue) => {setSchoolId(itemValue), setSelectedSchool(itemValue)}}
-                        style={{width: 200}}
-                        >
-                        <Picker.Item label="Selecione uma escola" value="" />
-                            {Array.isArray(allSchools) && allSchools.length > 0 ? (
-                            allSchools.map(school => (
-                                <Picker.Item
-                                key={school.point.id}
-                                label={`${school.point.name}`}
-                                value={school.point.id}
-                                />
-                            ))
-                            ) : (
-                            <Picker.Item label="Nenhuma escola disponível" value="" />
-                            )}
-                        </Picker>
-            
-                        <Button title="Confirmar" onPress={() => {
-                        if (selectedCar && selectedSchool) {
-                            handleCreateSchedule();
-                        } else {
-                            alert("Por favor, selecione o carro e a escola.");
-                        }
-                        }}>
-                            Confirmar
-                        </Button>
-                    </View>
-                  </View>
-                )}
-          
-                {/* Exibe a lista de alunos após a confirmação dos dropdowns */}
-                {showStudentList && routeType === 1 &&(
-                    <View style={styles.startButtonPos}>
-                        <View style={styles.startDropdown}>
-                        <FlatList
-                            data={waypoints.reduce((acc, point) => acc.concat(point.student), [])}
-                            keyExtractor={(item) => item.id.toString()}
-                            renderItem={({ item }) => (
-                            <View style={styles.card}>
-                                <Text style={styles.studentName}>{item.name}</Text>
-                                <Text>Idade: {item.year}</Text>
+                    {/* Show "IDA ESCOLA" and "VOLTA ESCOLA" buttons if no other selection is active */}
+                    {!showDropdowns && !showStudentList && !showDestinationSelection && (
+                        <View style={styles.startButtonPos}>
+                            <View style={styles.startContent}>
+                                <Button
+                                    style={styles.startRouteButton}
+                                    onPress={() => {
+                                        setRouteType(1);
+                                        handleUserVehiclesAndSchool();
+                                    }} // Rota de ida
+                                    title="IDA ESCOLA"
+                                >
+                                    IDA ESCOLA
+                                </Button>
+                                <Button
+                                    style={styles.startRouteButton}
+                                    onPress={() => {
+                                        setRouteType(2);
+                                        handleUserVehiclesAndSchool();
+                                    }} // Rota de volta
+                                    title="VOLTA ESCOLA"
+                                >
+                                    VOLTA ESCOLA
+                                </Button>
                             </View>
-                            )}
-                        />
-                        <Button
-                            title="Confirmar"
-                            onPress={startRoute}
-                        >
-                            Confirmar
-                        </Button>
                         </View>
-                    </View>
-                )}
+                    )}
 
-                {showStudentList && routeType === 2 && (
-                    <View style={styles.startButtonPos}>
-                        <View style={styles.startDropdown}>
-                            <FlatList
-                                data={waypoints.reduce((acc, point) => acc.concat(point.student), [])}
-                                keyExtractor={(item) => item.id.toString()}
-                                renderItem={({ item }) => (
-                                    <View style={styles.card}>
-                                        <Text style={styles.studentName}>{item.name}</Text>
-                                        <Text>Idade: {item.year}</Text>
-
-                                        {/* Checkbox to select/deselect the student */}
-                                        <Checkbox
-                                            status={selectedStudents.includes(item.point_id) ? 'checked' : 'unchecked'}
-                                            onPress={() => handleStudentSelect(item.point_id)}
+                    {/* Show car and school selection */}
+                    {showDropdowns && (
+                        <View style={styles.startButtonPos}>
+                            <View style={styles.startDropdown}>
+                                <Text>Escolha o carro:</Text>
+                                <Picker
+                                selectedValue={vehicleId}
+                                onValueChange={(itemValue) => {setVehicleId(itemValue), setSelectedCar(itemValue)}}
+                                style={{width: 200}}
+                                >
+                                    <Picker.Item label="Selecione um carro" value="" />
+                                    {Array.isArray(allVehicles) && allVehicles.length > 0 ? (
+                                    allVehicles.map(vehicle => (
+                                        <Picker.Item
+                                        key={vehicle.id}
+                                        label={`${vehicle.model} - ${vehicle.plate}`}
+                                        value={vehicle.id}
                                         />
-                                    </View>
-                                )}
-                            />
-                            <Button
-                                mode="contained"
-                                onPress={() => {
-                                    if (selectedStudents.length > 0) {
-                                        setShowStudentList(false);
-                                        setShowDestinationSelection(true);
-                                    } else {
-                                        Alert.alert('Aviso', 'Por favor, selecione pelo menos um aluno.');
-                                    }
-                                }}
-                            >
-                                Confirmar
-                            </Button>
+                                    ))
+                                    ): (
+                                    <Picker.Item label="Nenhum veículo disponível" value="" />
+                                    )}
+                                </Picker>
+                    
+                                <Text>Escolha a escola:</Text>
+                                <Picker
+                                selectedValue={schoolId}
+                                onValueChange={(itemValue) => {setSchoolId(itemValue), setSelectedSchool(itemValue)}}
+                                style={{width: 200}}
+                                >
+                                <Picker.Item label="Selecione uma escola" value="" />
+                                    {Array.isArray(allSchools) && allSchools.length > 0 ? (
+                                    allSchools.map(school => (
+                                        <Picker.Item
+                                        key={school.point.id}
+                                        label={`${school.point.name}`}
+                                        value={school.point.id}
+                                        />
+                                    ))
+                                    ) : (
+                                    <Picker.Item label="Nenhuma escola disponível" value="" />
+                                    )}
+                                </Picker>
+                    
+                                <Button title="Confirmar" onPress={() => {
+                                if (selectedCar && selectedSchool) {
+                                    handleCreateSchedule();
+                                } else {
+                                    alert("Por favor, selecione o carro e a escola.");
+                                }
+                                }}>
+                                    Confirmar
+                                </Button>
+                            </View>
                         </View>
-                    </View>
-                )}
+                        )}
 
-                {showDestinationSelection && (
-                    <View style={styles.startButtonPos}>
-                        <View style={styles.startDropdown}>
-                            <Text>Escolha o destino:</Text>
-                            {destinationOptions.length > 0 ? (
+                    {/* Show destination selection for return trip */}
+                    {showDestinationSelection && (
+                        <View style={styles.startButtonPos}>
+                            <View style={styles.startDropdown}>
+                                <Text>Escolha o destino:</Text>
+                                {destinationOptions.length > 0 ? (
+                                    <FlatList
+                                        data={destinationOptions}
+                                        keyExtractor={(item) => item.id.toString()}
+                                        renderItem={({ item }) => (
+                                            <View style={styles.card}>
+                                                <Text style={styles.title}>{item.name}</Text>
+                                                {item.description && item.description.trim() !== '' && (
+                                                    <Text style={styles.description}>{item.description}</Text>
+                                                )}
+                                                <Button
+                                                    mode="contained"
+                                                    onPress={() => {
+                                                        setSelectedDestination(item.id);
+                                                        setSelectedDestinationPoint(item);
+                                                        setShowDestinationSelection(false);
+                                                        setShowStudentList(true);
+                                                    }}
+                                                >
+                                                    Selecionar
+                                                </Button>
+                                            </View>
+                                        )}
+                                    />
+                                ) : (
+                                    <Text>Nenhum destino disponível.</Text>
+                                )}
+                            </View>
+                        </View>
+                    )}
+
+                    {/* Show student list after selecting destination for return trip */}
+                    {showStudentList && routeType === 2 && (
+                        <View style={styles.startButtonPos}>
+                            <View style={styles.startDropdown}>
                                 <FlatList
-                                    data={destinationOptions}
+                                    data={waypoints.reduce((acc, point) => acc.concat(point.student), [])}
                                     keyExtractor={(item) => item.id.toString()}
                                     renderItem={({ item }) => (
                                         <View style={styles.card}>
-                                            <Text style={styles.title}>{item.name}</Text>
-                                            {item.description && item.description.trim() !== '' && (
-                                                <Text style={styles.description}>{item.description}</Text>
-                                            )}
-                                            <Button
-                                                mode="contained"
-                                                onPress={() => {
-                                                    setSelectedDestination(item.id);
-                                                    setSelectedDestinationPoint(item);
-                                                    setShowDestinationSelection(false);
-                                                    startRoute();
-                                                }}
-                                            >
-                                                Selecionar
-                                            </Button>
+                                            <Text style={styles.studentName}>{item.name}</Text>
+                                            <Text>Idade: {item.year}</Text>
+
+                                            {/* Checkbox to select/deselect the student */}
+                                            <Checkbox
+                                                status={selectedStudents.includes(item.point_id) ? 'checked' : 'unchecked'}
+                                                onPress={() => handleStudentSelect(item.point_id)}
+                                            />
                                         </View>
                                     )}
                                 />
-                            ) : (
-                                <Text>Nenhum destino disponível.</Text>
-                            )}
+                                <Button
+                                    mode="contained"
+                                    onPress={() => {
+                                        if (selectedStudents.length > 0) {
+                                            startRoute();
+                                        } else {
+                                            Alert.alert('Aviso', 'Por favor, selecione pelo menos um aluno.');
+                                        }
+                                    }}
+                                >
+                                    Confirmar
+                                </Button>
+                            </View>
                         </View>
-                    </View>
-                )}
-                
-              </View>          
+                    )}
+
+                    {/* For routeType === 1 (Ida), show student list directly */}
+                    {showStudentList && routeType === 1 && (
+                        <View style={styles.startButtonPos}>
+                            <View style={styles.startDropdown}>
+                                <FlatList
+                                    data={waypoints.reduce((acc, point) => acc.concat(point.student), [])}
+                                    keyExtractor={(item) => item.id.toString()}
+                                    renderItem={({ item }) => (
+                                    <View style={styles.card}>
+                                        <Text style={styles.studentName}>{item.name}</Text>
+                                        <Text>Idade: {item.year}</Text>
+                                    </View>
+                                    )}
+                                />
+                                <Button
+                                    title="Confirmar"
+                                    onPress={startRoute}
+                                >
+                                    Confirmar
+                                </Button>
+                            </View>
+                        </View>
+                    )}
+                </View>
             )}
 
             {!startButton && eta && nextWaypointDistance !== null && (
