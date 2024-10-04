@@ -34,7 +34,7 @@ const MapaMotorista = ({ navigation }) => {
     const [heading, setHeading] = useState(0);
     const [userLocation, setUserLocation] = useState(null);
     const [routePoints, setRoutePoints] = useState([]);
-    const [encodedRoutePoints, setEncodedRoutePoints] = useState([]);
+    const [encodedRoutePoints, setEncodedRoutePoints] = useState("");
     const [optimizedWaypoints, setOptimizedWaypoints] = useState([]);
     const mapRef = useRef(null);
     const apiKey = GOOGLE_MAPS_API_KEY;
@@ -372,7 +372,12 @@ const MapaMotorista = ({ navigation }) => {
                 const mapsUrl = `https://www.google.com/maps/dir/?api=1&origin=${origin}&destination=${destination || origin}&waypoints=${waypointsString.replace(/\|/g, '%7C')}`;
                 setMapsUrl(mapsUrl);
 
-                return orderedPointIdsList;
+                return {
+                    orderedPointIdsList, // Retorna diretamente a variável se o nome for o mesmo
+                    allEtas, // Retorna diretamente a variável se o nome for o mesmo
+                    overviewPolylinePoints: route.overview_polyline.points, // Defina uma chave para acessar essa propriedade
+                    legs: route.legs // Defina uma chave para acessar essa propriedade
+                };
 
             } else {
                 console.log('Nenhuma rota encontrada.');
@@ -466,8 +471,8 @@ const MapaMotorista = ({ navigation }) => {
             console.log(waypointsToUse);
 
             setCurrentStudentIndex(0);
-            const list = await throttledCalculateRoute(waypointsToUse, userLocation, routeType);
-            await handleStartSchedule(list);
+            const {orderedPointIdsList, allEtas, overviewPolylinePoints, legs} = await throttledCalculateRoute(waypointsToUse, userLocation, routeType);
+            await handleStartSchedule(orderedPointIdsList, allEtas, overviewPolylinePoints, legs);
             setRouteOngoing(true);
             setStartButton(false);
             console.log(`Rota iniciada! Na escola ${selectedSchool} com o veículo ${selectedCar}`);
@@ -612,23 +617,23 @@ const MapaMotorista = ({ navigation }) => {
     //     console.log(orderedPointIds);
     // }, [orderedPointIds]);
 
-    const handleStartSchedule = async (list) => {
+    const handleStartSchedule = async (orderedPointIdsList, allEtas, overviewPolylinePoints, legs) => {
         const endDate = new Date(Date.now() + totalDuration * 1000);
         const formattedEndDate = endDate.toISOString(); // Retorna no formato 'YYYY-MM-DDTHH:mm:ss.sssZ'
         const formattedEndDateWithoutMilliseconds = formattedEndDate.split('.')[0];
 
         console.log('List:');
-        console.log(list);
+        console.log(orderedPointIdsList);
 
         const body = {
             user_id: userData.id,
             schedule_id: scheduleId,
             school_id: schoolId,
             end_date: formattedEndDateWithoutMilliseconds,
-            points: list,
-            encoded_points: encodedRoutePoints.toString(),
-            legs_info: JSON.stringify(routeLegs),
-            eta: etas.toString(),
+            points: orderedPointIdsList,
+            encoded_points: overviewPolylinePoints.toString(),
+            legs_info: JSON.stringify(legs[0].start_location), // TESTE
+            eta: allEtas.toString(),
             destiny_id: selectedDestination
         };
         console.log('Body:', body);
