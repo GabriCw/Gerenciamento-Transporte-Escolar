@@ -78,7 +78,7 @@ const MapaMotorista = ({ navigation }) => {
     const [nextStopName, setNextStopName] = useState('');
     const [driverPoints, setDriverPoints] = useState([]);
     const [destinationOptions, setDestinationOptions] = useState([]);
-    const [selectedDestination, setSelectedDestination] = useState('');
+    const [selectedDestination, setSelectedDestination] = useState(null); //inicializa com -1 para representar a ida (qua não tem destino setado)
     const [selectedDestinationPoint, setSelectedDestinationPoint] = useState(null);
     const [showDestinationSelection, setShowDestinationSelection] = useState(false);
 
@@ -163,8 +163,6 @@ const MapaMotorista = ({ navigation }) => {
                 },
                 (location) => {
                     const { latitude, longitude, heading, speed } = location.coords;
-                    
-                    console.log('Tamanho de routePoints antes da checagem:', routePointsRef.current.length);
 
                     if (speed >= 0){  // Só atualiza os dados caso a velocidade seja maior que 0.5 m/s
                         setUserLocation({ latitude, longitude });
@@ -178,7 +176,7 @@ const MapaMotorista = ({ navigation }) => {
                         setHeading(heading || 0);
                         
                         if ( routePointsRef.current.length > 0 && {latitude, longitude}) {
-                            console.log('lat, long',latitude,longitude, speed)
+                            // console.log('lat, long',latitude,longitude, speed)
                             const distanceToRoute = calculateDistanceToRoute(latitude, longitude);
                             console.log('Distância para a rota:', distanceToRoute);
                             if (distanceToRoute > recalculateThreshold) {
@@ -285,11 +283,11 @@ const MapaMotorista = ({ navigation }) => {
                 setRoutePoints(decodedPolyline);
                 setRouteLegs(route.legs);
 
-                console.log('Route Legs:', routeLegs);
-                console.log('Number of Legs:', routeLegs.length);
+                // console.log('Route Legs:', routeLegs);
+                // console.log('Number of Legs:', routeLegs.length);
 
-                console.log('Route:');
-                console.log(route);
+                // console.log('Route:');
+                // console.log(route);
                 const optimizedOrder = route.waypoint_order || [];
                 setWaypointOrder(optimizedOrder);
 
@@ -312,12 +310,8 @@ const MapaMotorista = ({ navigation }) => {
                         orderedPointIdsList = waypoints.map(wp => wp.point_id)
                     }
                         
-                        console.log(orderedWaypoints);
-                        console.log('optimizerOrder:', optimizedOrder);
-                        console.log(optimizedOrder);
-            
-                        console.log(waypoints);
-                        console.log('orderedPointIdsList:', orderedPointIdsList);
+                    console.log('TIPO 1 ORDERED WAYPOINTS ---->')
+                    console.log(orderedWaypoints);
 
                 } else if (routeType === 2) {
                     if (waypoints.length > 1) {
@@ -328,8 +322,11 @@ const MapaMotorista = ({ navigation }) => {
                                 latitude: selectedDestinationPoint.latitude,
                                 longitude: selectedDestinationPoint.longitude,
                                 isDestination: true,
+                                point_id: selectedDestination
                             },
                         ];
+                        console.log('TIPO 2 ORDERED WAYPOINTS ---->')
+                        console.log(orderedWaypoints);
                         orderedPointIdsList = orderedWaypoints.map(wp => wp.point_id);
                     } else {
                         orderedWaypoints = [
@@ -339,6 +336,7 @@ const MapaMotorista = ({ navigation }) => {
                                 latitude: selectedDestinationPoint.latitude,
                                 longitude: selectedDestinationPoint.longitude,
                                 isDestination: true,
+                                point_id: selectedDestination
                             },
                         ];
                         orderedPointIdsList = waypoints.map(wp => wp.point_id);
@@ -397,9 +395,9 @@ const MapaMotorista = ({ navigation }) => {
         const currentRouteLegs = legs || routeLegs;
         const currentOptimizedWaypoints = waypoints || optimizedWaypoints;
     
-        console.log('updateNextWaypointDetails called with nextIndex:', nextIndex);
-        console.log('Route Legs:', currentRouteLegs);
-        console.log('Number of Legs:', currentRouteLegs.length);
+        // console.log('updateNextWaypointDetails called with nextIndex:', nextIndex);
+        // console.log('Route Legs:', currentRouteLegs);
+        // console.log('Number of Legs:', currentRouteLegs.length);
     
         if (!currentRouteLegs || currentRouteLegs.length === 0) {
             console.log('No route legs available.');
@@ -610,10 +608,9 @@ const MapaMotorista = ({ navigation }) => {
         }
     };
 
-    useEffect(() => {
-        console.log('aaaaaa');
-        console.log(orderedPointIds);
-    }, [orderedPointIds]);
+    // useEffect(() => {
+    //     console.log(orderedPointIds);
+    // }, [orderedPointIds]);
 
     const handleStartSchedule = async (list) => {
         const endDate = new Date(Date.now() + totalDuration * 1000);
