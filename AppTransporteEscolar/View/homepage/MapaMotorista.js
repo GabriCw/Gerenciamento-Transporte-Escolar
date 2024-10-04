@@ -632,6 +632,7 @@ const MapaMotorista = ({ navigation }) => {
             encoded_points: encodedRoutePoints.toString(),
             legs_info: JSON.stringify(routeLegs),
             eta: etas.toString(),
+            destiny_id: selectedDestination
         };
         console.log('Body:', body);
 
