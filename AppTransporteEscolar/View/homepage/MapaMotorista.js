@@ -21,7 +21,6 @@ import { AuthContext } from '../../providers/AuthProvider';
 import { throttle } from 'lodash';
 
 
-
 const MapaMotorista = ({ navigation }) => {
     const [waypoints, setWaypoints] = useState(
     [
@@ -283,11 +282,6 @@ const MapaMotorista = ({ navigation }) => {
                 setRoutePoints(decodedPolyline);
                 setRouteLegs(route.legs);
 
-                // console.log('Route Legs:', routeLegs);
-                // console.log('Number of Legs:', routeLegs.length);
-
-                // console.log('Route:');
-                // console.log(route);
                 const optimizedOrder = route.waypoint_order || [];
                 setWaypointOrder(optimizedOrder);
 
@@ -536,7 +530,6 @@ const MapaMotorista = ({ navigation }) => {
         return Math.min(...validRoutePoints.map(point => getDistance(currentLocation, point)));
     };
     
-
     const recenterMap = () => {
         if (region) {
             setIsUserInteracting(false);
@@ -612,10 +605,6 @@ const MapaMotorista = ({ navigation }) => {
             console.error('Erro ao obter detalhes do schedule:', response.data);
         }
     };
-
-    // useEffect(() => {
-    //     console.log(orderedPointIds);
-    // }, [orderedPointIds]);
 
     const handleStartSchedule = async (orderedPointIdsList, allEtas, overviewPolylinePoints, legs) => {
         const endDate = new Date(Date.now() + totalDuration * 1000);
@@ -743,7 +732,6 @@ const MapaMotorista = ({ navigation }) => {
         }
     };
     
-
     // ------------------------------------------------------------ //
     //             Envio da Localização (60 em 60 seg)
     // ------------------------------------------------------------ //
@@ -765,7 +753,8 @@ const MapaMotorista = ({ navigation }) => {
             const body = {
                 lat: userLocation.latitude,
                 lng: userLocation.longitude,
-                user_id: userData.id
+                user_id: userData.id,
+                schedule_id: scheduleId
             }
             // console.log('body: ',body)
             handlePostDriverLocation(body);
@@ -789,7 +778,6 @@ const MapaMotorista = ({ navigation }) => {
             isMounted = false;
         };
     }, []);
-
 
     // ------------------------------------------------------------ //
     //                  Opções destino viagem volta
