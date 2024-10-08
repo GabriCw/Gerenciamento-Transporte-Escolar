@@ -78,10 +78,11 @@ const RegisterResponsavelScreen = ({ navigation }) => {
     };
 
     const handlePreviousStep = () => {
-        if (step === 1) {
-            return "Login"
-        } else {
+        if (step > 1) {
             setStep(step - 1);
+            return
+        } else {
+            navigation.navigate("Login");
         }
     };
 
@@ -217,7 +218,7 @@ const RegisterResponsavelScreen = ({ navigation }) => {
     };
 
     return (
-        <PageDefault headerTitle="Preencha seu cadastro" backNavigation={handlePreviousStep()} loading={isLoading}>
+        <PageDefault headerTitle="Preencha seu cadastro" backNavigation={handlePreviousStep} loading={isLoading}>
             <View style={styles.view}>
                 <KeyboardAwareScrollView
                     contentContainerStyle={styles.container}

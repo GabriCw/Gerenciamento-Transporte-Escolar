@@ -8,10 +8,15 @@ const Header = ({title, specificNavigation}) => {
 
     const handleNavigation = () => {
         if(specificNavigation){
-            navigation.navigate(specificNavigation);
+            if (typeof specificNavigation === 'function') {
+                specificNavigation(); 
+            }
+            else{
+                navigation.navigate(specificNavigation);
+            }
         }
-        else{
-            navigation.goBack();
+         else {
+            navigation.goBack(); 
         }
     };
 
