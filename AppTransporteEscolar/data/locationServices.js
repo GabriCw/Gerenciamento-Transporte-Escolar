@@ -60,19 +60,6 @@ export const getCurrentSchedules = async(user_id) => {
     }
 };
 
-// Função para obter informações do mapa (da rota)
-export const getMapsInfos = async(schedule_id, user_id) => {
-    const endpoint = `/get-maps-infos?schedule-id=${schedule_id}?user-id=${user_id}`;
-
-    try{
-        const response  = await axios.get(scheduleController + endpoint);
-        return response;
-    }
-    catch(error){
-        return error.response;
-    }
-};
-
 
 // Função para criar um novo schedule
 export const createSchedule = async(body) => {
@@ -146,8 +133,8 @@ export const getScheduleMapsInfos = async(schedule_id, user_id) => {
     try{
         const response = await axios.get(scheduleController + endpoint, {
             headers: {
-                schedule_id: schedule_id,
-                user_id: user_id
+                "schedule-id": schedule_id,
+                "user-id": user_id
             }
         });
         return response;
@@ -164,8 +151,8 @@ export const getStudentPosition = async(schedule_id, user_id) => {
     try{
         const response = await axios.get(scheduleController + endpoint, {
             headers: {
-                schedule_id: schedule_id,
-                user_id: user_id
+                "schedule-id": schedule_id,
+                "user-id": user_id
             }
         });
         return response;
@@ -178,7 +165,7 @@ export const getStudentPosition = async(schedule_id, user_id) => {
 
 // Função para obter schedule por aluno
 export const getByStudent = async(student_id, user_id) => {
-    const endpoint = `/by-student-position`;
+    const endpoint = `/by-student`;
 
     try{
         const response = await axios.get(scheduleController + endpoint, {

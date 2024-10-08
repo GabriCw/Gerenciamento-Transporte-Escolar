@@ -10,8 +10,8 @@ import { styles } from './Style/mapaResponsavelStyle';
 import { Button } from 'react-native-paper';
 import { formatTime, formatDistance } from '../../utils/formatUtils';
 import { FontAwesome5 } from '@expo/vector-icons';
-import { getDriverLocation, getDriversLastPosition, getStudentPosition, getCurrentSchedules, getMapsInfos, getByStudent } from '../../data/locationServices';
-import { getStudentByResponsible } from '../../data/studentServices';
+import { getDriverLocation, getDriversLastPosition, getStudentPosition, getCurrentSchedules, getScheduleMapsInfos, getByStudent } from '../../data/locationServices';
+import { getStudentByResponsible, getStudentDetails} from '../../data/studentServices';
 import { AuthContext } from '../../providers/AuthProvider';
 
 // Camera que nem a do uber (rota inteira, aumentando o zoom conforme diminuindo o tamanho)
@@ -115,7 +115,8 @@ const MapaResponsavel = ({ navigation }) => {
     }
 
     const handleGetMapsInfos = async(schedule_id, user_id) => {
-        const getMapInfos = await getMapsInfos(schedule_id, user_id)
+       
+        const getMapInfos = await getScheduleMapsInfos(schedule_id.toString(), user_id.toString())
 
         if(getMapInfos.status === 200){
             console.log('Sucesso ao receber informações da rota')
@@ -123,6 +124,7 @@ const MapaResponsavel = ({ navigation }) => {
         }
         else{   
             console.log('Erro ao receber informações da rota')
+            console.log('STATUS:', getMapInfos.status)
         }
     }
 
@@ -150,6 +152,7 @@ const MapaResponsavel = ({ navigation }) => {
         }
     }
 
+
     // ----------------------------------------------
     // ---------- Pega info das Schedules -----------
     // ----------------------------------------------
@@ -175,8 +178,8 @@ const MapaResponsavel = ({ navigation }) => {
     useEffect(() => {
         
         const fetchStudentInfo = async () => {
-            const studentsData = await handleGetStudentByResponsible(userData.id);
-            studentsData.current = studentsData;
+            const studentsDataResponse = await handleGetStudentByResponsible(userData.id);
+            studentsData.current = studentsDataResponse;
 
             setItems(studentsData.current.map(student => ({
                 label: `Aluno ${student.name}`,
@@ -204,10 +207,10 @@ const MapaResponsavel = ({ navigation }) => {
 
     const handlePickerChange = (itemValue) => {
         setSelectedStudent(itemValue);
+        // console.log('selectedStudent', selectedStudent)
+        // console.log('itemValue', itemValue)
     };
 
-
-    
 
     // ------------------------------------------
     // ----------- Definindo o Clock  -----------
@@ -258,11 +261,12 @@ const MapaResponsavel = ({ navigation }) => {
     useEffect(() => {
         const requestMapsInfos = async () => {
             const mapsInfosData = await handleGetMapsInfos(scheduleId, userData.id);
-            return mapsInfosData;
+            setMapsInfos(mapsInfosData);
+            console.log('MAPS INFOS:', mapsInfosData);
         };
-        
-        const mapsInfosResponse = requestMapsInfos();
-        setMapsInfos(mapsInfosResponse);
+    
+        requestMapsInfos();  // Chama a função assíncrona e espera seu término
+    
     }, [clock]);
 
     
@@ -370,7 +374,7 @@ const MapaResponsavel = ({ navigation }) => {
                         )}
                     </MapView>
                 )}
-            {scheduleInfoRef.current && (
+            {studentsData.current && (
                 <View style={styles.pickerWrapper}>
                     <DropDownPicker
                         style={styles.pickerStyle}
