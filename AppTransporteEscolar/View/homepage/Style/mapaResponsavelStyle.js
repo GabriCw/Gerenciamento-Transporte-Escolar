@@ -87,5 +87,24 @@ export const styles = StyleSheet.create({
         fontWeight: 'bold',
         fontSize: 30
     },
+    pickerStyle: {
+        width: 200,
+        height: 50,
+        fontSize: 30,
+        color: 'white'
+    },
+    pickerWrapper: {
+        position: 'absolute',
+        flex: 1,
+        top: 50
+    }
 
+    // startButtonPos: {
+    //     position: 'absolute',
+    //     flex: 1,
+    //     bottom: 30,
+    //     width: '100%',
+    //     justifyContent: 'center',
+    //     alignItems: 'center'
+    // },
 });

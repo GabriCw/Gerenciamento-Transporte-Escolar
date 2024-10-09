@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useRef, useContext } from 'react';
-import { StyleSheet, View, Image, Text } from 'react-native';
+import { StyleSheet, View, Image, Text} from 'react-native';
+import { Picker } from '@react-native-picker/picker';
+import DropDownPicker from 'react-native-dropdown-picker';
 import MapView, { Marker, Polyline, AnimatedRegion, Animated } from 'react-native-maps';
 import * as Location from 'expo-location';
 import axios from 'axios';
@@ -8,7 +10,8 @@ import { styles } from './Style/mapaResponsavelStyle';
 import { Button } from 'react-native-paper';
 import { formatTime, formatDistance } from '../../utils/formatUtils';
 import { FontAwesome5 } from '@expo/vector-icons';
-import { getDriverLocation, getDriversLastPosition, getStudentPosition, getCurrentSchedules, getMapsInfos } from '../../data/locationServices';
+import { getDriverLocation, getDriversLastPosition, getStudentPosition, getCurrentSchedules, getScheduleMapsInfos, getByStudent } from '../../data/locationServices';
+import { getStudentByResponsible, getStudentDetails} from '../../data/studentServices';
 import { AuthContext } from '../../providers/AuthProvider';
 
 // Camera que nem a do uber (rota inteira, aumentando o zoom conforme diminuindo o tamanho)
@@ -17,7 +20,9 @@ const MapaResponsavel = ({ navigation }) => {
 
     const {userData} = useContext(AuthContext);
     const scheduleInfoRef = useRef(null);
-    const [selectedScheduleId, setSelectedScheduleId] = useState(null);
+    const studentsData = useRef(null);
+    const [scheduleId, setScheduleId] = useState(null);
+    const [selectedStudent, setSelectedStudent] = useState(null);
 
     const [residenciaAtiva, setResidenciaAtiva] = useState(
         { name: 'Sacramento', latitude: -23.6579, longitude: -46.5744 }
@@ -37,6 +42,10 @@ const MapaResponsavel = ({ navigation }) => {
 
     const mapRef = useRef(null);
     const [clock, setClock] = useState(true);
+
+    const [open, setOpen] = useState(false);
+    const [value, setValue] = useState(null);
+    const [items, setItems] = useState(null);
 
     // useEffect(() => {
     //     const initializeLocation = async () => {
@@ -72,16 +81,29 @@ const MapaResponsavel = ({ navigation }) => {
 
         if(getSchedules.status === 200){
             console.log('Sucesso ao receber informações da viagem')
-            console.log(getSchedules.data)
+            console.log('Schedules.data: ', getSchedules.data)
             return getSchedules.data
         }
         else{   
             console.log('Erro ao receber informações da viagem')
         }
     }
+
+    const handleGetStudentByResponsible = async(user_id) => {
+        const getByResponsible = await getStudentByResponsible(user_id)
+
+        if(getByResponsible.status === 200){
+            console.log('Sucesso ao receber informações dos alunos pro Responsável')
+            console.log('Students by responsible: ', getByResponsible.data)
+            return getByResponsible.data
+        }
+        else{   
+            console.log('Erro ao receber informações dos alunos pro Responsável')
+        }
+    }
     
     const handleGetDriverLocation = async(schedule_id, user_id) => {
-        const getLocation = await getDriversLastPosition(schedule_id, user_id)
+        const getLocation = await getDriversLastPosition(parseInt(schedule_id), parseInt(user_id))
 
         if(getLocation.status === 200){
             console.log('Sucesso ao receber localização do motorista')
@@ -90,10 +112,12 @@ const MapaResponsavel = ({ navigation }) => {
         else{   
             console.log('Erro ao receber localização do motorista')
         }
+        console.log('Localização Status:', getLocation.status)
     }
 
     const handleGetMapsInfos = async(schedule_id, user_id) => {
-        const getMapInfos = await getMapsInfos(schedule_id, user_id)
+       
+        const getMapInfos = await getScheduleMapsInfos(schedule_id.toString(), user_id.toString())
 
         if(getMapInfos.status === 200){
             console.log('Sucesso ao receber informações da rota')
@@ -101,6 +125,7 @@ const MapaResponsavel = ({ navigation }) => {
         }
         else{   
             console.log('Erro ao receber informações da rota')
+            console.log('STATUS:', getMapInfos.status)
         }
     }
 
@@ -116,23 +141,77 @@ const MapaResponsavel = ({ navigation }) => {
         }
     }
 
+    const handleGetByStudent = async(student_id, user_id) => {
+        const studentSchedules = await getByStudent(student_id, user_id)
+
+        if(studentSchedules.status === 200){
+            console.log('Sucesso ao receber as viagens do aluno')
+            return studentSchedules.data
+        }
+        else{   
+            console.log('Erro ao receber as viagens do aluno')
+        }
+    }
+
+
     // ----------------------------------------------
     // ---------- Pega info das Schedules -----------
     // ----------------------------------------------
 
+    // useEffect(() => {
+    //     const fetchScheduleInfo = async () => {
+    //         const scheduleInfoData = await handleGetScheduleInfo(userData.id);
+    //         scheduleInfoRef.current = scheduleInfoData;
+
+    //         setItems(scheduleInfoRef.current.map(schedule => ({
+    //             label: `Schedule ${schedule.id}`,
+    //             value: schedule.id
+    //         })))
+    //     };
+
+    //     fetchScheduleInfo();
+    // }, []);
+
+
+    // ------------------------------------------------------------------
+    // ---------- Pega info dos Alunos com base no user_id --------------
+    // ------------------------------------------------------------------
     useEffect(() => {
+        
+        const fetchStudentInfo = async () => {
+            const studentsDataResponse = await handleGetStudentByResponsible(userData.id);
+            studentsData.current = studentsDataResponse;
+
+            setItems(studentsData.current.map(student => ({
+                label: `Aluno ${student.name}`,
+                value: {id: student.id, point_id: student.point_id}, 
+            })))
+        };
+
+        fetchStudentInfo();
+    }, []);
+
+    
+    // ---------------------------------------------------------------------
+    // ---------- Pega info das Schedules com base no student_id -----------
+    // ---------------------------------------------------------------------
+    useEffect(() => {
+        
         const fetchScheduleInfo = async () => {
-            const scheduleInfoData = await handleGetScheduleInfo(userData.id);
-            scheduleInfoRef.current = scheduleInfoData;
-            console.log(scheduleInfoRef.current);
+            const studentsDataResponse = await handleGetByStudent(selectedStudent.id ,userData.id);
+            setScheduleId(studentsDataResponse.id) // VERIFICA SE É ID MESMO NA RESPONSE
         };
 
         fetchScheduleInfo();
-    }, []);
+    }, [selectedStudent]);
+
 
     const handlePickerChange = (itemValue) => {
-        setSelectedScheduleId(itemValue);
+        setSelectedStudent(itemValue);
+        // console.log('selectedStudent', selectedStudent)
+        // console.log('itemValue', itemValue)
     };
+
 
     // ------------------------------------------
     // ----------- Definindo o Clock  -----------
@@ -160,27 +239,9 @@ const MapaResponsavel = ({ navigation }) => {
     // ---------- Pegando info da rota ----------
     // ------------------------------------------
 
-    // useEffect(() => {
-    //     const requestLocation = async () => {
-    //         const locationResponse = await handleGetDriverLocation(selectedScheduleId);
-    //         const lastCoordinate = locationResponse.coordinates[locationResponse.coordinates?.length - 1];
-    //         console.log('last coord: ', lastCoordinate.lat, lastCoordinate.lng);
-    //         return lastCoordinate;
-    //     };
-    
-    //     const updateLocation = async () => {
-    //         const lastCoord = await requestLocation();
-    //         updateRegion({latitude: lastCoord.lat, longitude: lastCoord.lng}, residenciaAtiva, 1000);
-    //         setMotoristaLoc({latitude: lastCoord.lat, longitude: lastCoord.lng});
-    //     };
-    
-    //     updateLocation();
-    // }, [clock]);
-
-
     useEffect(() => {
         const requestLocation = async () => {
-            const lastCoordinate = await handleGetDriverLocation(selectedScheduleId, userData.id);
+            const lastCoordinate = await handleGetDriverLocation(scheduleId, userData.id);
             console.log('last coord: ', lastCoordinate.lat, lastCoordinate.lng);
             return lastCoordinate;
         };
@@ -200,12 +261,13 @@ const MapaResponsavel = ({ navigation }) => {
     // ------------------------------------------
     useEffect(() => {
         const requestMapsInfos = async () => {
-            const mapsInfosData = await handleGetMapsInfos(selectedScheduleId, userData.id);
-            return mapsInfosData;
+            const mapsInfosData = await handleGetMapsInfos(scheduleId, userData.id);
+            setMapsInfos(mapsInfosData);
+            console.log('MAPS INFOS:', mapsInfosData);
         };
-        
-        const mapsInfosResponse = requestMapsInfos();
-        setMapsInfos(mapsInfosResponse);
+    
+        requestMapsInfos();  // Chama a função assíncrona e espera seu término
+    
     }, [clock]);
 
     
@@ -214,7 +276,8 @@ const MapaResponsavel = ({ navigation }) => {
     // ------------------------------------------------------
     useEffect(() => {
         const requestStudentPosition = async () => {
-            const studentPositionRes = await handleGetStudentPosition(selectedScheduleId, userData.id);
+            const studentPositionRes = await handleGetStudentPosition(scheduleId, userData.id);
+            console.log('Posição na fila:',studentPositionRes)
             return studentPositionRes;
         };
         
@@ -313,19 +376,21 @@ const MapaResponsavel = ({ navigation }) => {
                         )}
                     </MapView>
                 )}
-            {scheduleInfoRef.current && (
-                <Picker
-                    selectedValue={selectedScheduleId}
-                    onValueChange={handlePickerChange}
-                >
-                    {scheduleInfoRef.current.map((schedule) => (
-                        <Picker.Item
-                            key={schedule.schedule_id}
-                            label={`Schedule ${schedule.schedule_id}`}
-                            value={schedule.schedule_id}
-                        />
-                    ))}
-                </Picker>
+            {studentsData.current && (
+                <View style={styles.pickerWrapper}>
+                    <DropDownPicker
+                        style={styles.pickerStyle}
+                        open={open}
+                        value={value}
+                        items={items}
+                        setOpen={setOpen}
+                        setValue={setValue}
+                        setItems={setItems}
+                        onChangeValue={(value) => handlePickerChange(value)}
+                        placeholder="Escolha um aluno"
+                        ListEmptyComponent={() => <Text>Nenhum aluno disponível</Text>} // Mensagem personalizada
+                    />
+                </View>
             )}
             </View>
             <View style={styles.footer}>
