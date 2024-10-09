@@ -103,7 +103,7 @@ const MapaResponsavel = ({ navigation }) => {
     }
     
     const handleGetDriverLocation = async(schedule_id, user_id) => {
-        const getLocation = await getDriversLastPosition(schedule_id, user_id)
+        const getLocation = await getDriversLastPosition(parseInt(schedule_id), parseInt(user_id))
 
         if(getLocation.status === 200){
             console.log('Sucesso ao receber localização do motorista')
@@ -112,6 +112,7 @@ const MapaResponsavel = ({ navigation }) => {
         else{   
             console.log('Erro ao receber localização do motorista')
         }
+        console.log('Localização Status:', getLocation.status)
     }
 
     const handleGetMapsInfos = async(schedule_id, user_id) => {
@@ -276,6 +277,7 @@ const MapaResponsavel = ({ navigation }) => {
     useEffect(() => {
         const requestStudentPosition = async () => {
             const studentPositionRes = await handleGetStudentPosition(scheduleId, userData.id);
+            console.log('Posição na fila:',studentPositionRes)
             return studentPositionRes;
         };
         

@@ -36,10 +36,15 @@ export const getDriverLocation = async(schedule_id) => {
 
 // Função para obter a localização do motorista
 export const getDriversLastPosition = async(schedule_id, user_id) => {
-    const endpoint = `/get-last-position-by-schedule?schedule-id=${schedule_id}?user-id=${user_id}?`;
+    const endpoint = `/get-last-position-by-schedule`;
 
     try{
-        const response  = await axios.get(coordinateController + endpoint);
+        const response = await axios.get(coordinateController + endpoint, {
+            headers: {
+                "schedule-id": schedule_id,
+                "user-id": user_id
+            }
+        });
         return response;
     }
     catch(error){
