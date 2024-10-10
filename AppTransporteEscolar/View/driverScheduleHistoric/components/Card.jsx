@@ -1,3 +1,4 @@
+import { AntDesign } from "@expo/vector-icons";
 import moment from "moment";
 import { useEffect, useRef, useState } from "react";
 import { StyleSheet, Text, View } from "react-native";
@@ -52,7 +53,10 @@ const Card = ({data, key}) => {
             }
             </View>
         <View style={styles.infosContainer}>
-            <Text style={styles.title}>{data.schedule.name}</Text>
+            <View style={styles.titleContainer}>
+                <Text style={styles.title}>{data.schedule.name}</Text>
+                <AntDesign name="rightcircle" size={24} color="black"/>
+            </View>
             
             <View style={styles.datesContainer}>
                 <View>
@@ -95,9 +99,14 @@ const styles = StyleSheet.create({
         paddingRight: 5,
         paddingVertical: 5
     },
+    titleContainer: {
+        flexDirection: "row",
+        alignItems: "center"
+    },  
     title: {
         fontSize: 16,
         fontWeight: "bold",
+        flex: .95,
         flexWrap: "wrap"
     },
     datesContainer: {
