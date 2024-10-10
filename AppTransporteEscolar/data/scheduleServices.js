@@ -6,7 +6,7 @@ const _controller = apiUrl + '/schedule';
 
 export const getHistoricDriverByDate = async(body) => {
     const _endpoint = "/get-driver-historic-by-date";
-
+    
     try{
         const response  = await axios.post(_controller + _endpoint, body);
 

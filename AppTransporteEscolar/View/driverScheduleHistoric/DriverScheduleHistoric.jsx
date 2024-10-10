@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useState } from "react";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import DateTimePickerModal from "react-native-modal-datetime-picker";
 import moment from "moment";
 import 'moment/locale/pt-br'; 
@@ -22,27 +22,35 @@ const DriverScheduleHistoric = () => {
     const [listByDate, setListByDate] = useState([]);
     const [errorMessage, setErrorMessage] = useState(null);
 
+    const handleSearchSchedulesByDate = async(date) => {
+        setErrorMessage(null);
+
+        setLoading(true);
+
+        const list = await getHistoricDriverByDate({ date: date, user_id: userData.id });
+
+        if(list.status === 200){
+            setListByDate(list.data);
+        }
+        else{
+            setErrorMessage(list.data.detail);
+        }
+
+        setLoading(false);
+    };
+
     useEffect(() => {
         const requestData = async() => {
-            setLoading(true);
-
-            const list = await getHistoricDriverByDate({ date: moment().format("DD/MM/YYYY"), user_id: userData.id });
-
-            if(list.status === 200){
-                setListByDate(list.data);
-            }
-            else{
-                setErrorMessage(list.data.detail);
-            }
-
-            setLoading(false);
+            await handleSearchSchedulesByDate(moment().format("YYYY-MM-DD"));            
         };
 
         requestData();
     }, [userData]);
 
-    const handleConfirmDate = (e) => {
-        setDateSelected(moment(e).format("DD/MM/YYYY, dddd"));
+    const handleConfirmDate = async(value) => {
+        await handleSearchSchedulesByDate(moment(value).format("YYYY-MM-DD"));
+        
+        setDateSelected(moment(value).format("DD/MM/YYYY, dddd"));
         setDateButton(false);
     };
 
@@ -57,17 +65,19 @@ const DriverScheduleHistoric = () => {
                     </Pressable>
                 </View>
 
-                <View style={styles.cardContainer}>
+                <ScrollView style={styles.cardContainer}>
                     {
                         !errorMessage ?
-                            listByDate?.map((item, key) => (<Card key={key} data={item}/>))
+                            <View style={styles.cardContent}>
+                                {listByDate?.map((item, key) => (<Card key={key} data={item}/>))}
+                            </View>
                         :
                         <View style={styles.errorMessageContainer}>
                             <FontAwesome name="exclamation-circle" size={"80%"} color="#C36005" />
                             <Text style={styles.errorMessage}>{errorMessage}</Text>
                         </View>
                     }
-                </View>
+                </ScrollView>
             </View>
 
             <DateTimePickerModal
@@ -84,8 +94,7 @@ const DriverScheduleHistoric = () => {
 
 const styles = StyleSheet.create({
     content: {
-        flex: 1,
-        overflow: "scroll"
+        flex: 1
     },  
     dateContainer: {
         display: "flex",
@@ -115,13 +124,20 @@ const styles = StyleSheet.create({
         marginLeft: 10,
     },
     cardContainer: {
-        alignItems: "center",
+        paddingBottom: 15,
+        flex: 1
+    },
+    cardContent: {
         flex: 1,
-        overflow: "scroll"
+        alignItems: "center",
+        rowGap: 15,
+        flexDirection: "column",
+        minHeight: "100%"
     },
     errorMessageContainer:{
         flex: 1,
         justifyContent: "center",
+        marginTop: "35%",
         rowGap: 10,
         alignItems: "center",
         marginBottom: "20%"
