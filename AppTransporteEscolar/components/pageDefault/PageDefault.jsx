@@ -2,12 +2,12 @@ import { StyleSheet, View } from "react-native";
 import Header from "../header/Header";
 import { ActivityIndicator } from "react-native-paper";
 
-const PageDefault = ({children, headerTitle, loading, backNavigation}) => {
+const PageDefault = ({children, headerTitle, loading, withoutCentering, backNavigation}) => {
     return <View style={styles.view}>
         {headerTitle && <Header title={headerTitle} specificNavigation={backNavigation}/>}
         {
             !loading ? 
-                <View style={styles.content}>
+                <View style={!withoutCentering ? styles.content : styles.contentWithoutCentering}>
                     {children}
                 </View>
                 :
@@ -30,6 +30,13 @@ const styles = StyleSheet.create({
         height: "100%",
         alignItems: 'center',
         justifyContent: "center",
+        position: "relative"
+    },
+    contentWithoutCentering: {
+        width: "100%",
+        flex: 1,
+        height: "100%",
+        alignItems: 'center',
         position: "relative"
     },
     loadingOverlay: {

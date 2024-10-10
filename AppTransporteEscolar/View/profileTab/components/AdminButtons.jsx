@@ -4,6 +4,10 @@ import ButtonDefault from "./ButtonDefault";
 import { FontAwesome, FontAwesome5, Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 
 const AdminButtons = ({navigation}) => {
+    const handleGoToDriverHistoric = () => {
+        navigation.navigate('DriverScheduleHistoric');
+    }
+    
     const handleToParentNotifications = () => {
         navigation.navigate('ParentNotifications');
     }
@@ -56,6 +60,11 @@ const AdminButtons = ({navigation}) => {
                     icon={<Ionicons name="alert" size={"30%"} color="#fff" />}
                     title={"Faltas"}
                     onClick={handleToParentNotifications}
+                />
+                <ButtonDefault
+                    icon={<FontAwesome name="history" size={"30%"} color="#fff" />}
+                    title={"Histórico"}
+                    onClick={handleGoToDriverHistoric}
                 />
             </View>
         </View>

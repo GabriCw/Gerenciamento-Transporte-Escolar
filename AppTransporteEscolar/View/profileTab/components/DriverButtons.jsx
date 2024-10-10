@@ -4,10 +4,10 @@ import ButtonDefault from "./ButtonDefault";
 import { FontAwesome, FontAwesome5, Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 
 const DriverButtons = ({navigation}) => {
-    const handleToDriverSchoolPage = () => {
-        navigation.navigate('DriverSchools');
+    const handleGoToDriverHistoric = () => {
+        navigation.navigate('DriverScheduleHistoric');
     }
-
+    
     const handleToSchoolsPage = () => {
         navigation.navigate('Schools');
     }
@@ -42,6 +42,11 @@ const DriverButtons = ({navigation}) => {
                     icon={<Ionicons name="school" size={"30%"} color="#fff" />}
                     title={"Escolas"}
                     onClick={handleToSchoolsPage}
+                />
+                <ButtonDefault
+                    icon={<FontAwesome name="history" size={"30%"} color="#fff" />}
+                    title={"Histórico"}
+                    onClick={handleGoToDriverHistoric}
                 />
             </View>
         </View>
