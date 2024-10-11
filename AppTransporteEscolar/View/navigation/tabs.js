@@ -25,6 +25,7 @@ import PastNotificationsList from '../parentNotifications/components/PastNotific
 import CreateVehicle from '../vehicle/components/CreateVehicle';
 import VehicleDetails from '../vehicle/components/VehicleDetails';
 import DriverScheduleHistoric from '../driverScheduleHistoric/DriverScheduleHistoric';
+import DriverScheduleHistoricDetails from '../driverScheduleHistoric/components/DriverScheduleHistoricDetails';
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -65,6 +66,7 @@ const PerfilMotoStack = () => (
     <Stack.Screen name="SchoolsDetails" component={SchoolsDetails} options={{ headerShown: false }} />
     <Stack.Screen name="RemoveUser" component={RemoveUser} options={{ headerShown: false }} />
     <Stack.Screen name="DriverScheduleHistoric" component={DriverScheduleHistoric} options={{ headerShown: false }} />
+    <Stack.Screen name="DriverScheduleHistoricDetails" component={DriverScheduleHistoricDetails} options={{ headerShown: false }} />
   </Stack.Navigator>
 );
 
@@ -88,6 +90,7 @@ const PerfilAdminStack = () => (
     <Stack.Screen name="CreateNotification" component={CreateNotification} options={{ headerShown: false }} />
     <Stack.Screen name="PastNotificationsList" component={PastNotificationsList} options={{ headerShown: false }} />
     <Stack.Screen name="DriverScheduleHistoric" component={DriverScheduleHistoric} options={{ headerShown: false }} />
+    <Stack.Screen name="DriverScheduleHistoricDetails" component={DriverScheduleHistoricDetails} options={{ headerShown: false }} />
   </Stack.Navigator>
 );
 

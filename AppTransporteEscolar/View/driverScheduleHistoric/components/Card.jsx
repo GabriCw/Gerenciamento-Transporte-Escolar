@@ -1,13 +1,39 @@
 import { AntDesign } from "@expo/vector-icons";
+import { useNavigation } from "@react-navigation/native";
 import moment from "moment";
-import { useEffect, useRef, useState } from "react";
-import { StyleSheet, Text, View } from "react-native";
+import { useContext, useEffect, useRef, useState } from "react";
+import { Pressable, StyleSheet, Text, View } from "react-native";
 import MapView, { Polyline } from "react-native-maps";
+import { getHistoricDriverDetail } from "../../../data/scheduleServices";
+import { AuthContext } from "../../../providers/AuthProvider";
+import Toast from "react-native-toast-message";
 
-const Card = ({data, key}) => {
+const Card = ({data, key, setLoading}) => {
 
     const mapRef = useRef(null);
+    const { userData } = useContext(AuthContext);
+    const navigation = useNavigation(); 
     const [coordinates, setCoordinates] = useState([]);
+
+    const handleScheduleDetails = async() => {
+        setLoading(true);
+
+        const response = await getHistoricDriverDetail(data.schedule.id, userData.id);
+
+        if(response.status === 200){
+            navigation.navigate("DriverScheduleHistoricDetails", {coordinates: coordinates, details: response.data});
+        }
+        else{
+            Toast.show({
+                type: 'error',
+                text1: 'Erro',
+                text2: "Erro ao trazer os detalhes",
+                visibilityTime: 3000,
+            });
+        }
+
+        setLoading(false);
+    };
 
     useEffect(() => {
         const formatCoordinates = data?.coordinates?.map(item => ({
@@ -52,7 +78,7 @@ const Card = ({data, key}) => {
                 null
             }
             </View>
-        <View style={styles.infosContainer}>
+        <Pressable style={styles.infosContainer} onPress={handleScheduleDetails}>
             <View style={styles.titleContainer}>
                 <Text style={styles.title}>{data.schedule.name}</Text>
                 <AntDesign name="rightcircle" size={24} color="black"/>
@@ -69,7 +95,7 @@ const Card = ({data, key}) => {
                     <Text>{moment(data.schedule.real_end_date).format("DD/MM/YY HH:mm")}</Text>
                 </View>
             </View>
-        </View>
+        </Pressable>
     </View>
 };
 
@@ -97,7 +123,7 @@ const styles = StyleSheet.create({
         flex: 3,
         paddingLeft: 10,
         paddingRight: 5,
-        paddingVertical: 5
+        paddingVertical: 5,
     },
     titleContainer: {
         flexDirection: "row",
