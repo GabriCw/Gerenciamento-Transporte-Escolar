@@ -93,8 +93,8 @@ const DriverScheduleHistoricDetails = ({route}) => {
                 <ScrollView style={styles.pointContainer}>
                     {
                         details?.points.map((item, index) => (
-                            <View>
-                                <Pressable style={[styles.pointContent, detailsId === item.id ? {borderBottomLeftRadius: 0, borderBottomRightRadius: 0, backgroundColor: "#C36005"} : {borderRadius: 10}]} key={item.id} onPress={() => handleShowDetails(item)}>
+                            <View key={item.id}>
+                                <Pressable style={[styles.pointContent, detailsId === item.id ? {borderBottomLeftRadius: 0, borderBottomRightRadius: 0, backgroundColor: "#C36005"} : {borderRadius: 10}]} onPress={() => handleShowDetails(item)}>
                                     <View>
                                         <View style={styles.pointItem}>
                                             <Text style={[styles.pointTitle, detailsId === item.id ? {color: "#fff"} : null]}>{index + 1}. </Text>

@@ -8,8 +8,7 @@ import { getHistoricDriverDetail } from "../../../data/scheduleServices";
 import { AuthContext } from "../../../providers/AuthProvider";
 import Toast from "react-native-toast-message";
 
-const Card = ({data, key, setLoading}) => {
-
+const Card = ({data, index, setLoading}) => {
     const mapRef = useRef(null);
     const { userData } = useContext(AuthContext);
     const navigation = useNavigation(); 
@@ -55,7 +54,7 @@ const Card = ({data, key, setLoading}) => {
         }, 100);
     }, [coordinates]);
 
-    return <View style={styles.content} key={key}>
+    return <View style={styles.content} key={index}>
         <View style={styles.mapContainer}>
             {
                 coordinates.length > 0 ? <MapView
