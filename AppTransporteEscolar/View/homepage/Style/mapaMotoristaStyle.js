@@ -1,5 +1,4 @@
 import { StyleSheet } from 'react-native';
-import { shadow } from 'react-native-paper';
 
 export const styles = StyleSheet.create({
     view: {
@@ -104,7 +103,7 @@ export const styles = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'space-between',
         width: '100%',
-        paddingHorizontal: 20 
+        paddingHorizontal: 20
     },
     infoCardText: {
         fontWeight: 'bold',
@@ -126,11 +125,11 @@ export const styles = StyleSheet.create({
         borderRadius: 15,
         alignItems: 'center',
     },
-    deliveredCardText:{
+    deliveredCardText: {
         flex: 1,
         fontWeight: 'bold',
         fontSize: 12,
-        marginHorizontal: 10
+        marginLeft: 20
     },
     deliveredCardButtons: {
         flex: 1,
@@ -160,31 +159,37 @@ export const styles = StyleSheet.create({
     startButtonPos: {
         position: 'absolute',
         flex: 1,
-        bottom: 30,
+        bottom: 35,
         width: '100%',
         justifyContent: 'center',
         alignItems: 'center'
     },
-    startContent:{
-        flex: 1,
+    startContent: {
         flexDirection: 'row',
-        height: 200,
+        backgroundColor: '#FFFFFFEE',
         width: '90%',
-        backgroundColor: '#999999DD',
+        height: 100,
         justifyContent: 'space-around',
         alignItems: 'center',
-        borderRadius: 50,
+        borderRadius: 10,
+        padding: 10,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.2,
+        shadowRadius: 2,
     },
     startDropdown: {
-        flex: 1,
-        flexDirection: 'column',
-        backgroundColor: '#999999DD',
+        backgroundColor: '#FFFFFFEE',
         width: '90%',
-        height: 250,
-        justifyContent: 'space-around',
+        padding: 20,
+        borderRadius: 10,
         alignItems: 'center',
-        borderRadius: 50,
-        paddingTop: 30
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.2,
+        shadowRadius: 2,
+        zIndex: 3000,
+        elevation: 3000,
     },
     startButton: {
         flexDirection: 'row',
@@ -193,16 +198,14 @@ export const styles = StyleSheet.create({
         marginVertical: 10
     },
     startRouteButton: {
-        width: '42%',
-        backgroundColor: '#C36005',
-        text: '#FFFFFF',
-        height: 80,
+        width: '40%',
+        height: 60,
         justifyContent: 'center',
-        flexDirection: 'column',
-        marginHorizontal: '2%',
+        alignItems: 'center',
+        marginHorizontal: 10,
+        backgroundColor: '#C36005',
     },
-    startText:{
-        // backgroundColor: '#FFFFFF99',
+    startText: {
         color: 'black',
         fontSize: 18,
         fontWeight: 'bold',
@@ -226,10 +229,65 @@ export const styles = StyleSheet.create({
         shadowRadius: 5,
     },
     loadingRouteStyle: {
-        flex: 1,                 // Faz com que o componente ocupe toda a área disponível
-        justifyContent: 'center', // Centraliza verticalmente
-        alignItems: 'center',     // Centraliza horizontalmente
-        backgroundColor: 'rgba(0,0,0,0.5)', // Opcional: fundo semitransparente para destacar o loader
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: 'rgba(0,0,0,0.5)',
     },
-
+    dropdown: {
+        width: '90%',
+        marginBottom: 20,
+        alignSelf: 'center',
+        // zIndex: 900
+    },
+    dropdownContainer: {
+        width: '90%',
+        zIndex: 1000,
+        alignSelf: 'center',
+    },
+    dropdownLabel: {
+        fontSize: 18,
+        marginBottom: 10,
+    },
+    confirmButton: {
+        marginTop: 20,
+        width: '45%',
+        backgroundColor: '#C36005',
+        borderRadius: 15,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    card: {
+        backgroundColor: '#fff',
+        padding: 15,
+        marginVertical: 5,
+        borderRadius: 10,
+        width: '100%',
+    },
+    studentName: {
+        fontSize: 16,
+        fontWeight: 'bold',
+        alignSelf: 'flex-start',
+    },
+    studentName2: {
+        fontSize: 16,
+        fontWeight: 'bold',
+        alignSelf: 'center',
+    },
+    endRouteButtonContainer: {
+        position: 'absolute',
+        bottom: '25%',
+        alignSelf: 'center',
+    },
+    endRouteButton: {
+        backgroundColor: '#C36005',
+        borderRadius: 10,
+        width: '100%',
+        height: 50,
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    checkbox: {
+        backgroundColor: '#B0B0B0',
+    }
 });

@@ -96,7 +96,8 @@ const Tabs = () => {
 
   return (
     <Tab.Navigator
-      screenOptionsr={{
+      initialRouteName="Home"
+      screenOptions={{
         activeTintColor: '#C36005',
         inactiveTintColor: 'black',
         style: {

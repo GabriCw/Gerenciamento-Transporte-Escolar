@@ -2,7 +2,6 @@ import React, { useState, useEffect, useRef, useContext } from 'react';
 import { GOOGLE_MAPS_API_KEY } from '@env';
 import { View, Image, Text, Alert, Linking, Pressable, FlatList, ActivityIndicator } from 'react-native';
 import MapView, { Marker, Polyline } from 'react-native-maps';
-import { Picker } from '@react-native-picker/picker';
 import * as Location from 'expo-location';
 import axios from 'axios';
 import polyline from '@mapbox/polyline';
@@ -10,25 +9,19 @@ import { getPinImage } from '../../utils/getPinImage';
 import { getDistance } from 'geolib';
 import { styles } from './Style/mapaMotoristaStyle';
 import { Button, Checkbox } from 'react-native-paper';
-import { formatTime, formatDistance } from '../../utils/formatUtils';
-import FontAwesome from '@expo/vector-icons/FontAwesome';
-import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
+import { formatDistance } from '../../utils/formatUtils';
 import { postDriverLocation, postRoutePoints, getDriverScheduleDetails, createSchedule, startSchedule, updateSchedulePoint, endSchedule } from '../../data/locationServices';
 import { getUserDetails } from '../../data/userServices';
 import { getVehicleByUser } from '../../data/vehicleServices';
 import { getSchoolByDriver } from '../../data/pointServices';
 import { AuthContext } from '../../providers/AuthProvider';
 import { throttle } from 'lodash';
-
+// Importação do DropDownPicker
+import DropDownPicker from 'react-native-dropdown-picker';
+import { color } from 'react-native-elements/dist/helpers';
 
 const MapaMotorista = ({ navigation }) => {
-    const [waypoints, setWaypoints] = useState(
-    [
-        { name: 'Mauá', latitude: -23.647438, longitude: -46.575321 }, 
-        { name: 'Sacramento', latitude: -23.653268, longitude: -46.574290 },
-        { name: 'Shopping', latitude: -23.626883, longitude: -46.580122 },
-    ]
-    )
+    const [waypoints, setWaypoints] = useState([]);
     const [region, setRegion] = useState(null);
     const [heading, setHeading] = useState(0);
     const [userLocation, setUserLocation] = useState(null);
@@ -44,23 +37,23 @@ const MapaMotorista = ({ navigation }) => {
     const [nextWaypointDistance, setNextWaypointDistance] = useState(null);
     const [nextWaypointDuration, setNextWaypointDuration] = useState(null);
     const recalculateThreshold = 100; // Distância em metros para recalcular a rota
-    const [waypointProximity, setWaypointProximity] = useState(true)
+    const [waypointProximity, setWaypointProximity] = useState(true);
     const [startButton, setStartButton] = useState(true);
     const [routeOnGoing, setRouteOngoing] = useState(false);
     const [waypointOrder, setWaypointOrder] = useState([]);
-    const {userData} = useContext(AuthContext);
+    const { userData } = useContext(AuthContext);
     const [clock, setClock] = useState(true);
     const [mapsUrl, setMapsUrl] = useState('');
-    const [currentStudentIndex, setCurrentStudentIndex] = useState(0); // ìndice do aluno atual (na lista de orderedWaypoints)
+    const [currentStudentIndex, setCurrentStudentIndex] = useState(0);
     const [currentLeg, setCurrentLeg] = useState(0);
     const [eta, setEta] = useState(null);
-    const [etas, setEtas] = useState([]); // Stores ETAs for all legs
+    const [etas, setEtas] = useState([]); // Armazena ETAs para todas as pernas
     const [showDropdowns, setShowDropdowns] = useState(false);
     const [selectedCar, setSelectedCar] = useState('');
     const [selectedSchool, setSelectedSchool] = useState('');
     const [routeType, setRouteType] = useState('');
     const [showStudentList, setShowStudentList] = useState(false);
-    const [apiCalls, setApiCalls] = useState(0)
+    const [apiCalls, setApiCalls] = useState(0);
     const [routeLegs, setRouteLegs] = useState([]);
     const [loadingRoute, setLoadingRoute] = useState(false);
     const [scheduleId, setScheduleId] = useState(null);
@@ -71,15 +64,34 @@ const MapaMotorista = ({ navigation }) => {
     const [allSchools, setAllSchools] = useState([]);
     const [orderedPointIds, setOrderedPointIds] = useState([]);
     const [selectedStudents, setSelectedStudents] = useState([]);
-    const [showEndRouteButton, setShowEndRouteButton] = useState(false); // Controls visibility of "End Route" button
+    const [showEndRouteButton, setShowEndRouteButton] = useState(false);
     const [originPoint, setOriginPoint] = useState(null);
     const [destinationPoint, setDestinationPoint] = useState(null);
     const [nextStopName, setNextStopName] = useState('');
     const [driverPoints, setDriverPoints] = useState([]);
     const [destinationOptions, setDestinationOptions] = useState([]);
-    const [selectedDestination, setSelectedDestination] = useState(null); //inicializa com -1 para representar a ida (qua não tem destino setado)
+    const [selectedDestination, setSelectedDestination] = useState(null);
     const [selectedDestinationPoint, setSelectedDestinationPoint] = useState(null);
     const [showDestinationSelection, setShowDestinationSelection] = useState(false);
+
+    // Estados para o DropDownPicker de veículos
+    const [vehicleOpen, setVehicleOpen] = useState(false);
+    const [vehicleValue, setVehicleValue] = useState(null);
+    const [vehicleItems, setVehicleItems] = useState([]);
+
+    // Estados para o DropDownPicker de escolas
+    const [schoolOpen, setSchoolOpen] = useState(false);
+    const [schoolValue, setSchoolValue] = useState(null);
+    const [schoolItems, setSchoolItems] = useState([]);
+
+    // Estado para o DropDownPicker de destinos
+    const [destinationOpen, setDestinationOpen] = useState(false);
+
+    const [isLoadingVehiclesAndSchools, setIsLoadingVehiclesAndSchools] = useState(false);
+    const [isLoadingCreateSchedule, setIsLoadingCreateSchedule] = useState(false);
+    const [isLoadingStartRoute, setIsLoadingStartRoute] = useState(false);
+    const [isLoadingEndRoute, setIsLoadingEndRoute] = useState(false);
+
 
     useEffect(() => {
         const fetchUserDetails = async () => {
@@ -93,7 +105,7 @@ const MapaMotorista = ({ navigation }) => {
                 console.error('Erro ao obter detalhes do usuário:', response.data);
             }
         };
-    
+
         fetchUserDetails();
     }, []);
 
@@ -107,8 +119,8 @@ const MapaMotorista = ({ navigation }) => {
                         'Precisamos da sua localização para fornecer o serviço. Por favor, habilite nas configurações.',
                         [
                             { text: 'Cancelar', style: 'cancel' },
-                            { 
-                                text: 'Abrir Configurações', 
+                            {
+                                text: 'Abrir Configurações',
                                 onPress: () => Linking.openSettings()
                             },
                         ]
@@ -126,11 +138,11 @@ const MapaMotorista = ({ navigation }) => {
                     setRegion({
                         latitude,
                         longitude,
-                        latitudeDelta: 0.005,  // Ajuste o zoom conforme necessário
+                        latitudeDelta: 0.005,
                         longitudeDelta: 0.005,
                     });
                     setHeading(heading || 0);
-                    
+
                 } else {
                     console.log('Could not get current location');
                 }
@@ -142,30 +154,26 @@ const MapaMotorista = ({ navigation }) => {
         initializeLocation();
     }, []);
 
-
     const routePointsRef = useRef(routePoints);
     useEffect(() => {
         routePointsRef.current = routePoints;
     }, [routePoints]);
 
-
     useEffect(() => {
-
         let locationSubscription;
 
         const startLocationUpdates = async () => {
             locationSubscription = await Location.watchPositionAsync(
                 {
                     accuracy: Location.Accuracy.BestForNavigation,
-                    timeInterval: 1000, // Atualiza a cada 1 segundo
-                    distanceInterval: 1, // Ou a cada 1 metro
+                    timeInterval: 1000,
+                    distanceInterval: 1,
                 },
                 (location) => {
                     const { latitude, longitude, heading, speed } = location.coords;
 
-                    if (speed >= 0){  // Só atualiza os dados caso a velocidade seja maior que 0.5 m/s
+                    if (speed >= 0) {
                         setUserLocation({ latitude, longitude });
-                        // console.log('User Location: ', userLocation)
                         setRegion({
                             latitude,
                             longitude,
@@ -173,13 +181,12 @@ const MapaMotorista = ({ navigation }) => {
                             longitudeDelta: 0.005,
                         });
                         setHeading(heading || 0);
-                        
-                        if ( routePointsRef.current.length > 0 && {latitude, longitude}) {
-                            // console.log('lat, long',latitude,longitude, speed)
+
+                        if (routePointsRef.current.length > 0 && { latitude, longitude }) {
                             const distanceToRoute = calculateDistanceToRoute(latitude, longitude);
                             console.log('Distância para a rota:', distanceToRoute);
                             if (distanceToRoute > recalculateThreshold) {
-                                throttledCalculateRoute(waypoints,{latitude, longitude});
+                                throttledCalculateRoute(waypoints, { latitude, longitude });
 
                             }
                         }
@@ -197,9 +204,9 @@ const MapaMotorista = ({ navigation }) => {
         };
     }, []);
 
-    // Updated calculateRoute function
+    // Atualização da função calculateRoute
     const calculateRoute = async (stateWaypoints, currentLocation, routeType) => {
-        // Map waypoints with their data
+        // Mapear waypoints com seus dados
         const waypoints = stateWaypoints.map((wp) => {
             const studentNames = wp.student.map(student => student.name).join(', ');
             return {
@@ -214,20 +221,17 @@ const MapaMotorista = ({ navigation }) => {
         let waypointsString = waypoints.map(point => `${point.latitude},${point.longitude}`).join('|');
 
         if (routeType === 1) {
-            // Origin is driver's current location, destination is the school
+            // Origem é a localização atual do motorista, destino é a escola
             origin = `${currentLocation.latitude},${currentLocation.longitude}`;
             destination = `${schoolInfo.lat},${schoolInfo.lng}`;
 
-            // Handle cases with no waypoints or a single waypoint
             if (waypoints.length === 0) {
-                // No students, route directly to the school
                 waypointsString = '';
             } else if (waypoints.length === 1) {
-                // Only one student, waypointsString is that student's location
                 waypointsString = `${waypoints[0].latitude},${waypoints[0].longitude}`;
             }
         } else if (routeType === 2) {
-            // Origin is the school, destination is the last student's location
+            // Origem é a escola, destino é o último aluno
             origin = `${schoolInfo.lat},${schoolInfo.lng}`;
 
             if (!selectedDestinationPoint) {
@@ -235,9 +239,8 @@ const MapaMotorista = ({ navigation }) => {
                 setLoadingRoute(false);
                 return;
             }
-            destination = `${selectedDestinationPoint.latitude},${selectedDestinationPoint.longitude}`;        
+            destination = `${selectedDestinationPoint.latitude},${selectedDestinationPoint.longitude}`;
 
-            // Filter waypoints for selected students
             const selectedWaypoints = waypoints.filter(wp => selectedStudents.includes(wp.point_id));
 
             if (selectedWaypoints.length === 0) {
@@ -249,10 +252,9 @@ const MapaMotorista = ({ navigation }) => {
                 destination = `${selectedWaypoints[0].latitude},${selectedWaypoints[0].longitude}`;
             } else {
                 waypointsString = selectedWaypoints.map(point => `${point.latitude},${point.longitude}`).join('|');
-                destination = ''; // Destination will be handled by the API
+                destination = '';
             }
 
-            // Update waypoints variable to use selected waypoints
             waypoints.splice(0, waypoints.length, ...selectedWaypoints);
         }
 
@@ -266,7 +268,6 @@ const MapaMotorista = ({ navigation }) => {
             if (response.data.routes && response.data.routes.length) {
                 const route = response.data.routes[0];
 
-                // Check if route.legs is populated
                 if (!route.legs || route.legs.length === 0) {
                     console.log('No legs found in the route.');
                     Alert.alert('Erro', 'Não foi possível calcular a rota.');
@@ -290,7 +291,6 @@ const MapaMotorista = ({ navigation }) => {
 
                 if (routeType === 1) {
                     if (waypoints.length > 1) {
-                        // Para routeType 1 (Ida)
                         orderedWaypoints = [
                             ...optimizedOrder.map(i => waypoints[i]),
                             { name: schoolInfo.name, latitude: schoolInfo.lat, longitude: schoolInfo.lng, isDestination: true }
@@ -303,9 +303,6 @@ const MapaMotorista = ({ navigation }) => {
                         ];
                         orderedPointIdsList = waypoints.map(wp => wp.point_id)
                     }
-                        
-                    console.log('TIPO 1 ORDERED WAYPOINTS ---->')
-                    console.log(orderedWaypoints);
 
                 } else if (routeType === 2) {
                     if (waypoints.length > 1) {
@@ -319,8 +316,6 @@ const MapaMotorista = ({ navigation }) => {
                                 point_id: selectedDestination
                             },
                         ];
-                        console.log('TIPO 2 ORDERED WAYPOINTS ---->')
-                        console.log(orderedWaypoints);
                         orderedPointIdsList = orderedWaypoints.map(wp => wp.point_id);
                     } else {
                         orderedWaypoints = [
@@ -340,37 +335,32 @@ const MapaMotorista = ({ navigation }) => {
                 setOptimizedWaypoints(orderedWaypoints);
                 setOrderedPointIds(orderedPointIdsList);
 
-                // Chamar updateNextWaypointDetails para o primeiro aluno
                 updateNextWaypointDetails(currentStudentIndex, route.legs, orderedWaypoints);
 
-                // Generate ETAs for all legs
                 const allEtas = [];
                 let cumulativeDuration = 0;
                 for (let leg of route.legs) {
-                    cumulativeDuration += leg.duration.value; // Duration in seconds
+                    cumulativeDuration += leg.duration.value;
                     const eta = new Date(Date.now() + cumulativeDuration * 1000);
                     allEtas.push(eta.toISOString());
                 }
-                setEtas(allEtas); // Store ETAs in state
+                setEtas(allEtas);
 
-                // Calculate total duration and distance
                 setTotalDuration(route.legs.reduce((acc, leg) => acc + leg.duration.value, 0));
                 setTotalDistance(route.legs.reduce((acc, leg) => acc + leg.distance.value, 0));
 
-                // Set next waypoint details
                 if (route.legs.length >= 0) {
-                    updateNextWaypointDetails(currentStudentIndex, route.legs, orderedWaypoints);                        
+                    updateNextWaypointDetails(currentStudentIndex, route.legs, orderedWaypoints);
                 }
 
-                // Generate Google Maps URL
                 const mapsUrl = `https://www.google.com/maps/dir/?api=1&origin=${origin}&destination=${destination || origin}&waypoints=${waypointsString.replace(/\|/g, '%7C')}`;
                 setMapsUrl(mapsUrl);
 
                 return {
-                    orderedPointIdsList, // Retorna diretamente a variável se o nome for o mesmo
-                    allEtas, // Retorna diretamente a variável se o nome for o mesmo
-                    overviewPolylinePoints: route.overview_polyline.points, // Defina uma chave para acessar essa propriedade
-                    legs: route.legs // Defina uma chave para acessar essa propriedade
+                    orderedPointIdsList,
+                    allEtas,
+                    overviewPolylinePoints: route.overview_polyline.points,
+                    legs: route.legs
                 };
 
             } else {
@@ -385,19 +375,13 @@ const MapaMotorista = ({ navigation }) => {
             setLoadingRoute(false);
         }
     };
-   
-    // Controlar a quantidade de chamadas API com 'throttle'    
-    const throttledCalculateRoute = throttle(calculateRoute, 30000);
 
+    const throttledCalculateRoute = throttle(calculateRoute, 30000);
 
     const updateNextWaypointDetails = (nextIndex, legs, waypoints) => {
         const currentRouteLegs = legs || routeLegs;
         const currentOptimizedWaypoints = waypoints || optimizedWaypoints;
-    
-        // console.log('updateNextWaypointDetails called with nextIndex:', nextIndex);
-        // console.log('Route Legs:', currentRouteLegs);
-        // console.log('Number of Legs:', currentRouteLegs.length);
-    
+
         if (!currentRouteLegs || currentRouteLegs.length === 0) {
             console.log('No route legs available.');
             setNextWaypointDistance(null);
@@ -405,10 +389,10 @@ const MapaMotorista = ({ navigation }) => {
             setEta(null);
             return;
         }
-    
+
         let nextLeg;
         let nextStopName;
-    
+
         if (nextIndex === 'destination') {
             nextLeg = currentRouteLegs[currentRouteLegs.length - 1];
             nextStopName = destinationPoint.name;
@@ -422,7 +406,7 @@ const MapaMotorista = ({ navigation }) => {
             setEta(null);
             return;
         }
-    
+
         if (!nextLeg) {
             console.log('No next leg found for index:', nextIndex);
             setNextWaypointDistance(null);
@@ -430,54 +414,52 @@ const MapaMotorista = ({ navigation }) => {
             setEta(null);
             return;
         }
-    
+
         setNextWaypointDistance(nextLeg.distance.value);
         setNextWaypointDuration(nextLeg.duration.value);
-    
-        // Update ETA
+
         const cumulativeDuration = currentRouteLegs
             .slice(0, nextIndex + 1)
             .reduce((acc, leg) => acc + leg.duration.value, 0);
         const eta_inside = new Date(Date.now() + cumulativeDuration * 1000);
         setEta(eta_inside);
-        setNextStopName(nextStopName); // Update next stop name
-    
-        console.log('Current Student NextWaypointsDetails:')
-        console.log(nextWaypointDistance, '------', nextLeg.distance.value)
-        console.log('Current Student ETA:')
-        console.log(eta,'------',eta_inside)
+        setNextStopName(nextStopName);
     };
 
-    // Updated student selection for return route
     const startRoute = async () => {
-        if (routeType === 1 || (routeType === 2 && selectedStudents.length > 0 && selectedDestinationPoint)) {
-            setShowDropdowns(false);
+        setIsLoadingStartRoute(true);
+        try {
+            if (routeType === 1 || (routeType === 2 && selectedStudents.length > 0 && selectedDestinationPoint)) {
+                setShowDropdowns(false);
     
-            let waypointsToUse = waypoints;
-            if (routeType === 2) {
-                // Filtrar waypoints com base nos alunos selecionados
-                waypointsToUse = waypoints.filter(wp => {
-                    return wp.student.some(student => selectedStudents.includes(student.point_id));
-                });
+                let waypointsToUse = waypoints;
+                if (routeType === 2) {
+                    waypointsToUse = waypoints.filter(wp => {
+                        return wp.student.some(student => selectedStudents.includes(student.point_id));
+                    });
+                }
+    
+                setCurrentStudentIndex(0);
+                const { orderedPointIdsList, allEtas, overviewPolylinePoints, legs } = await throttledCalculateRoute(waypointsToUse, userLocation, routeType);
+                await handleStartSchedule(orderedPointIdsList, allEtas, overviewPolylinePoints, legs);
+                setRouteOngoing(true);
+                setStartButton(false);
+                console.log(`Rota iniciada! Na escola ${selectedSchool} com o veículo ${selectedCar}`);
+            } else {
+                Alert.alert('Aviso', 'Por favor, selecione pelo menos um aluno para a rota de volta.');
             }
-            
-            console.log('waypointsToUse:');
-            console.log(waypointsToUse);
-
-            setCurrentStudentIndex(0);
-            const {orderedPointIdsList, allEtas, overviewPolylinePoints, legs} = await throttledCalculateRoute(waypointsToUse, userLocation, routeType);
-            await handleStartSchedule(orderedPointIdsList, allEtas, overviewPolylinePoints, legs);
-            setRouteOngoing(true);
-            setStartButton(false);
-            console.log(`Rota iniciada! Na escola ${selectedSchool} com o veículo ${selectedCar}`);
-        } else {
-            Alert.alert('Aviso', 'Por favor, selecione pelo menos um aluno para a rota de volta.');
+        } catch (error) {
+            console.error('Erro ao iniciar a rota:', error);
+        } finally {
+            setIsLoadingStartRoute(false);
         }
     };
-    
-    const endRoute = (schedule) => {
+
+    const endRoute = async (schedule) => {
+        setIsLoadingEndRoute(true);
         if (schedule === 1 || schedule === 2) {
-            handleEndSchedule();
+
+            await handleEndSchedule();
             setRouteOngoing(false);
             setShowStudentList(false);
             setStartButton(true);
@@ -495,6 +477,7 @@ const MapaMotorista = ({ navigation }) => {
             setMapsUrl('');
             setTotalDuration(null);
             setTotalDistance(null);
+            setIsLoadingEndRoute(false);
         } else {
             console.log('Erro no tipo da schedule.');
         }
@@ -510,9 +493,9 @@ const MapaMotorista = ({ navigation }) => {
             console.log('Erro: Nenhum ponto de rota disponível.');
             return 0;
         }
-    
+
         const currentLocation = { latitude, longitude };
-    
+
         const validRoutePoints = routePointsRef.current.filter(
             point =>
                 point &&
@@ -521,19 +504,19 @@ const MapaMotorista = ({ navigation }) => {
                 !isNaN(point.latitude) &&
                 !isNaN(point.longitude)
         );
-        // console.log('validRoutePoints', validRoutePoints)
+
         if (validRoutePoints.length === 0) {
             console.log('Erro: Nenhum ponto de rota válido encontrado.');
             return 0;
         }
-        
+
         return Math.min(...validRoutePoints.map(point => getDistance(currentLocation, point)));
     };
-    
+
     const recenterMap = () => {
         if (region) {
             setIsUserInteracting(false);
-            try{
+            try {
                 mapRef.current.animateCamera({
                     center: {
                         latitude: region.latitude,
@@ -541,11 +524,11 @@ const MapaMotorista = ({ navigation }) => {
                     },
                     pitch: 0,
                     heading: heading,
-                    zoom: 18, // Ajuste o zoom conforme necessário
+                    zoom: 18,
                     altitude: 0,
-                }, { duration: 1000 }); // Anima a recentralização
+                }, { duration: 1000 });
             }
-            catch{
+            catch {
                 console.log('Erro de Animate Camera');
             }
 
@@ -557,50 +540,56 @@ const MapaMotorista = ({ navigation }) => {
         if (inactivityTimeout.current) {
             clearTimeout(inactivityTimeout.current);
         }
-        inactivityTimeout.current = setTimeout(recenterMap, 5000); // 5 segundos de inatividade
+        inactivityTimeout.current = setTimeout(recenterMap, 5000);
     };
 
     const handleCreateSchedule = async () => {
-        const body = {
-            user_id: userData.id,
-            vehicle_id: vehicleId,
-            school_id: schoolId,
-            schedule_type: routeType
-        };
+        setIsLoadingCreateSchedule(true);
+        try {
+            const body = {
+                user_id: userData.id,
+                vehicle_id: vehicleId,
+                school_id: schoolId,
+                schedule_type: routeType
+            };
     
-        const response = await createSchedule(body);
-
-        console.log('Response Create Schedule:', response.data);
+            const response = await createSchedule(body);
     
-        if (response.status === 201) {
-            console.log('Schedule criado com sucesso');
-            const data = response.data;
-            setScheduleId(data.schedule_id);
-            setSchoolInfo(data.school);
-            setWaypoints(data.points);
-            console.log('Waypoints:', data.points);
-            console.log('School:', data.school);
-            
-            setShowDropdowns(false);
-
-            if (routeType === 2) {
-                setShowDestinationSelection(true); // Show destination selection for return trip
+            console.log('Response Create Schedule:', response.data);
+    
+            if (response.status === 201) {
+                console.log('Schedule criado com sucesso');
+                const data = response.data;
+                setScheduleId(data.schedule_id);
+                setSchoolInfo(data.school);
+                setWaypoints(data.points);
+                console.log('Waypoints:', data.points);
+                console.log('School:', data.school);
+    
+                setShowDropdowns(false);
+    
+                if (routeType === 2) {
+                    setShowDestinationSelection(true);
+                } else {
+                    setShowStudentList(true);
+                }
             } else {
-                setShowStudentList(true); // For routeType === 1 (Ida), show student list
+                console.error('Erro ao criar o schedule:', response.data);
             }
-        } else {
-            console.error('Erro ao criar o schedule:', response.data);
+        } catch (error) {
+            console.error('Erro ao criar o schedule:', error);
+        } finally {
+            setIsLoadingCreateSchedule(false);
         }
     };
 
     const fetchScheduleDetails = async () => {
         const response = await getDriverScheduleDetails(scheduleId);
-    
+
         if (response.status === 200) {
             console.log('Detalhes do schedule obtidos com sucesso');
             const data = response.data;
-            setWaypoints(data.waypoints); // Supondo que 'waypoints' seja o campo com os alunos
-            // Outros detalhes podem ser salvos conforme necessário
+            setWaypoints(data.waypoints);
         } else {
             console.error('Erro ao obter detalhes do schedule:', response.data);
         }
@@ -608,7 +597,7 @@ const MapaMotorista = ({ navigation }) => {
 
     const handleStartSchedule = async (orderedPointIdsList, allEtas, overviewPolylinePoints, legs) => {
         const endDate = new Date(Date.now() + totalDuration * 1000);
-        const formattedEndDate = endDate.toISOString(); // Retorna no formato 'YYYY-MM-DDTHH:mm:ss.sssZ'
+        const formattedEndDate = endDate.toISOString();
         const formattedEndDateWithoutMilliseconds = formattedEndDate.split('.')[0];
 
         console.log('List:');
@@ -620,15 +609,15 @@ const MapaMotorista = ({ navigation }) => {
             school_id: schoolId,
             end_date: formattedEndDateWithoutMilliseconds,
             points: orderedPointIdsList,
-            encoded_points: overviewPolylinePoints.toString(),
-            legs_info: JSON.stringify(legs[0].start_location), // TESTE
+            encoded_points: "overviewPolylinePoints.toString()",
+            legs_info: JSON.stringify(legs[0].start_location),
             eta: allEtas.toString(),
             destiny_id: selectedDestination
         };
         console.log('Body:', body);
 
         const response = await startSchedule(body);
-    
+
         if (response.status === 200) {
             console.log('Schedule iniciado com sucesso');
         } else {
@@ -645,9 +634,9 @@ const MapaMotorista = ({ navigation }) => {
         };
 
         console.log('Body:', body);
-    
+
         const response = await updateSchedulePoint(body);
-    
+
         if (response.status === 200) {
             console.log('Status do aluno atualizado com sucesso');
         } else {
@@ -660,9 +649,9 @@ const MapaMotorista = ({ navigation }) => {
             schedule_id: scheduleId,
             user_id: userData.id
         };
-    
+
         const response = await endSchedule(body);
-    
+
         if (response.status === 200) {
             console.log('Schedule encerrado com sucesso');
         } else {
@@ -671,11 +660,17 @@ const MapaMotorista = ({ navigation }) => {
     };
 
     const handleUserVehiclesAndSchool = async () => {
-        const response = await getVehicleByUser(userData.id);
+        setIsLoadingVehiclesAndSchools(true);
+        try {
+            const response = await getVehicleByUser(userData.id);
 
         if (response.status === 200) {
             console.log('Veículos obtidos com sucesso');
             setAllVehicles(response.data);
+            setVehicleItems(response.data.map(vehicle => ({
+                label: `${vehicle.model} - ${vehicle.plate}`,
+                value: vehicle.id
+            })));
             console.log('Veículos:', response.data);
         } else {
             console.error('Erro ao obter veículos:', response.data);
@@ -686,69 +681,67 @@ const MapaMotorista = ({ navigation }) => {
         if (response2.status === 200) {
             console.log('Escolas obtidas com sucesso');
             setAllSchools(response2.data);
+            setSchoolItems(response2.data.map(school => ({
+                label: `${school.point.name}`,
+                value: school.point.id
+            })));
             setShowDropdowns(true);
             console.log('Escolas:', response2.data);
         } else {
             console.error('Erro ao obter escolas:', response2.data);
+        }
+        } catch (error) {
+            console.error('Erro ao obter veículos ou escolas:', error);
+        } finally {
+            setIsLoadingVehiclesAndSchools(false);
         }
     }
 
     const handleStudentSelect = (studentId) => {
         setSelectedStudents((prevSelected) => {
             if (prevSelected.includes(studentId)) {
-                // Se o aluno já está selecionado, remove-o
                 return prevSelected.filter((id) => id !== studentId);
             } else {
-                // Se o aluno não está selecionado, adiciona-o
                 return [...prevSelected, studentId];
             }
         });
     };
 
-    // ------------------------------------------------------------ //
-    //                Gerencia a Entrega dos Alunos
-    // ------------------------------------------------------------ //
-
-
     const handleEntrega = async (bool) => {
         if (optimizedWaypoints[currentStudentIndex]?.point_id) {
             await handleStudentDelivered(optimizedWaypoints[currentStudentIndex]?.point_id, bool);
         }
-    
+
         if (currentStudentIndex < optimizedWaypoints.length - 1) {
             setCurrentStudentIndex((prevIndex) => {
                 const newIndex = prevIndex + 1;
                 setWaypointProximity(true);
-    
-                // Atualiza os detalhes do próximo waypoint
+
                 updateNextWaypointDetails(newIndex);
-    
+
                 return newIndex;
             });
         } else {
             console.log('Toda a fila de alunos foi percorrida.');
             setWaypointProximity(false);
-            setShowEndRouteButton(true); // Exibe o botão para encerrar a rota
+            setShowEndRouteButton(true);
         }
     };
-    
-    // ------------------------------------------------------------ //
-    //             Envio da Localização (60 em 60 seg)
-    // ------------------------------------------------------------ //
-    const handlePostDriverLocation = async(body) => {
+
+    const handlePostDriverLocation = async (body) => {
         const postLocation = await postDriverLocation(body)
 
-        if(postLocation.status === 201){
+        if (postLocation.status === 201) {
             console.log('Sucesso ao enviar localização do motorista')
         }
-        else{   
+        else {
             console.log('Erro ao enviar localização do motorista')
         }
     }
 
     useEffect(() => {
         const isLocationAvailable = userLocation?.latitude && userLocation?.longitude
-        
+
         if (isLocationAvailable && routeOnGoing && userData) {
             const body = {
                 lat: userLocation.latitude,
@@ -756,10 +749,9 @@ const MapaMotorista = ({ navigation }) => {
                 user_id: userData.id,
                 schedule_id: scheduleId
             }
-            // console.log('body: ',body)
             handlePostDriverLocation(body);
         }
-    },[clock])
+    }, [clock])
 
     useEffect(() => {
         let isMounted = true;
@@ -767,84 +759,72 @@ const MapaMotorista = ({ navigation }) => {
         const intervalFunc = () => {
             if (isMounted) {
                 setClock(prevClock => !prevClock);
-                setTimeout(intervalFunc, 60000); // Repetir a cada 10 segundos
-
+                setTimeout(intervalFunc, 60000);
             }
         };
 
-        intervalFunc(); // Inicializar a primeira execução
+        intervalFunc();
 
         return () => {
             isMounted = false;
         };
     }, []);
 
-    // ------------------------------------------------------------ //
-    //                  Opções destino viagem volta
-    // ------------------------------------------------------------ //
     useEffect(() => {
-    const options = [];
+        const options = [];
 
-    if (schoolInfo) {
-        options.push({
-            id: 'school',
-            name: 'Escola',
-            description: schoolInfo.name,
-            latitude: schoolInfo.lat,
-            longitude: schoolInfo.lng,
-        });
-    }
+        if (schoolInfo) {
+            options.push({
+                id: 'school',
+                name: 'Escola',
+                description: schoolInfo.name,
+                latitude: schoolInfo.lat,
+                longitude: schoolInfo.lng,
+            });
+        }
 
-    if (driverPoints && driverPoints.length > 0) {
-        driverPoints.forEach(point => {
-            // Check if the point is the same as the school only if schoolInfo is available
-            const isSameAsSchool = schoolInfo && point.lat === schoolInfo.lat && point.lng === schoolInfo.lng;
+        if (driverPoints && driverPoints.length > 0) {
+            driverPoints.forEach(point => {
+                const isSameAsSchool = schoolInfo && point.lat === schoolInfo.lat && point.lng === schoolInfo.lng;
 
-            if (!isSameAsSchool) {
-                options.push({
-                    id: point.id,
-                    name: point.name,
-                    description: point.description,
-                    latitude: point.lat,
-                    longitude: point.lng,
-                });
-            }
-        });
-    }
+                if (!isSameAsSchool) {
+                    options.push({
+                        id: point.id,
+                        name: point.name,
+                        description: point.description,
+                        latitude: point.lat,
+                        longitude: point.lng,
+                    });
+                }
+            });
+        }
 
-    setDestinationOptions(options);
-}, [driverPoints, schoolInfo]);
+        setDestinationOptions(options);
+    }, [driverPoints, schoolInfo]);
 
-
-    // ------------------------------------------------------------ //
-    //        Envio da Rota pro Backend (Sempre que att a rota)
-    // ------------------------------------------------------------ //
-    const handlePostRoute = async(body) => {
+    const handlePostRoute = async (body) => {
         if (encodedRoutePoints && routeOnGoing && userData) {
             const body = {
                 route_points: encodedRoutePoints
             }
             const postRoute = await postRoutePoints(body)
-    
-            if(postRoute.status === 201){
+
+            if (postRoute.status === 201) {
                 console.log('Sucesso ao enviar rota codificada')
             }
-            else{   
+            else {
                 console.log('Erro ao enviar rota codificada')
             }
         }
     }
 
-    // ------------------------------------------------------------ //
-    //                    Abrir App google Maps
-    // ------------------------------------------------------------ //
     const openGoogleMaps = () => {
         if (mapsUrl) {
-          Linking.openURL(mapsUrl).catch(err => {
-            Alert.alert('Erro', 'Não foi possível abrir o Google Maps.');
-          });
+            Linking.openURL(mapsUrl).catch(err => {
+                Alert.alert('Erro', 'Não foi possível abrir o Google Maps.');
+            });
         } else {
-          Alert.alert('Aviso', 'Nenhuma rota gerada ainda.');
+            Alert.alert('Aviso', 'Nenhuma rota gerada ainda.');
         }
     };
 
@@ -853,10 +833,10 @@ const MapaMotorista = ({ navigation }) => {
             <View style={styles.content}>
                 {loadingRoute && (
                     <View style={styles.loadingRouteStyle}>
-                        <ActivityIndicator size="large" color="#0000ff" />
+                        <ActivityIndicator size="large" color="#C36005" />
                     </View>
                 )}
-                {region && (
+                {region ? (
                     <MapView
                         ref={mapRef}
                         style={styles.map}
@@ -876,17 +856,17 @@ const MapaMotorista = ({ navigation }) => {
                                 longitude: region.longitude,
                             },
                             pitch: 0,
-                            heading: heading, // Controla a direção do mapa
+                            heading: heading,
                             altitude: 0,
                             zoom: 18,
                         }}
-                    >   
-                        
+                    >
+
                         {userLocation && (
                             <Marker
                                 coordinate={userLocation}
                                 title="Sua localização"
-                                anchor={{x: 0.5, y: 0.5}}
+                                anchor={{ x: 0.5, y: 0.5 }}
                                 rotation={0}
                             >
                                 <Image
@@ -915,7 +895,9 @@ const MapaMotorista = ({ navigation }) => {
                             </Marker>
                         ))}
                     </MapView>
-                )}
+                )
+            :
+            (<ActivityIndicator size="large" color="#C36005" />)}
             </View>
 
             {/* Botão Google Maps */}
@@ -926,10 +908,9 @@ const MapaMotorista = ({ navigation }) => {
                             source={require('../../assets/icons/googleMaps.png')}
                             style={{ width: 45, height: 45 }}
                         />
-                    </Pressable>  
+                    </Pressable>
                 </View>
             )}
-            
 
             {/* ---------- CARD IDA VOLTA ---------- */}
             {startButton && region && (
@@ -939,24 +920,33 @@ const MapaMotorista = ({ navigation }) => {
                         <View style={styles.startButtonPos}>
                             <View style={styles.startContent}>
                                 <Button
+                                    disabled={isLoadingVehiclesAndSchools}
                                     style={styles.startRouteButton}
                                     onPress={() => {
                                         setRouteType(1);
                                         handleUserVehiclesAndSchool();
-                                    }} // Rota de ida
-                                    title="IDA ESCOLA"
-                                >
-                                    IDA ESCOLA
-                                </Button>
-                                <Button
+                                    }}
+                                    >
+                                    {isLoadingVehiclesAndSchools ? (
+                                        <ActivityIndicator size="small" color="#FFFFFF" style={{alignSelf:'center'}}/>
+                                    ) : (
+                                        <Text style={{ color: 'white', fontSize: 13, fontWeight: 'bold' }}>IDA ESCOLA</Text>
+                                    )}
+                                    </Button>
+
+                                    <Button
+                                    disabled={isLoadingVehiclesAndSchools}
                                     style={styles.startRouteButton}
                                     onPress={() => {
                                         setRouteType(2);
                                         handleUserVehiclesAndSchool();
-                                    }} // Rota de volta
-                                    title="VOLTA ESCOLA"
-                                >
-                                    VOLTA ESCOLA
+                                    }}
+                                    >
+                                    {isLoadingVehiclesAndSchools ? (
+                                        <ActivityIndicator size="small" color="#FFFFFF" style={{alignSelf:'center'}}/>
+                                    ) : (
+                                        <Text style={{ color: 'white', fontSize: 13, fontWeight: 'bold' }}>VOLTA ESCOLA</Text>
+                                    )}
                                 </Button>
                             </View>
                         </View>
@@ -966,91 +956,106 @@ const MapaMotorista = ({ navigation }) => {
                     {showDropdowns && (
                         <View style={styles.startButtonPos}>
                             <View style={styles.startDropdown}>
-                                <Text>Escolha o carro:</Text>
-                                <Picker
-                                selectedValue={vehicleId}
-                                onValueChange={(itemValue) => {setVehicleId(itemValue), setSelectedCar(itemValue)}}
-                                style={{width: 200}}
-                                >
-                                    <Picker.Item label="Selecione um carro" value="" />
-                                    {Array.isArray(allVehicles) && allVehicles.length > 0 ? (
-                                    allVehicles.map(vehicle => (
-                                        <Picker.Item
-                                        key={vehicle.id}
-                                        label={`${vehicle.model} - ${vehicle.plate}`}
-                                        value={vehicle.id}
-                                        />
-                                    ))
-                                    ): (
-                                    <Picker.Item label="Nenhum veículo disponível" value="" />
-                                    )}
-                                </Picker>
-                    
-                                <Text>Escolha a escola:</Text>
-                                <Picker
-                                selectedValue={schoolId}
-                                onValueChange={(itemValue) => {setSchoolId(itemValue), setSelectedSchool(itemValue)}}
-                                style={{width: 200}}
-                                >
-                                <Picker.Item label="Selecione uma escola" value="" />
-                                    {Array.isArray(allSchools) && allSchools.length > 0 ? (
-                                    allSchools.map(school => (
-                                        <Picker.Item
-                                        key={school.point.id}
-                                        label={`${school.point.name}`}
-                                        value={school.point.id}
-                                        />
-                                    ))
-                                    ) : (
-                                    <Picker.Item label="Nenhuma escola disponível" value="" />
-                                    )}
-                                </Picker>
-                    
-                                <Button title="Confirmar" onPress={() => {
-                                if (selectedCar && selectedSchool) {
+                                <Text style={styles.dropdownLabel}>Escolha o carro:</Text>
+                                <DropDownPicker
+                                    open={vehicleOpen}
+                                    value={vehicleValue}
+                                    items={vehicleItems}
+                                    setOpen={setVehicleOpen}
+                                    setValue={(callback) => {
+                                        const value = callback(vehicleValue);
+                                        setVehicleValue(value);
+                                        setVehicleId(value);
+                                        setSelectedCar(value);
+                                    }}
+                                    setItems={setVehicleItems}
+                                    placeholder="Selecione um carro"
+                                    style={styles.dropdown}
+                                    dropDownContainerStyle={styles.dropdownContainer}
+                                    zIndex={3000}
+                                    zIndexInverse={1000}
+                                />
+
+                                <Text style={styles.dropdownLabel}>Escolha a escola:</Text>
+                                <DropDownPicker
+                                    open={schoolOpen}
+                                    value={schoolValue}
+                                    items={schoolItems}
+                                    setOpen={setSchoolOpen}
+                                    setValue={(callback) => {
+                                        const value = callback(schoolValue);
+                                        setSchoolValue(value);
+                                        setSchoolId(value);
+                                        setSelectedSchool(value);
+                                    }}
+                                    setItems={setSchoolItems}
+                                    placeholder="Selecione uma escola"
+                                    style={styles.dropdown}
+                                    dropDownContainerStyle={styles.dropdownContainer}
+                                    zIndex={2000}
+                                    zIndexInverse={2000}
+                                />
+
+                                <Button
+                                mode="contained"
+                                style={styles.confirmButton}
+                                disabled={isLoadingCreateSchedule}
+                                onPress={() => {
+                                    if (selectedCar && selectedSchool) {
                                     handleCreateSchedule();
-                                } else {
-                                    alert("Por favor, selecione o carro e a escola.");
-                                }
-                                }}>
-                                    Confirmar
+                                    } else {
+                                    alert('Por favor, selecione o carro e a escola.');
+                                    }
+                                }}
+                                >
+                                {isLoadingCreateSchedule ? (
+                                    <ActivityIndicator size="small" color="#FFFFFF" style={{alignSelf:'center'}}/>
+                                ) : (
+                                    <Text style={{ color: 'white', fontSize: 13, fontWeight: 'bold' }}>CONFIRMAR</Text>
+                                )}
                                 </Button>
                             </View>
                         </View>
-                        )}
+                    )}
 
                     {/* Show destination selection for return trip */}
                     {showDestinationSelection && (
                         <View style={styles.startButtonPos}>
                             <View style={styles.startDropdown}>
-                                <Text>Escolha o destino:</Text>
-                                {destinationOptions.length > 0 ? (
-                                    <FlatList
-                                        data={destinationOptions}
-                                        keyExtractor={(item) => item.id.toString()}
-                                        renderItem={({ item }) => (
-                                            <View style={styles.card}>
-                                                <Text style={styles.title}>{item.name}</Text>
-                                                {item.description && item.description.trim() !== '' && (
-                                                    <Text style={styles.description}>{item.description}</Text>
-                                                )}
-                                                <Button
-                                                    mode="contained"
-                                                    onPress={() => {
-                                                        setSelectedDestination(item.id);
-                                                        setSelectedDestinationPoint(item);
-                                                        setShowDestinationSelection(false);
-                                                        setShowStudentList(true);
-                                                    }}
-                                                >
-                                                    Selecionar
-                                                </Button>
-                                            </View>
-                                        )}
-                                    />
-                                ) : (
-                                    <Text>Nenhum destino disponível.</Text>
-                                )}
+                                <Text style={styles.dropdownLabel}>Escolha o destino:</Text>
+                                <DropDownPicker
+                                    open={destinationOpen}
+                                    value={selectedDestination}
+                                    items={destinationOptions.map(option => ({
+                                        label: option.name,
+                                        value: option.id,
+                                        description: option.description
+                                    }))}
+                                    setOpen={setDestinationOpen}
+                                    setValue={(callback) => {
+                                        const value = callback(selectedDestination);
+                                        setSelectedDestination(value);
+                                        const selectedOption = destinationOptions.find(option => option.id === value);
+                                        setSelectedDestinationPoint(selectedOption);
+                                    }}
+                                    placeholder="Selecione um destino"
+                                    style={styles.dropdown}
+                                    dropDownContainerStyle={styles.dropdownContainer}
+                                />
+                                <Button
+                                    mode="contained"
+                                    style={styles.confirmButton}
+                                    onPress={() => {
+                                        if (selectedDestinationPoint) {
+                                            setShowDestinationSelection(false);
+                                            setShowStudentList(true);
+                                        } else {
+                                            Alert.alert("Por favor, selecione um destino.");
+                                        }
+                                    }}
+                                    >
+                                    <Text style={{ color: 'white', fontSize: 13, fontWeight: 'bold' }}>CONFIRMAR</Text>
+                                </Button>
                             </View>
                         </View>
                     )}
@@ -1059,24 +1064,34 @@ const MapaMotorista = ({ navigation }) => {
                     {showStudentList && routeType === 2 && (
                         <View style={styles.startButtonPos}>
                             <View style={styles.startDropdown}>
-                                <FlatList
+                                <Text style={styles.dropdownLabel}>Selecione os alunos:</Text>
+                                <FlatList style={{ width: '60%' }}
                                     data={waypoints.reduce((acc, point) => acc.concat(point.student), [])}
                                     keyExtractor={(item) => item.id.toString()}
                                     renderItem={({ item }) => (
                                         <View style={styles.card}>
-                                            <Text style={styles.studentName}>{item.name}</Text>
-                                            <Text>Idade: {item.year}</Text>
+                                            <View style={{flexDirection:'row', width:'100%', justifyContent:'space-between'}}>
+                                                <View style={{alignItems:'flex-start', width:'50%', marginLeft:10}}>
+                                                    <Text style={styles.studentName}>{item.name}</Text>
+                                                    <Text style={{alignSelf:'flex-start'}}>Idade: {item.year}</Text>
+                                                </View>
 
-                                            {/* Checkbox to select/deselect the student */}
-                                            <Checkbox
-                                                status={selectedStudents.includes(item.point_id) ? 'checked' : 'unchecked'}
-                                                onPress={() => handleStudentSelect(item.point_id)}
-                                            />
+                                                {/* Checkbox to select/deselect the student */}
+                                                <View style={{borderColor:'#C0C0C0', borderWidth:1, borderRadius:20}}>
+                                                    <Checkbox
+                                                        status={selectedStudents.includes(item.point_id) ? 'checked' : 'unchecked'}
+                                                        onPress={() => handleStudentSelect(item.point_id)}
+                                                        color="#C36005"
+                                                        style={styles.checkbox}
+                                                    />
+                                                </View>
+                                            </View>
                                         </View>
                                     )}
                                 />
                                 <Button
                                     mode="contained"
+                                    style={styles.confirmButton}
                                     onPress={() => {
                                         if (selectedStudents.length > 0) {
                                             startRoute();
@@ -1085,7 +1100,11 @@ const MapaMotorista = ({ navigation }) => {
                                         }
                                     }}
                                 >
-                                    Confirmar
+                                    {isLoadingStartRoute ? (
+                                        <ActivityIndicator size="small" color="#FFFFFF" style={{alignSelf:'center'}}/>
+                                    ) : (
+                                        <Text style={{ color: 'white', fontSize: 13, fontWeight: 'bold' }}>CONFIRMAR</Text>
+                                    )}
                                 </Button>
                             </View>
                         </View>
@@ -1095,21 +1114,27 @@ const MapaMotorista = ({ navigation }) => {
                     {showStudentList && routeType === 1 && (
                         <View style={styles.startButtonPos}>
                             <View style={styles.startDropdown}>
-                                <FlatList
+                                <Text style={styles.dropdownLabel}>Alunos da rota:</Text>
+                                <FlatList style={{ width: '60%' }}
                                     data={waypoints.reduce((acc, point) => acc.concat(point.student), [])}
                                     keyExtractor={(item) => item.id.toString()}
                                     renderItem={({ item }) => (
-                                    <View style={styles.card}>
-                                        <Text style={styles.studentName}>{item.name}</Text>
-                                        <Text>Idade: {item.year}</Text>
-                                    </View>
+                                        <View style={styles.card}>
+                                            <Text style={styles.studentName2}>{item.name}</Text>
+                                            <Text style={{alignSelf:'center'}}>Idade: {item.year}</Text>
+                                        </View>
                                     )}
                                 />
                                 <Button
-                                    title="Confirmar"
+                                    mode="contained"
+                                    style={styles.confirmButton}
                                     onPress={startRoute}
                                 >
-                                    Confirmar
+                                    {isLoadingStartRoute ? (
+                                        <ActivityIndicator size="small" color="#FFFFFF" style={{alignSelf:'center'}}/>
+                                    ) : (
+                                        <Text style={{ color: 'white', fontSize: 13, fontWeight: 'bold' }}>CONFIRMAR</Text>
+                                    )}
                                 </Button>
                             </View>
                         </View>
@@ -1130,17 +1155,17 @@ const MapaMotorista = ({ navigation }) => {
                             </View>
                             <View style={styles.infoCardRight}>
                                 <Text>Distância</Text>
-                                <Text style={styles.infoCardText}>{nextWaypointDistance? formatDistance(nextWaypointDistance) : ''}</Text>
+                                <Text style={styles.infoCardText}>{nextWaypointDistance ? formatDistance(nextWaypointDistance) : ''}</Text>
                             </View>
                         </View>
                     </View>
                 </View>
             )
             }
-            
+
             {/* ---------- CARD ALUNO ENTREGUE ---------- */}
             {waypointProximity && currentStudentIndex < optimizedWaypoints.length && (
-                <View style={styles.deliveredCardPosition}> 
+                <View style={styles.deliveredCardPosition}>
                     <View style={styles.deliveredCardContent}>
                         <Text style={styles.deliveredCardText}>
                             {optimizedWaypoints[currentStudentIndex]?.isDestination
@@ -1154,10 +1179,14 @@ const MapaMotorista = ({ navigation }) => {
                         </Text>
                         <View style={styles.deliveredCardButtons}>
                             <Button style={styles.deliveredCardButtonYes} mode="contained" onPress={() => handleEntrega(true)}>
-                                SIM
+                                <Text style={{color:'white', fontSize:13, fontWeight:'bold'}}>
+                                    SIM
+                                </Text>
                             </Button>
                             <Button style={styles.deliveredCardButtonNo} mode="contained" onPress={() => handleEntrega(false)}>
-                                NÃO
+                                <Text style={{color:'white', fontSize:13, fontWeight:'bold'}}>
+                                    NÃO
+                                </Text>
                             </Button>
                         </View>
                     </View>
@@ -1167,15 +1196,23 @@ const MapaMotorista = ({ navigation }) => {
             {showEndRouteButton && (
                 <View style={styles.endRouteButtonContainer}>
                     <Button
-                        mode="contained"
+                        // mode="contained"
                         onPress={() => endRoute(routeType)}
+                        style={styles.endRouteButton}
                     >
-                        Encerrar Rota
+                        {isLoadingEndRoute ? (
+                            <ActivityIndicator size="small" color="#FFFFFF" style={{alignSelf:'center'}}/>
+                        ): (
+
+                            <Text style={{color:'white', fontSize:13, fontWeight:'bold', alignSelf:'center'}}>
+                                ENCERRAR ROTA
+                            </Text>
+                        )}
                     </Button>
                 </View>
             )}
 
-            
+
         </View>
     );
 }

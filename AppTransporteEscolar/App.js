@@ -11,10 +11,16 @@ import Tabs from './View/navigation/tabs';
 import { AuthProvider } from './providers/AuthProvider';
 import { Provider as PaperProvider } from 'react-native-paper';
 import Students from './View/students/Students';
+import { LogBox } from 'react-native';
 
 const Stack = createStackNavigator();
 
 const App = () => {
+  
+  LogBox.ignoreLogs([
+    'Found screens with the same name nested inside one another',
+  ]);
+
   return (
     <AuthProvider>
       <PaperProvider>
