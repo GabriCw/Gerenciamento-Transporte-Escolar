@@ -69,7 +69,7 @@ const DriverScheduleHistoric = () => {
                     {
                         !errorMessage ?
                             <View style={styles.cardContent}>
-                                {listByDate?.map((item, key) => (<Card key={key} data={item}/>))}
+                                {listByDate?.map(item => (<Card index={item.schedule.id} data={item} setLoading={setLoading}/>))}
                             </View>
                         :
                         <View style={styles.errorMessageContainer}>
