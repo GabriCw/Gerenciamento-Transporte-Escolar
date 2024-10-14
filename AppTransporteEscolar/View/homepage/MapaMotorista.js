@@ -603,14 +603,19 @@ const MapaMotorista = ({ navigation }) => {
         console.log('List:');
         console.log(orderedPointIdsList);
 
+        const legsInfo = legs.map(leg => ({
+            start_location: leg.start_location,
+            end_location: leg.end_location
+        }));
+
         const body = {
             user_id: userData.id,
             schedule_id: scheduleId,
             school_id: schoolId,
             end_date: formattedEndDateWithoutMilliseconds,
             points: orderedPointIdsList,
-            encoded_points: "overviewPolylinePoints.toString()",
-            legs_info: JSON.stringify(legs[0].start_location),
+            encoded_points: overviewPolylinePoints.toString(),
+            legs_info: JSON.stringify(legsInfo),
             eta: allEtas.toString(),
             destiny_id: selectedDestination
         };

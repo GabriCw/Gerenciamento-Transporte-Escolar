@@ -97,7 +97,12 @@ export const styles = StyleSheet.create({
         position: 'absolute',
         flex: 1,
         top: 50
-    }
+    },
+    infoCardTitle2: {
+        fontSize: 18,
+        textAlign: 'center',
+        // ... outros estilos
+    },
 
     // startButtonPos: {
     //     position: 'absolute',

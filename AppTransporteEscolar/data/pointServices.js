@@ -17,6 +17,19 @@ export const getPointByUser = async(user_id) => {
     }
 };
 
+export const getPointByID = async(point_id) => {
+    const _endpoint = `/get-by-id?point_id=${point_id}`;
+
+    try{
+        const response  = await axios.get(_controller + _endpoint);
+
+        return response;
+    }
+    catch(error){
+        return error.response;
+    }
+};
+
 export const updatePoint = async(body) => {
     const _endpoint = `/update`;
 
