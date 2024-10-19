@@ -4,13 +4,17 @@ import MapView, { Marker, Polyline } from "react-native-maps";
 import { useEffect, useRef, useState } from "react";
 import moment from "moment";
 import { FontAwesome, FontAwesome5 } from "@expo/vector-icons";
+import { Button } from "react-native-paper";
 
 const DriverScheduleHistoricDetails = ({route}) => {
     
     const mapRef = useRef(null);
-    const { coordinates, details } = route.params;
+    const { coordinates, loraCoordinates, details } = route.params;
 
     const [detailsId, setDetailsId] = useState(null);
+    const [actualCoordinate, setActualCoordinate] = useState(coordinates);
+    const [hasChangedCoord, setHasChangedCoord] = useState(false);
+    const [stops, setStops] = useState([]);
 
     const handleShowDetails = (value) => {
         if(detailsId){
@@ -22,34 +26,50 @@ const DriverScheduleHistoricDetails = ({route}) => {
     };
 
     useEffect(() => {
-        setTimeout(() => {
-            if (mapRef.current && coordinates.length > 0) {
-                mapRef.current.fitToCoordinates(coordinates, {
-                    edgePadding: { top: 50, right: 50, bottom: 50, left: 50 }, // Ajuste de espaçamento
-                    animated: false
-                });
-            }
-        }, 100);
-    }, [coordinates]);
+
+    }, [details]);
+
+    const handleChangeCoordinate = () => {
+        if(!hasChangedCoord){
+            setActualCoordinate(loraCoordinates);
+            setHasChangedCoord(true);
+        }
+        else{
+            setActualCoordinate(coordinates);
+            setHasChangedCoord(false);
+        }
+    };
 
     return <PageDefault headerTitle="Detalhe da Viagem" withoutCentering={true}>
         <View style={styles.content}>
             <View style={styles.mapContainer}> 
                 {
-                    coordinates.length > 0 ? 
+                    actualCoordinate.length > 0 ? 
                     <MapView
                         style={styles.map}
                         ref={mapRef}
                         initialRegion={{
-                            latitude: coordinates[0]?.latitude,
-                            longitude: coordinates[0]?.longitude,
+                            latitude: actualCoordinate[0]?.latitude,
+                            longitude: actualCoordinate[0]?.longitude,
                             latitudeDelta: 0.2,
                             longitudeDelta: 0.2,
                         }}
                         zoomTapEnabled={true}
+                        onLayout={() => {
+                            if (details?.points?.length > 0) {
+                                const coordinates = details.points.map(item => ({
+                                    latitude: item.point.lat,
+                                    longitude: item.point.lng,
+                                }));
+                                mapRef.current?.fitToCoordinates(coordinates, {
+                                    edgePadding: { top: 50, right: 50, bottom: 50, left: 50 },
+                                    animated: true,
+                                });
+                            }
+                        }}
                     >
                         <Polyline
-                            coordinates={coordinates}
+                            coordinates={actualCoordinate}
                             strokeColor="#090833"
                             strokeWidth={5}
                         />
@@ -89,6 +109,7 @@ const DriverScheduleHistoricDetails = ({route}) => {
                         <Text style={styles.resumeText}>{moment(details.planned_duration).format("HH:mm")}</Text>
                     </View>
                 </View>
+                <Pressable onPress={handleChangeCoordinate}><Text style={{color: "#fff"}}>trocar coordenadas</Text></Pressable>
 
                 <ScrollView style={styles.pointContainer}>
                     {

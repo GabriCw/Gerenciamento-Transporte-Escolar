@@ -13,6 +13,7 @@ const Card = ({data, index, setLoading}) => {
     const { userData } = useContext(AuthContext);
     const navigation = useNavigation(); 
     const [coordinates, setCoordinates] = useState([]);
+    const [loraCoordinates, setLoraCoordinates] = useState([]);
 
     const handleScheduleDetails = async() => {
         setLoading(true);
@@ -20,7 +21,7 @@ const Card = ({data, index, setLoading}) => {
         const response = await getHistoricDriverDetail(data.schedule.id, userData.id);
 
         if(response.status === 200){
-            navigation.navigate("DriverScheduleHistoricDetails", {coordinates: coordinates, details: response.data});
+            navigation.navigate("DriverScheduleHistoricDetails", {coordinates: coordinates, details: response.data, loraCoordinates: loraCoordinates});
         }
         else{
             Toast.show({
@@ -40,7 +41,14 @@ const Card = ({data, index, setLoading}) => {
             longitude: item.lng
         }));
 
-        setCoordinates(formatCoordinates);        
+        setCoordinates(formatCoordinates);    
+        
+        const formatLoraCoordinates = data?.coordinates_lora?.map(item => ({
+            latitude: item.lat,
+            longitude: item.lng
+        }));
+
+        setLoraCoordinates(formatLoraCoordinates);
     }, [data]);
 
     useEffect(() => {
