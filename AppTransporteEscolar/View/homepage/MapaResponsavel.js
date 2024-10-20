@@ -1,19 +1,15 @@
 import React, { useState, useEffect, useRef, useContext } from 'react';
 import { StyleSheet, View, Image, Text} from 'react-native';
-import { Picker } from '@react-native-picker/picker';
 import DropDownPicker from 'react-native-dropdown-picker';
 import MapView, { Marker, Polyline, AnimatedRegion, Animated } from 'react-native-maps';
-import * as Location from 'expo-location';
-import axios from 'axios';
 import polyline from '@mapbox/polyline';
 import { styles } from './Style/mapaResponsavelStyle';
-import { Button } from 'react-native-paper';
-import { formatTime, formatDistance } from '../../utils/formatUtils';
 import { FontAwesome5 } from '@expo/vector-icons';
-import { getDriverLocation, getDriversLastPosition, getStudentPosition, getCurrentSchedules, getScheduleMapsInfos, getByStudent } from '../../data/locationServices';
-import { getStudentByResponsible, getStudentDetails} from '../../data/studentServices';
+import { getDriversLastPosition, getStudentPosition, getCurrentSchedules, getScheduleMapsInfos, getByStudent } from '../../data/locationServices';
+import { getStudentByResponsible } from '../../data/studentServices';
 import { getPointByID } from '../../data/pointServices';
 import { AuthContext } from '../../providers/AuthProvider';
+import { getDistance } from 'geolib';
 
 // Camera que nem a do uber (rota inteira, aumentando o zoom conforme diminuindo o tamanho)
 
@@ -33,9 +29,6 @@ const MapaResponsavel = ({ navigation }) => {
     const [heading, setHeading] = useState(0);
     const [motoristaLoc, setMotoristaLoc] = useState(null);
 
-    const [nextWaypointDuration, setNextWaypointDuration] = useState(300);
-    const [nextWaypointDistance, setNextWaypointDistance] = useState(500);
-
     const [mapsInfos, setMapsInfos] = useState(null);
     const [studentPosition, setStudentPosition] = useState(null);
 
@@ -43,39 +36,84 @@ const MapaResponsavel = ({ navigation }) => {
     const [clock, setClock] = useState(true);
 
     const [open, setOpen] = useState(false);
-    const [value, setValue] = useState(null);
     const [items, setItems] = useState(null);
 
     const [routeCoordinates, setRouteCoordinates] = useState([]);
 
-    // useEffect(() => {
-    //     const initializeLocation = async () => {
-    //         try {
-    //             let { status } = await Location.requestForegroundPermissionsAsync();
-    //             if (status !== 'granted') {
-    //                 console.log('Permission to access location was denied');
-    //                 return;
-    //             }
+    const [legsInfo, setLegsInfo] = useState([]);
+    const [relevantRouteCoordinates, setRelevantRouteCoordinates] = useState([]);
+    
+    const [studentDelivered, setStudentDelivered] = useState(false);
+    const [totalDurationToStudent, setTotalDurationToStudent] = useState(0);
+    const [etaToStudent, setEtaToStudent] = useState(null);
+    const [totalDurationToSchool, setTotalDurationToSchool] = useState(0);
+    const [etaToSchool, setEtaToSchool] = useState(null);
 
-    //             const location = await Location.getCurrentPositionAsync({
-    //                 accuracy: Location.Accuracy.BestForNavigation,
-    //             });
+    const lastValidStudentPosition = useRef(null);
 
-    //             if (location) {
-    //                 const { latitude, longitude, heading } = location.coords;
-    //                 updateRegion({ latitude, longitude }, residenciaAtiva, 50);
-    //                 setMotoristaLoc({ latitude, longitude });
-    //                 setHeading(heading);
-    //             } else {
-    //                 console.log('Could not get current location');
-    //             }
-    //         } catch (error) {
-    //             console.error('Error during location initialization:', error);
-    //         }
-    //     };
 
-    //     initializeLocation();
-    // }, []);
+    // Determinar se o aluno já foi embarcado
+    useEffect(() => {
+        if (studentPosition !== null && studentPosition !== undefined) {
+          if (studentPosition >= 0) {
+            // Aluno ainda não foi embarcado
+            setStudentDelivered(false);
+          } else {
+            // Aluno já foi embarcado
+            setStudentDelivered(true);
+          }
+        }
+    }, [studentPosition]);
+
+    // Calcular totalDurationToStudent e etaToStudent
+    useEffect(() => {
+        if (legsInfo.length > 0 && studentPosition !== null && studentPosition !== undefined && studentPosition >= 0) {
+        let durationSum = 0;
+        for (let i = 0; i <= studentPosition && i < legsInfo.length; i++) {
+            durationSum += legsInfo[i].duration.value;
+        }
+        setTotalDurationToStudent(durationSum);
+    
+        const now = new Date();
+        const etaDate = new Date(now.getTime() + durationSum * 1000);
+        setEtaToStudent(etaDate);
+        }
+    }, [legsInfo, studentPosition]);
+
+    useEffect(() => {
+    if (legsInfo.length > 0 && studentPosition !== null && studentPosition !== undefined && studentPosition >= 0) {
+        let studentLegIndex = legsInfo.findIndex(leg => leg.point_id === selectedStudent.point_id);
+        let durationSum = 0;
+        for (let i = studentLegIndex + 1; i < legsInfo.length; i++) {
+        durationSum += legsInfo[i].duration.value; // em segundos
+        }
+        setTotalDurationToSchool(durationSum);
+    }
+    }, [legsInfo, studentPosition, selectedStudent]);
+
+    
+    useEffect(() => {
+    if (totalDurationToSchool > 0) {
+        const now = new Date();
+        const etaDate = new Date(now.getTime() + totalDurationToSchool * 1000);
+        setEtaToSchool(etaDate);
+    }
+    }, [totalDurationToSchool]);
+
+
+    const findClosestIndex = (coordinate, coordinatesArray) => {
+        let minDistance = Infinity;
+        let closestIndex = -1;
+        for (let i = 0; i < coordinatesArray.length; i++) {
+            const distance = getDistance(coordinate, coordinatesArray[i]);
+            if (distance < minDistance) {
+                minDistance = distance;
+                closestIndex = i;
+            }
+        }
+        return closestIndex;
+    };
+
 
     const handleGetScheduleInfo = async(user_id) => {
         const getSchedules = await getCurrentSchedules(user_id)
@@ -116,12 +154,13 @@ const MapaResponsavel = ({ navigation }) => {
         console.log('Localização Status:', getLocation.status)
     }
 
-    const handleGetMapsInfos = async(schedule_id, user_id) => {
+    const handleGetMapsInfos = async (schedule_id, user_id) => {
         const getMapInfos = await getScheduleMapsInfos(schedule_id.toString(), user_id.toString());
     
-        if(getMapInfos.status === 200){
+        if (getMapInfos.status === 200) {
             console.log('Sucesso ao receber informações da rota');
             const mapsData = getMapInfos.data;
+            // console.log(mapsData)
     
             // Decodificar o encoded_points
             const decodedPoints = polyline.decode(mapsData.encoded_points).map(point => ({
@@ -132,25 +171,30 @@ const MapaResponsavel = ({ navigation }) => {
             // Armazenar os pontos decodificados no estado
             setRouteCoordinates(decodedPoints);
     
-            // Você também pode armazenar outras informações, se necessário
+            // Parse do legs_info e armazenamento
+            const parsedLegsInfo = JSON.parse(mapsData.legs_info);
+            setLegsInfo(parsedLegsInfo);
+    
+            // Armazenar outras informações, se necessário
             setMapsInfos(mapsData);
-        } else {   
+        } else {
             console.log('Erro ao receber informações da rota');
             console.log('STATUS:', getMapInfos.status);
         }
-    }
+    };
 
-    const handleGetStudentPosition = async(schedule_id, user_id) => {
-        const studentPositionResponse = await getStudentPosition(schedule_id, user_id)
-
-        if(studentPositionResponse.status === 200){
-            console.log('Sucesso ao receber a posição na fila do aluno')
-            return studentPositionResponse.data
+    const handleGetStudentPosition = async (schedule_id, user_id) => {
+        const studentPositionResponse = await getStudentPosition(schedule_id, user_id);
+      
+        if (studentPositionResponse && studentPositionResponse.status === 200) {
+          console.log('Sucesso ao receber a posição na fila do aluno');
+          return studentPositionResponse.data;
+        } 
+        else {
+          console.log('Erro ao receber a posição na fila do aluno');
+          return null; // Retorna null em caso de erro
         }
-        else{   
-            console.log('Erro ao receber a posição na fila do aluno')
-        }
-    }
+    };
 
     const handleGetByStudent = async(student_id, user_id) => {
         const studentSchedules = await getByStudent(student_id, user_id)
@@ -163,25 +207,6 @@ const MapaResponsavel = ({ navigation }) => {
             console.log('Erro ao receber as viagens do aluno')
         }
     }
-
-
-    // ----------------------------------------------
-    // ---------- Pega info das Schedules -----------
-    // ----------------------------------------------
-
-    // useEffect(() => {
-    //     const fetchScheduleInfo = async () => {
-    //         const scheduleInfoData = await handleGetScheduleInfo(userData.id);
-    //         scheduleInfoRef.current = scheduleInfoData;
-
-    //         setItems(scheduleInfoRef.current.map(schedule => ({
-    //             label: `Schedule ${schedule.id}`,
-    //             value: schedule.id
-    //         })))
-    //     };
-
-    //     fetchScheduleInfo();
-    // }, []);
 
 
     // ------------------------------------------------------------------
@@ -221,30 +246,36 @@ const MapaResponsavel = ({ navigation }) => {
 
     const handlePickerChange = (itemValue) => {
         setSelectedStudent(itemValue);
-        // console.log('selectedStudent', selectedStudent)
-        // console.log('itemValue', itemValue)
     };
 
 
     // ------------------------------------------
     // ----------- Definindo o Clock  -----------
     // ------------------------------------------
+    // useEffect(() => {
+    //     let isMounted = true;
+
+    //     const intervalFunc = () => {
+    //         if (isMounted) {
+    //             setClock(prevClock => !prevClock);
+    //             setTimeout(intervalFunc, 10000); // Repetir a cada 10 segundos
+
+    //         }
+    //     };
+
+    //     intervalFunc(); // Inicializar a primeira execução
+
+    //     return () => {
+    //         isMounted = false; // Limpar na desmontagem do componente
+    //     };
+    // }, []);
+
     useEffect(() => {
-        let isMounted = true;
-
-        const intervalFunc = () => {
-            if (isMounted) {
-                setClock(prevClock => !prevClock);
-                setTimeout(intervalFunc, 10000); // Repetir a cada 10 segundos
-
-            }
-        };
-
-        intervalFunc(); // Inicializar a primeira execução
-
-        return () => {
-            isMounted = false; // Limpar na desmontagem do componente
-        };
+        const intervalId = setInterval(() => {
+            setClock((prevClock) => !prevClock);
+        }, 10000); // Repeats every 10 seconds
+        
+        return () => clearInterval(intervalId); // Clear interval on component unmount
     }, []);
 
 
@@ -263,25 +294,17 @@ const MapaResponsavel = ({ navigation }) => {
             const lastCoord = await requestLocation();
             updateRegion({latitude: lastCoord.lat, longitude: lastCoord.lng}, residenciaAtiva, 1000);
             setMotoristaLoc({latitude: lastCoord.lat, longitude: lastCoord.lng});
+            console.log('------ MOTORISTA LOC:', lastCoord)
         };
     
         updateLocation();
+        handleGetScheduleInfo(userData.id);
     }, [clock]);
 
 
     // ------------------------------------------
     // ---------- Pegando info da rota ----------
     // ------------------------------------------
-    // useEffect(() => {
-    //     const requestMapsInfos = async () => {
-    //         const mapsInfosData = await handleGetMapsInfos(scheduleId, userData.id);
-    //         setMapsInfos(mapsInfosData);
-    //         console.log('MAPS INFOS:', mapsInfosData);
-    //     };
-    
-    //     requestMapsInfos();  // Chama a função assíncrona e espera seu término
-    
-    // }, [clock]);
     useEffect(() => {
         if (scheduleId && userData.id) {
             const requestMapsInfos = async () => {
@@ -296,25 +319,24 @@ const MapaResponsavel = ({ navigation }) => {
     // ------------------------------------------------------
     // ---------- Pegando posição na fila do aluno ----------
     // ------------------------------------------------------
-    // useEffect(() => {
-    //     const requestStudentPosition = async () => {
-    //         const studentPositionRes = await handleGetStudentPosition(scheduleId, userData.id);
-    //         console.log('Posição na fila:',studentPositionRes)
-    //         return studentPositionRes;
-    //     };
-        
-    //     const studentPositionData = requestStudentPosition();
-    //     setStudentPosition(studentPositionData);
-    // }, [clock]);
+
     useEffect(() => {
         const requestStudentPosition = async () => {
-            const studentPositionRes = await handleGetStudentPosition(scheduleId, userData.id);
-            console.log('Posição na fila:', studentPositionRes);
+          const studentPositionRes = await handleGetStudentPosition(scheduleId, userData.id);
+          console.log('Posição na fila:', studentPositionRes);
+      
+          if (studentPositionRes !== null && studentPositionRes !== undefined) {
             setStudentPosition(studentPositionRes);
+            lastValidStudentPosition.current = studentPositionRes; // Atualiza o último valor válido
+          } else if (lastValidStudentPosition.current !== null) {
+            // Mantém o último valor válido
+            setStudentPosition(lastValidStudentPosition.current);
+          }
+          // Caso contrário, não atualiza o estado
         };
-    
+      
         if (scheduleId && userData.id) {
-            requestStudentPosition();
+          requestStudentPosition();
         }
     }, [clock, scheduleId, userData.id]);
 
@@ -394,6 +416,102 @@ const MapaResponsavel = ({ navigation }) => {
         }
     }, [routeCoordinates]);
 
+
+    // ------------------------------------------------------------
+    // Encontrar o Leg Correspondente ao Aluno
+    // ------------------------------------------------------------
+    
+    useEffect(() => {
+        if (legsInfo.length > 0 && selectedStudent && routeCoordinates.length > 0) {
+            // Filtrar os legs até o aluno selecionado
+            const relevantLegs = [];
+            for (let i = 0; i < legsInfo.length; i++) {
+                const leg = legsInfo[i];
+                relevantLegs.push(leg);
+    
+                if (leg.point_id === selectedStudent.point_id) {
+                    // Encontramos o leg do aluno, podemos parar aqui
+                    break;
+                }
+            }
+    
+            // Mapear os legs relevantes para coordenadas
+            const relevantCoords = [];
+            for (const leg of relevantLegs) {
+                const startCoord = { latitude: leg.start_location.lat, longitude: leg.start_location.lng };
+                const endCoord = { latitude: leg.end_location.lat, longitude: leg.end_location.lng };
+    
+                const startIndex = findClosestIndex(startCoord, routeCoordinates);
+                const endIndex = findClosestIndex(endCoord, routeCoordinates);
+    
+                if (startIndex >= 0 && endIndex >= 0 && endIndex >= startIndex) {
+                    const legCoords = routeCoordinates.slice(startIndex, endIndex + 1);
+                    relevantCoords.push(...legCoords);
+                }
+            }
+    
+            setRelevantRouteCoordinates(relevantCoords);
+        }
+    }, [legsInfo, selectedStudent, routeCoordinates]);
+
+    // ------------------------------------
+    // Extrai coordenadas das legs
+    // ------------------------------------
+    const extractCoordinatesFromLegs = (legsArray) => {
+        const relevantCoords = [];
+        for (const leg of legsArray) {
+          const startCoord = { latitude: leg.start_location.lat, longitude: leg.start_location.lng };
+          const endCoord = { latitude: leg.end_location.lat, longitude: leg.end_location.lng };
+          const startIndex = findClosestIndex(startCoord, routeCoordinates);
+          const endIndex = findClosestIndex(endCoord, routeCoordinates);
+          if (startIndex >= 0 && endIndex >= 0 && endIndex >= startIndex) {
+            const legCoords = routeCoordinates.slice(startIndex, endIndex + 1);
+            relevantCoords.push(...legCoords);
+          }
+        }
+        return relevantCoords;
+    };
+
+
+    // ------------------------------------
+    // Antes do Embarque
+    // ------------------------------------
+    useEffect(() => {
+        if (legsInfo.length > 0 && selectedStudent && studentPosition !== null && studentPosition >= 0 && routeCoordinates.length > 0) {
+          const legsToStudent = legsInfo.slice(0, studentPosition + 1);
+          const relevantCoords = extractCoordinatesFromLegs(legsToStudent);
+          setRelevantRouteCoordinates(relevantCoords);
+        }
+    }, [legsInfo, selectedStudent, studentPosition, routeCoordinates]);
+
+
+    // ------------------------------------
+    // Depois do Embarque
+    // ------------------------------------
+    useEffect(() => {
+        if (legsInfo.length > 0 && selectedStudent && studentPosition !== null && studentPosition < 0 && routeCoordinates.length > 0) {
+          let studentLegIndex = legsInfo.findIndex(leg => leg.point_id === selectedStudent.point_id);
+          const legsToSchool = legsInfo.slice(studentLegIndex + 1);
+          const relevantCoords = extractCoordinatesFromLegs(legsToSchool);
+          setRelevantRouteCoordinates(relevantCoords);
+        }
+    }, [legsInfo, selectedStudent, studentPosition, routeCoordinates]);
+
+
+    // ------------------------------------
+    // Ajustar Enquadramento no Mapa
+    // ------------------------------------
+    useEffect(() => {
+        if (relevantRouteCoordinates.length > 0 && mapRef.current) {
+          mapRef.current.fitToCoordinates(relevantRouteCoordinates, {
+            edgePadding: { top: 50, right: 50, bottom: 50, left: 50 },
+            animated: true,
+          });
+        }
+    }, [relevantRouteCoordinates]);
+
+
+
     return (
         <View style={styles.view}>
             <View style={styles.content}>
@@ -429,6 +547,21 @@ const MapaResponsavel = ({ navigation }) => {
                             </Marker>
                         )}
 
+                        {relevantRouteCoordinates.length > 0 && (
+                            <Polyline
+                                coordinates={relevantRouteCoordinates}
+                                strokeWidth={10}
+                                strokeColor="orange"
+                            />
+                        )}
+
+                        {/* {routeCoordinates.length > 0 && (
+                            <Polyline
+                                coordinates={routeCoordinates}
+                                strokeWidth={10}
+                                strokeColor="orange"
+                            />
+                        )} */}
 
                         {motoristaLoc && (
                             <Marker
@@ -444,13 +577,6 @@ const MapaResponsavel = ({ navigation }) => {
                             </Marker>
                         )}
 
-                        {routeCoordinates.length > 0 && (
-                            <Polyline
-                                coordinates={routeCoordinates}
-                                strokeWidth={10}
-                                strokeColor="orange"
-                            />
-                        )}
                     </MapView>
                 )}
             {studentsData.current && (
@@ -458,10 +584,10 @@ const MapaResponsavel = ({ navigation }) => {
                     <DropDownPicker
                         style={styles.pickerStyle}
                         open={open}
-                        value={value}
+                        value={selectedStudent}
                         items={items}
                         setOpen={setOpen}
-                        setValue={setValue}
+                        setValue={setSelectedStudent}
                         setItems={setItems}
                         onChangeValue={(value) => handlePickerChange(value)}
                         placeholder="Escolha um aluno"
@@ -470,32 +596,37 @@ const MapaResponsavel = ({ navigation }) => {
                 </View>
             )}
             </View>
-            <View style={styles.footer}>
-                <View style={styles.infoCard}>
-                    <View style={styles.infoCardNextStop}>
-                        <Text style={styles.infoCardTitle}>
-                            Chegará ao destino
-                        </Text>
-                        {nextWaypointDistance && nextWaypointDuration && (
-                            <View style={styles.infoCardNextStopTexts}>
+                <View style={styles.footer}>
+                    <View style={styles.infoCard}>
+                        <View style={styles.infoCardNextStop}>
+                        {studentPosition !== null && studentPosition >= 0 && (
+                            // Aluno ainda não embarcado
+                            <>
+                            <Text style={styles.infoCardTitle}>Chegada na residência:</Text>
+                            {etaToStudent && (
                                 <Text style={styles.infoCardText}>
-                                    {formatDistance(nextWaypointDistance)}
+                                {etaToStudent.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                 </Text>
+                            )}
+                            <Text style={styles.infoCardTitle2}>
+                                {`${studentPosition} aluno(s) até a chegada`}
+                            </Text>
+                            </>
+                        )}
+                        {studentPosition !== null && studentPosition < 0 && (
+                            // Aluno já embarcado
+                            <>
+                            <Text style={styles.infoCardTitle}>Chegada na escola:</Text>
+                            {etaToSchool && (
                                 <Text style={styles.infoCardText}>
-                                    {studentPosition !== null ? (
-                                        <>
-                                            <Text style={styles.infoCardTitle2}>
-                                                {`${studentPosition} aluno(s) até a entrega`}
-                                            </Text>
-                                            {/* Se quiser, pode adicionar mais informações aqui */}
-                                        </>
-                                    ) : (
-                                        <Text style={styles.infoCardTitle}>
-                                            Carregando posição na fila...
-                                        </Text>
-                                    )}
+                                {etaToSchool.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                 </Text>
-                            </View>
+                            )}
+                        </>
+                        )}
+                        {(studentPosition === null || studentPosition === undefined) && (
+                            // Quando studentPosition é undefined ou null
+                            <Text style={styles.infoCardTitle}>Carregando informações...</Text>
                         )}
                     </View>
                 </View>
