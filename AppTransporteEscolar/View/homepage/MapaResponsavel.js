@@ -121,6 +121,7 @@ const MapaResponsavel = ({ navigation }) => {
         if(getSchedules.status === 200){
             console.log('Sucesso ao receber informações da viagem')
             console.log('Schedules.data: ', getSchedules.data)
+            
             return getSchedules.data
         }
         else{   
@@ -294,7 +295,7 @@ const MapaResponsavel = ({ navigation }) => {
             const lastCoord = await requestLocation();
             updateRegion({latitude: lastCoord.lat, longitude: lastCoord.lng}, residenciaAtiva, 1000);
             setMotoristaLoc({latitude: lastCoord.lat, longitude: lastCoord.lng});
-            console.log('------ MOTORISTA LOC:', lastCoord)
+            // console.log('------ MOTORISTA LOC:', lastCoord)
         };
     
         updateLocation();
@@ -323,7 +324,7 @@ const MapaResponsavel = ({ navigation }) => {
     useEffect(() => {
         const requestStudentPosition = async () => {
           const studentPositionRes = await handleGetStudentPosition(scheduleId, userData.id);
-          console.log('Posição na fila:', studentPositionRes);
+        //   console.log('Posição na fila:', studentPositionRes);
       
           if (studentPositionRes !== null && studentPositionRes !== undefined) {
             setStudentPosition(studentPositionRes);
