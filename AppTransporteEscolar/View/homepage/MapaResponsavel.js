@@ -50,18 +50,17 @@ const MapaResponsavel = ({ navigation }) => {
     const [etaToSchool, setEtaToSchool] = useState(null);
 
     const lastValidStudentPosition = useRef(null);
+    const [scheduleType, setScheduleType] = useState(null);
 
 
     // Determinar se o aluno já foi embarcado
     useEffect(() => {
-        if (studentPosition !== null && studentPosition !== undefined) {
-          if (studentPosition >= 0) {
-            // Aluno ainda não foi embarcado
-            setStudentDelivered(false);
-          } else {
-            // Aluno já foi embarcado
+        if (studentPosition === null || studentPosition === undefined) {
+            // Student has been picked up or delivered
             setStudentDelivered(true);
-          }
+        } else {
+            // Student has not been picked up or delivered yet
+            setStudentDelivered(false);
         }
     }, [studentPosition]);
 
@@ -81,7 +80,7 @@ const MapaResponsavel = ({ navigation }) => {
     }, [legsInfo, studentPosition]);
 
     useEffect(() => {
-    if (legsInfo.length > 0 && studentPosition !== null && studentPosition !== undefined && studentPosition >= 0) {
+    if (legsInfo.length > 0 && selectedStudent && (studentPosition === null || studentPosition === undefined)) {
         let studentLegIndex = legsInfo.findIndex(leg => leg.point_id === selectedStudent.point_id);
         let durationSum = 0;
         for (let i = studentLegIndex + 1; i < legsInfo.length; i++) {
@@ -114,20 +113,6 @@ const MapaResponsavel = ({ navigation }) => {
         return closestIndex;
     };
 
-
-    const handleGetScheduleInfo = async(user_id) => {
-        const getSchedules = await getCurrentSchedules(user_id)
-
-        if(getSchedules.status === 200){
-            console.log('Sucesso ao receber informações da viagem')
-            console.log('Schedules.data: ', getSchedules.data)
-            
-            return getSchedules.data
-        }
-        else{   
-            console.log('Erro ao receber informações da viagem')
-        }
-    }
 
     const handleGetStudentByResponsible = async(user_id) => {
         const getByResponsible = await getStudentByResponsible(user_id)
@@ -237,6 +222,7 @@ const MapaResponsavel = ({ navigation }) => {
         const fetchScheduleInfo = async () => {
             const studentsDataResponse = await handleGetByStudent(selectedStudent.id ,userData.id);
             setScheduleId(studentsDataResponse.id) // VERIFICA SE É ID MESMO NA RESPONSE
+            setScheduleType(studentsDataResponse.schedule_type_id)
         };
 
         if (selectedStudent) {
@@ -253,23 +239,6 @@ const MapaResponsavel = ({ navigation }) => {
     // ------------------------------------------
     // ----------- Definindo o Clock  -----------
     // ------------------------------------------
-    // useEffect(() => {
-    //     let isMounted = true;
-
-    //     const intervalFunc = () => {
-    //         if (isMounted) {
-    //             setClock(prevClock => !prevClock);
-    //             setTimeout(intervalFunc, 10000); // Repetir a cada 10 segundos
-
-    //         }
-    //     };
-
-    //     intervalFunc(); // Inicializar a primeira execução
-
-    //     return () => {
-    //         isMounted = false; // Limpar na desmontagem do componente
-    //     };
-    // }, []);
 
     useEffect(() => {
         const intervalId = setInterval(() => {
@@ -299,7 +268,6 @@ const MapaResponsavel = ({ navigation }) => {
         };
     
         updateLocation();
-        handleGetScheduleInfo(userData.id);
     }, [clock]);
 
 
@@ -452,6 +420,8 @@ const MapaResponsavel = ({ navigation }) => {
             }
     
             setRelevantRouteCoordinates(relevantCoords);
+
+            console.log('Posicao do aluno:', studentPosition)
         }
     }, [legsInfo, selectedStudent, routeCoordinates]);
 
@@ -478,25 +448,58 @@ const MapaResponsavel = ({ navigation }) => {
     // Antes do Embarque
     // ------------------------------------
     useEffect(() => {
-        if (legsInfo.length > 0 && selectedStudent && studentPosition !== null && studentPosition >= 0 && routeCoordinates.length > 0) {
-          const legsToStudent = legsInfo.slice(0, studentPosition + 1);
-          const relevantCoords = extractCoordinatesFromLegs(legsToStudent);
-          setRelevantRouteCoordinates(relevantCoords);
+        if (
+            legsInfo.length > 0 &&
+            selectedStudent &&
+            studentPosition !== null &&
+            studentPosition >= 0 &&
+            routeCoordinates.length > 0 &&
+            scheduleType !== null
+        ) {
+            if (scheduleType === 1) {
+                // "Ida" route, student has not been picked up yet
+                const legsToStudent = legsInfo.slice(0, studentPosition + 1);
+                const relevantCoords = extractCoordinatesFromLegs(legsToStudent);
+                setRelevantRouteCoordinates(relevantCoords);
+            } else if (scheduleType === 2) {
+                // "Volta" route, student has not been delivered yet
+                let studentLegIndex = legsInfo.findIndex(leg => leg.point_id === selectedStudent.point_id);
+                if (studentLegIndex !== -1) {
+                    const legsToStudent = legsInfo.slice(0, studentLegIndex + 1);
+                    const relevantCoords = extractCoordinatesFromLegs(legsToStudent);
+                    setRelevantRouteCoordinates(relevantCoords);
+                }
+            }
         }
-    }, [legsInfo, selectedStudent, studentPosition, routeCoordinates]);
+    }, [legsInfo, selectedStudent, studentPosition, routeCoordinates, scheduleType]);
 
 
     // ------------------------------------
     // Depois do Embarque
     // ------------------------------------
     useEffect(() => {
-        if (legsInfo.length > 0 && selectedStudent && studentPosition !== null && studentPosition < 0 && routeCoordinates.length > 0) {
-          let studentLegIndex = legsInfo.findIndex(leg => leg.point_id === selectedStudent.point_id);
-          const legsToSchool = legsInfo.slice(studentLegIndex + 1);
-          const relevantCoords = extractCoordinatesFromLegs(legsToSchool);
-          setRelevantRouteCoordinates(relevantCoords);
+        if (
+            legsInfo.length > 0 &&
+            selectedStudent &&
+            (studentPosition === null || studentPosition === undefined) &&
+            routeCoordinates.length > 0 &&
+            scheduleType !== null
+        ) {
+            if (scheduleType === 1) {
+                // "Ida" route, student has been picked up, show route to school
+                let studentLegIndex = legsInfo.findIndex(leg => leg.point_id === selectedStudent.point_id);
+                if (studentLegIndex !== -1) {
+                    const legsToSchool = legsInfo.slice(studentLegIndex + 1);
+                    const relevantCoords = extractCoordinatesFromLegs(legsToSchool);
+                    setRelevantRouteCoordinates(relevantCoords);
+                }
+            } else if (scheduleType === 2) {
+                // "Volta" route, student has been delivered, do not show route or driver's location
+                setRelevantRouteCoordinates([]);
+                setMotoristaLoc(null);
+            }
         }
-    }, [legsInfo, selectedStudent, studentPosition, routeCoordinates]);
+    }, [legsInfo, selectedStudent, studentPosition, routeCoordinates, scheduleType]);
 
 
     // ------------------------------------
@@ -597,25 +600,26 @@ const MapaResponsavel = ({ navigation }) => {
                 </View>
             )}
             </View>
-                <View style={styles.footer}>
-                    <View style={styles.infoCard}>
-                        <View style={styles.infoCardNextStop}>
-                        {studentPosition !== null && studentPosition >= 0 && (
-                            // Aluno ainda não embarcado
-                            <>
-                            <Text style={styles.infoCardTitle}>Chegada na residência:</Text>
-                            {etaToStudent && (
-                                <Text style={styles.infoCardText}>
-                                {etaToStudent.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                                </Text>
-                            )}
-                            <Text style={styles.infoCardTitle2}>
-                                {`${studentPosition} aluno(s) até a chegada`}
+            <View style={styles.footer}>
+                <View style={styles.infoCard}>
+                    <View style={styles.infoCardNextStop}>
+                    {(studentPosition !== null && studentPosition !== undefined) ? (
+                        <>
+                        {/* Student has not been picked up/delivered yet */}
+                        <Text style={styles.infoCardTitle}>Chegada na residência:</Text>
+                        {etaToStudent && (
+                            <Text style={styles.infoCardText}>
+                            {etaToStudent.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                             </Text>
-                            </>
                         )}
-                        {studentPosition !== null && studentPosition < 0 && (
-                            // Aluno já embarcado
+                        <Text style={styles.infoCardTitle2}>
+                            {`${studentPosition} aluno(s) até a chegada`}
+                        </Text>
+                        </>
+                    ) : (
+                        <>
+                        {scheduleType === 1 && (
+                            // "Ida" route, student has been picked up
                             <>
                             <Text style={styles.infoCardTitle}>Chegada na escola:</Text>
                             {etaToSchool && (
@@ -623,12 +627,18 @@ const MapaResponsavel = ({ navigation }) => {
                                 {etaToSchool.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                 </Text>
                             )}
-                        </>
+                            </>
                         )}
-                        {(studentPosition === null || studentPosition === undefined) && (
-                            // Quando studentPosition é undefined ou null
+                        {scheduleType === 2 && (
+                            // "Volta" route, student has been delivered
+                            <Text style={styles.infoCardTitle}>Não existem viagens no momento com o aluno {selectedStudent.name}</Text>
+                        )}
+                        {scheduleType === null && (
+                            // scheduleType not available yet
                             <Text style={styles.infoCardTitle}>Carregando informações...</Text>
                         )}
+                        </>
+                    )}
                     </View>
                 </View>
             </View>
