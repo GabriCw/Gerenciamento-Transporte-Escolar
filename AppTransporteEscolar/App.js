@@ -20,6 +20,7 @@ const App = () => {
   LogBox.ignoreLogs([
     'Found screens with the same name nested inside one another',
   ]);
+  LogBox.ignoreAllLogs();
 
   return (
     <AuthProvider>
