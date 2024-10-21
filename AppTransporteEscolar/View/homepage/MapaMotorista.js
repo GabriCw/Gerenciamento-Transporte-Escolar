@@ -171,7 +171,7 @@ const MapaMotorista = ({ navigation }) => {
                 (location) => {
                     const { latitude, longitude, heading, speed } = location.coords;
 
-                    if (speed >= 0) {
+                    if (speed >= 0.5) {
                         setUserLocation({ latitude, longitude });
                         setRegion({
                             latitude,
@@ -360,7 +360,8 @@ const MapaMotorista = ({ navigation }) => {
                     orderedPointIdsList,
                     allEtas,
                     overviewPolylinePoints: route.overview_polyline.points,
-                    legs: route.legs
+                    legs: route.legs,
+                    orderedWaypoints // Adicionado
                 };
 
             } else {
@@ -440,8 +441,8 @@ const MapaMotorista = ({ navigation }) => {
                 }
 
                 setCurrentStudentIndex(0);
-                const { orderedPointIdsList, allEtas, overviewPolylinePoints, legs } = await throttledCalculateRoute(waypointsToUse, userLocation, routeType);
-                await handleStartSchedule(orderedPointIdsList, allEtas, overviewPolylinePoints, legs);
+                const { orderedPointIdsList, allEtas, overviewPolylinePoints, legs, orderedWaypoints } = await throttledCalculateRoute(waypointsToUse, userLocation, routeType);
+                await handleStartSchedule(orderedPointIdsList, allEtas, overviewPolylinePoints, legs, orderedWaypoints);
                 setRouteOngoing(true);
                 setStartButton(false);
                 console.log(`Rota iniciada! Na escola ${selectedSchool} com o veículo ${selectedCar}`);
@@ -595,7 +596,7 @@ const MapaMotorista = ({ navigation }) => {
         }
     };
 
-    const handleStartSchedule = async (orderedPointIdsList, allEtas, overviewPolylinePoints, legs) => {
+    const handleStartSchedule = async (orderedPointIdsList, allEtas, overviewPolylinePoints, legs, orderedWaypoints) => {
         const endDate = new Date(Date.now() + totalDuration * 1000);
         const formattedEndDate = endDate.toISOString();
         const formattedEndDateWithoutMilliseconds = formattedEndDate.split('.')[0];
@@ -603,10 +604,25 @@ const MapaMotorista = ({ navigation }) => {
         console.log('List:');
         console.log(orderedPointIdsList);
 
-        const legsInfo = legs.map(leg => ({
-            start_location: leg.start_location,
-            end_location: leg.end_location
-        }));
+        const legsInfo = legs.map((leg, index) => {
+            let point_id = null;
+        
+            // Verificar se existe um waypoint correspondente
+            if (index < orderedWaypoints.length) {
+                point_id = orderedWaypoints[index].point_id || null;
+            }
+            
+            return {
+                start_location: leg.start_location,
+                end_location: leg.end_location,
+                duration: leg.duration, // Adicionado
+                point_id: point_id
+            };
+        });
+
+        console.log('Legs Info:', JSON.stringify(legsInfo));
+        console.log('Encoded',overviewPolylinePoints.toString())
+
         const body = {
             user_id: userData.id,
             schedule_id: scheduleId,
