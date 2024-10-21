@@ -92,7 +92,6 @@ const MapaMotorista = ({ navigation }) => {
     const [isLoadingStartRoute, setIsLoadingStartRoute] = useState(false);
     const [isLoadingEndRoute, setIsLoadingEndRoute] = useState(false);
 
-
     useEffect(() => {
         const fetchUserDetails = async () => {
             const response = await getUserDetails(userData.id);
@@ -172,7 +171,7 @@ const MapaMotorista = ({ navigation }) => {
                 (location) => {
                     const { latitude, longitude, heading, speed } = location.coords;
 
-                    if (speed >= 0.5) {
+                    if (speed >= 0) {
                         setUserLocation({ latitude, longitude });
                         setRegion({
                             latitude,
@@ -185,9 +184,9 @@ const MapaMotorista = ({ navigation }) => {
                         if (routePointsRef.current.length > 0 && { latitude, longitude }) {
                             const distanceToRoute = calculateDistanceToRoute(latitude, longitude);
                             console.log('Distância para a rota:', distanceToRoute);
+                            
                             if (distanceToRoute > recalculateThreshold) {
-                                throttledCalculateRoute(waypoints, { latitude, longitude });
-
+                                throttledCalculateRoute(waypoints, { latitude, longitude }, routeType);
                             }
                         }
                     }
@@ -202,7 +201,7 @@ const MapaMotorista = ({ navigation }) => {
                 locationSubscription.remove();
             }
         };
-    }, []);
+    }, [routeType]);
 
     // Atualização da função calculateRoute
     const calculateRoute = async (stateWaypoints, currentLocation, routeType) => {
@@ -216,15 +215,15 @@ const MapaMotorista = ({ navigation }) => {
                 point_id: wp.point.id,
             };
         });
-    
+
         let origin, destination;
         let waypointsString = waypoints.map(point => `${point.latitude},${point.longitude}`).join('|');
-    
+
         if (routeType === 1) {
             // Origem é a localização atual do motorista, destino é a escola
             origin = `${currentLocation.latitude},${currentLocation.longitude}`;
             destination = `${schoolInfo.lat},${schoolInfo.lng}`;
-    
+
             if (waypoints.length === 0) {
                 waypointsString = '';
             } else if (waypoints.length === 1) {
@@ -233,16 +232,16 @@ const MapaMotorista = ({ navigation }) => {
         } else if (routeType === 2) {
             // Origem é a escola, destino é o último aluno
             origin = `${schoolInfo.lat},${schoolInfo.lng}`;
-    
+
             if (!selectedDestinationPoint) {
                 Alert.alert('Erro', 'Destino não selecionado.');
                 setLoadingRoute(false);
                 return;
             }
             destination = `${selectedDestinationPoint.latitude},${selectedDestinationPoint.longitude}`;
-    
+
             const selectedWaypoints = waypoints.filter(wp => selectedStudents.includes(wp.point_id));
-    
+
             if (selectedWaypoints.length === 0) {
                 Alert.alert('Aviso', 'Nenhum aluno selecionado para a rota de volta.');
                 setLoadingRoute(false);
@@ -254,70 +253,57 @@ const MapaMotorista = ({ navigation }) => {
                 waypointsString = selectedWaypoints.map(point => `${point.latitude},${point.longitude}`).join('|');
                 destination = '';
             }
-    
+
             waypoints.splice(0, waypoints.length, ...selectedWaypoints);
         }
-    
+
         const url = `https://maps.googleapis.com/maps/api/directions/json?origin=${origin}&destination=${destination || origin}&waypoints=optimize:true|${waypointsString}&key=${apiKey}&overview=full`;
-    
+
         try {
             setLoadingRoute(true);
             const response = await axios.get(url);
             console.log('Response:', response.data);
-    
-            console.log('-------- Waypoints Info --------')
-            console.log(waypoints)
-    
+            console.log('Waypoints para a rota:', waypoints);
+
             if (response.data.routes && response.data.routes.length) {
                 const route = response.data.routes[0];
-    
+
                 if (!route.legs || route.legs.length === 0) {
                     console.log('No legs found in the route.');
                     Alert.alert('Erro', 'Não foi possível calcular a rota.');
                     return;
                 }
-    
+
                 const decodedPolyline = polyline.decode(route.overview_polyline.points).map(point => ({
                     latitude: point[0],
                     longitude: point[1],
                 }));
-    
+
                 setEncodedRoutePoints(route.overview_polyline.points);
                 setRoutePoints(decodedPolyline);
-    
+                setRouteLegs(route.legs);
+
                 const optimizedOrder = route.waypoint_order || [];
                 setWaypointOrder(optimizedOrder);
-    
+
                 let orderedWaypoints = [];
                 let orderedPointIdsList = [];
-    
+
                 if (routeType === 1) {
                     if (waypoints.length > 1) {
                         orderedWaypoints = [
                             ...optimizedOrder.map(i => waypoints[i]),
-                            {
-                                name: schoolInfo.name,
-                                latitude: schoolInfo.lat,
-                                longitude: schoolInfo.lng,
-                                isDestination: true,
-                                point_id: schoolInfo.point_id || null // Adicione o point_id da escola, se disponível
-                            }
+                            { name: schoolInfo.name, latitude: schoolInfo.lat, longitude: schoolInfo.lng, isDestination: true }
                         ];
-                        orderedPointIdsList = optimizedOrder.map(i => waypoints[i].point_id);
+                        orderedPointIdsList = optimizedOrder.map(i => waypoints[i].point_id)
                     } else {
                         orderedWaypoints = [
                             ...waypoints,
-                            {
-                                name: schoolInfo.name,
-                                latitude: schoolInfo.lat,
-                                longitude: schoolInfo.lng,
-                                isDestination: true,
-                                point_id: schoolInfo.point_id || null
-                            }
+                            { name: schoolInfo.name, latitude: schoolInfo.lat, longitude: schoolInfo.lng, isDestination: true }
                         ];
-                        orderedPointIdsList = waypoints.map(wp => wp.point_id);
+                        orderedPointIdsList = waypoints.map(wp => wp.point_id)
                     }
-    
+
                 } else if (routeType === 2) {
                     if (waypoints.length > 1) {
                         orderedWaypoints = [
@@ -345,34 +331,12 @@ const MapaMotorista = ({ navigation }) => {
                         orderedPointIdsList = waypoints.map(wp => wp.point_id);
                     }
                 }
-    
+
                 setOptimizedWaypoints(orderedWaypoints);
                 setOrderedPointIds(orderedPointIdsList);
-    
-                // Mapear os legs para incluir o point_id associado
-                const legsWithInfo = route.legs.map((leg, index) => {
-                    let associatedWaypoint = null;
-    
-                    // O leg na posição 'index' vai para o waypoint na posição 'index' em orderedWaypoints
-                    if (index < orderedWaypoints.length) {
-                        associatedWaypoint = orderedWaypoints[index];
-                    }
-    
-                    return {
-                        start_location: leg.start_location,
-                        end_location: leg.end_location,
-                        distance: leg.distance,
-                        duration: leg.duration,
-                        point_id: associatedWaypoint ? associatedWaypoint.point_id : null,
-                        isDestination: associatedWaypoint ? associatedWaypoint.isDestination : false,
-                    };
-                });
-    
-                // Atualizar o estado com os legs enriquecidos
-                setRouteLegs(legsWithInfo);
-    
-                updateNextWaypointDetails(currentStudentIndex, legsWithInfo, orderedWaypoints);
-    
+
+                updateNextWaypointDetails(currentStudentIndex, route.legs, orderedWaypoints);
+
                 const allEtas = [];
                 let cumulativeDuration = 0;
                 for (let leg of route.legs) {
@@ -381,29 +345,29 @@ const MapaMotorista = ({ navigation }) => {
                     allEtas.push(eta.toISOString());
                 }
                 setEtas(allEtas);
-    
+
                 setTotalDuration(route.legs.reduce((acc, leg) => acc + leg.duration.value, 0));
                 setTotalDistance(route.legs.reduce((acc, leg) => acc + leg.distance.value, 0));
-    
+
                 if (route.legs.length >= 0) {
-                    updateNextWaypointDetails(currentStudentIndex, legsWithInfo, orderedWaypoints);
+                    updateNextWaypointDetails(currentStudentIndex, route.legs, orderedWaypoints);
                 }
-    
+
                 const mapsUrl = `https://www.google.com/maps/dir/?api=1&origin=${origin}&destination=${destination || origin}&waypoints=${waypointsString.replace(/\|/g, '%7C')}`;
                 setMapsUrl(mapsUrl);
-    
+
                 return {
                     orderedPointIdsList,
                     allEtas,
                     overviewPolylinePoints: route.overview_polyline.points,
-                    legs: legsWithInfo // Retornar legsWithInfo em vez de route.legs
+                    legs: route.legs
                 };
-    
+
             } else {
                 console.log('Nenhuma rota encontrada.');
                 Alert.alert('Erro', 'Não foi possível calcular a rota.');
             }
-    
+
         } catch (error) {
             console.error(`Erro ao buscar direções: ${error.message || error}`);
             Alert.alert('Erro', 'Não foi possível calcular a rota.');
@@ -411,7 +375,6 @@ const MapaMotorista = ({ navigation }) => {
             setLoadingRoute(false);
         }
     };
-    
 
     const throttledCalculateRoute = throttle(calculateRoute, 30000);
 
@@ -468,14 +431,14 @@ const MapaMotorista = ({ navigation }) => {
         try {
             if (routeType === 1 || (routeType === 2 && selectedStudents.length > 0 && selectedDestinationPoint)) {
                 setShowDropdowns(false);
-    
+
                 let waypointsToUse = waypoints;
                 if (routeType === 2) {
                     waypointsToUse = waypoints.filter(wp => {
                         return wp.student.some(student => selectedStudents.includes(student.point_id));
                     });
                 }
-    
+
                 setCurrentStudentIndex(0);
                 const { orderedPointIdsList, allEtas, overviewPolylinePoints, legs } = await throttledCalculateRoute(waypointsToUse, userLocation, routeType);
                 await handleStartSchedule(orderedPointIdsList, allEtas, overviewPolylinePoints, legs);
@@ -589,11 +552,11 @@ const MapaMotorista = ({ navigation }) => {
                 school_id: schoolId,
                 schedule_type: routeType
             };
-    
+
             const response = await createSchedule(body);
-    
+
             console.log('Response Create Schedule:', response.data);
-    
+
             if (response.status === 201) {
                 console.log('Schedule criado com sucesso');
                 const data = response.data;
@@ -602,9 +565,9 @@ const MapaMotorista = ({ navigation }) => {
                 setWaypoints(data.points);
                 console.log('Waypoints:', data.points);
                 console.log('School:', data.school);
-    
+
                 setShowDropdowns(false);
-    
+
                 if (routeType === 2) {
                     setShowDestinationSelection(true);
                 } else {
@@ -636,9 +599,14 @@ const MapaMotorista = ({ navigation }) => {
         const endDate = new Date(Date.now() + totalDuration * 1000);
         const formattedEndDate = endDate.toISOString();
         const formattedEndDateWithoutMilliseconds = formattedEndDate.split('.')[0];
-    
-        const legsInfoJson = JSON.stringify(legs);
-    
+
+        console.log('List:');
+        console.log(orderedPointIdsList);
+
+        const legsInfo = legs.map(leg => ({
+            start_location: leg.start_location,
+            end_location: leg.end_location
+        }));
         const body = {
             user_id: userData.id,
             schedule_id: scheduleId,
@@ -646,18 +614,18 @@ const MapaMotorista = ({ navigation }) => {
             end_date: formattedEndDateWithoutMilliseconds,
             points: orderedPointIdsList,
             encoded_points: overviewPolylinePoints.toString(),
-            legs_info: legsInfoJson,
+            legs_info: JSON.stringify(legsInfo),
             eta: allEtas.toString(),
             destiny_id: selectedDestination
         };
         console.log('Body:', body);
-    
+
         const response = await startSchedule(body);
-    
+
         if (response.status === 200) {
             console.log('Schedule iniciado com sucesso');
         } else {
-            console.error(`${response.status} Erro ao iniciar o schedule:`, response.data);
+            console.error('Erro ao iniciar o schedule:', response.data);
         }
     };
 
@@ -811,9 +779,9 @@ const MapaMotorista = ({ navigation }) => {
 
         if (schoolInfo) {
             options.push({
-                id: 'school',
-                name: 'Escola',
-                description: schoolInfo.name,
+                id: schoolInfo.id,
+                name: schoolInfo.name,
+                description: schoolInfo.description,
                 latitude: schoolInfo.lat,
                 longitude: schoolInfo.lng,
             });
@@ -1253,4 +1221,4 @@ const MapaMotorista = ({ navigation }) => {
     );
 }
 
-export default MapaMotorista;
+export default MapaMotorista
