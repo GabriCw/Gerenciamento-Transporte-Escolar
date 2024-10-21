@@ -452,23 +452,16 @@ const MapaResponsavel = ({ navigation }) => {
             legsInfo.length > 0 &&
             selectedStudent &&
             studentPosition !== null &&
-            studentPosition >= 0 &&
             routeCoordinates.length > 0 &&
             scheduleType !== null
         ) {
-            if (scheduleType === 1) {
-                // "Ida" route, student has not been picked up yet
-                const legsToStudent = legsInfo.slice(0, studentPosition + 1);
+            let studentLegIndex = legsInfo.findIndex(
+                leg => leg.point_id === selectedStudent.point_id
+            );
+            if (studentLegIndex !== -1) {
+                const legsToStudent = legsInfo.slice(0, studentLegIndex + 1);
                 const relevantCoords = extractCoordinatesFromLegs(legsToStudent);
                 setRelevantRouteCoordinates(relevantCoords);
-            } else if (scheduleType === 2) {
-                // "Volta" route, student has not been delivered yet
-                let studentLegIndex = legsInfo.findIndex(leg => leg.point_id === selectedStudent.point_id);
-                if (studentLegIndex !== -1) {
-                    const legsToStudent = legsInfo.slice(0, studentLegIndex + 1);
-                    const relevantCoords = extractCoordinatesFromLegs(legsToStudent);
-                    setRelevantRouteCoordinates(relevantCoords);
-                }
             }
         }
     }, [legsInfo, selectedStudent, studentPosition, routeCoordinates, scheduleType]);
@@ -558,14 +551,6 @@ const MapaResponsavel = ({ navigation }) => {
                                 strokeColor="orange"
                             />
                         )}
-
-                        {/* {routeCoordinates.length > 0 && (
-                            <Polyline
-                                coordinates={routeCoordinates}
-                                strokeWidth={10}
-                                strokeColor="orange"
-                            />
-                        )} */}
 
                         {motoristaLoc && (
                             <Marker

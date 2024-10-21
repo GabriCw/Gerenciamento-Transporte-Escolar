@@ -171,7 +171,7 @@ const MapaMotorista = ({ navigation }) => {
                 (location) => {
                     const { latitude, longitude, heading, speed } = location.coords;
 
-                    if (speed >= 0.5) {
+                    if (speed >= 1) {
                         setUserLocation({ latitude, longitude });
                         setRegion({
                             latitude,
