@@ -22,9 +22,10 @@ const MapaResponsavel = ({ navigation }) => {
     const [selectedStudent, setSelectedStudent] = useState(null);
 
     const [residenciaAtiva, setResidenciaAtiva] = useState(null);
-    const [escola, setEscola] = useState(
-        { name: 'Mauá', latitude: -23.647438, longitude: -46.575321 }
-    )
+    // const [escola, setEscola] = useState(
+    //     { name: 'Mauá', latitude: -23.647438, longitude: -46.575321 }
+    // )
+    const [escola, setEscola] = useState(null);
     
     const [heading, setHeading] = useState(0);
     const [motoristaLoc, setMotoristaLoc] = useState(null);
@@ -136,8 +137,9 @@ const MapaResponsavel = ({ navigation }) => {
         }
         else{   
             console.log('Erro ao receber localização do motorista')
+            return null
         }
-        console.log('Localização Status:', getLocation.status)
+        // console.log('Localização Status:', getLocation.status)
     }
 
     const handleGetMapsInfos = async (schedule_id, user_id) => {
@@ -163,9 +165,40 @@ const MapaResponsavel = ({ navigation }) => {
     
             // Armazenar outras informações, se necessário
             setMapsInfos(mapsData);
+
+            // Setando escola do aluno
+            if (scheduleType === 1) {
+                const lastEndLocation = parsedLegsInfo[parsedLegsInfo.length - 1].end_location;
+                setEscola({
+                    latitude: lastEndLocation.lat,
+                    longitude: lastEndLocation.lng
+                });
+            }
+            
+            if (scheduleType === 2) {
+                const firstStartLocation = parsedLegsInfo[0].start_location;
+                setEscola({
+                    latitude: firstStartLocation.lat,
+                    longitude: firstStartLocation.lng
+                });
+            }
+
         } else {
             console.log('Erro ao receber informações da rota');
             console.log('STATUS:', getMapInfos.status);
+    
+            // Clear state variables to remove route and related information
+            setRouteCoordinates([]);
+            setLegsInfo([]);
+            setRelevantRouteCoordinates([]);
+            setMotoristaLoc(null);
+            setStudentPosition(null);
+            setEtaToStudent(null);
+            setEtaToSchool(null);
+            setScheduleId(null);
+            setScheduleType(null);
+            setEscola(null);
+            setMapsInfos(null);
         }
     };
 
@@ -230,7 +263,6 @@ const MapaResponsavel = ({ navigation }) => {
         }
     }, [selectedStudent]);
 
-
     const handlePickerChange = (itemValue) => {
         setSelectedStudent(itemValue);
     };
@@ -262,9 +294,15 @@ const MapaResponsavel = ({ navigation }) => {
     
         const updateLocation = async () => {
             const lastCoord = await requestLocation();
-            updateRegion({latitude: lastCoord.lat, longitude: lastCoord.lng}, residenciaAtiva, 1000);
-            setMotoristaLoc({latitude: lastCoord.lat, longitude: lastCoord.lng});
-            // console.log('------ MOTORISTA LOC:', lastCoord)
+
+            if (lastCoord) {
+                console.log('last coord: ', lastCoordinate.lat, lastCoordinate.lng);
+                setMotoristaLoc({ latitude: lastCoordinate.lat, longitude: lastCoordinate.lng });
+                updateRegion({ latitude: lastCoordinate.lat, longitude: lastCoordinate.lng }, residenciaAtiva, 1000);
+            } else {
+                // Clear the driver's location if there's no active schedule
+                setMotoristaLoc(null);
+            }
         };
     
         updateLocation();
@@ -282,7 +320,7 @@ const MapaResponsavel = ({ navigation }) => {
     
             requestMapsInfos();
         }
-    }, [clock, scheduleId, userData.id]);
+    }, [clock, scheduleId, userData.id, studentPosition]);
 
     
     // ------------------------------------------------------
@@ -291,21 +329,20 @@ const MapaResponsavel = ({ navigation }) => {
 
     useEffect(() => {
         const requestStudentPosition = async () => {
-          const studentPositionRes = await handleGetStudentPosition(scheduleId, userData.id);
-        //   console.log('Posição na fila:', studentPositionRes);
-      
-          if (studentPositionRes !== null && studentPositionRes !== undefined) {
-            setStudentPosition(studentPositionRes);
-            lastValidStudentPosition.current = studentPositionRes; // Atualiza o último valor válido
-          } else if (lastValidStudentPosition.current !== null) {
-            // Mantém o último valor válido
-            setStudentPosition(lastValidStudentPosition.current);
-          }
-          // Caso contrário, não atualiza o estado
+            const studentPositionRes = await handleGetStudentPosition(scheduleId, userData.id);
+    
+            if (studentPositionRes !== null && studentPositionRes !== undefined) {
+                setStudentPosition(studentPositionRes);
+                lastValidStudentPosition.current = studentPositionRes; // Update the last valid value
+            } else {
+                // Student has been picked up or delivered
+                setStudentPosition(null);
+                lastValidStudentPosition.current = null;
+            }
         };
-      
+    
         if (scheduleId && userData.id) {
-          requestStudentPosition();
+            requestStudentPosition();
         }
     }, [clock, scheduleId, userData.id]);
 
@@ -588,42 +625,45 @@ const MapaResponsavel = ({ navigation }) => {
             <View style={styles.footer}>
                 <View style={styles.infoCard}>
                     <View style={styles.infoCardNextStop}>
-                    {(studentPosition !== null && studentPosition !== undefined) ? (
-                        <>
-                        {/* Student has not been picked up/delivered yet */}
-                        <Text style={styles.infoCardTitle}>Chegada na residência:</Text>
-                        {etaToStudent && (
-                            <Text style={styles.infoCardText}>
-                            {etaToStudent.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                        {scheduleId === null ? (
+                            // No active schedule
+                            <Text style={styles.infoCardTitle}>
+                                Não existem viagens no momento com o aluno {selectedStudent?.name || ''}
                             </Text>
+                        ) : (
+                            // Existing schedule logic
+                            (studentPosition !== null && studentPosition !== undefined) ? (
+                                <>
+                                    {/* Student has not been picked up/delivered yet */}
+                                    <Text style={styles.infoCardTitle}>Chegada na residência:</Text>
+                                    {etaToStudent && (
+                                        <Text style={styles.infoCardText}>
+                                            {etaToStudent.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                        </Text>
+                                    )}
+                                    <Text style={styles.infoCardTitle2}>
+                                        {`${studentPosition} aluno(s) até a chegada`}
+                                    </Text>
+                                </>
+                            ) : (
+                                scheduleType === 1 ? (
+                                    // "Ida" route, student has been picked up
+                                    <>
+                                        <Text style={styles.infoCardTitle}>Chegada na escola:</Text>
+                                        {etaToSchool && (
+                                            <Text style={styles.infoCardText}>
+                                                {etaToSchool.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                            </Text>
+                                        )}
+                                    </>
+                                ) : (
+                                    // "Volta" route, student has been delivered
+                                    <Text style={styles.infoCardTitle}>
+                                        Não existem viagens no momento com o aluno {selectedStudent.name}
+                                    </Text>
+                                )
+                            )
                         )}
-                        <Text style={styles.infoCardTitle2}>
-                            {`${studentPosition} aluno(s) até a chegada`}
-                        </Text>
-                        </>
-                    ) : (
-                        <>
-                        {scheduleType === 1 && (
-                            // "Ida" route, student has been picked up
-                            <>
-                            <Text style={styles.infoCardTitle}>Chegada na escola:</Text>
-                            {etaToSchool && (
-                                <Text style={styles.infoCardText}>
-                                {etaToSchool.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                                </Text>
-                            )}
-                            </>
-                        )}
-                        {scheduleType === 2 && (
-                            // "Volta" route, student has been delivered
-                            <Text style={styles.infoCardTitle}>Não existem viagens no momento com o aluno {selectedStudent.name}</Text>
-                        )}
-                        {scheduleType === null && (
-                            // scheduleType not available yet
-                            <Text style={styles.infoCardTitle}>Carregando informações...</Text>
-                        )}
-                        </>
-                    )}
                     </View>
                 </View>
             </View>
