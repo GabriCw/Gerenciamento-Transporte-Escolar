@@ -65,7 +65,7 @@ export const styles = StyleSheet.create({
     },
     infoCardNextStop: {
         flex: 1,
-        paddingTop: 10,
+        justifyContent: "center",
         alignItems: 'center',
         flexDirection: 'column'
     },
