@@ -45,7 +45,7 @@ export const styles = StyleSheet.create({
     },
     footer: {
         position: 'absolute',
-        bottom: 50,
+        bottom: 25,
         height: '15%',
         width: '100%',
         alignItems: 'center',
@@ -96,7 +96,7 @@ export const styles = StyleSheet.create({
     pickerWrapper: {
         position: 'absolute',
         flex: 1,
-        top: 50
+        top: 30
     },
     infoCardTitle2: {
         fontSize: 18,
