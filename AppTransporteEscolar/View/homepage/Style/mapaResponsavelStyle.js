@@ -96,7 +96,7 @@ export const styles = StyleSheet.create({
     pickerWrapper: {
         position: 'absolute',
         flex: 1,
-        top: 30
+        top: 40
     },
     infoCardTitle2: {
         fontSize: 18,
