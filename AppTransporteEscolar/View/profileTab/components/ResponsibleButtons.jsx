@@ -11,6 +11,14 @@ const ResponsibleButtons = ({navigation}) => {
     const handleToProfilePage = () => {
         navigation.navigate('VerPerfilMoto');
     }
+    
+    const handleToParentNotifications = () => {
+        navigation.navigate('ParentNotifications');
+    }
+    
+    const handleToHistoric = () => {
+        navigation.navigate('ResponsibleScheduleHistoric');
+    }
 
     return <KeyboardAwareScrollView
         contentContainerStyle={styles.container}
@@ -29,6 +37,16 @@ const ResponsibleButtons = ({navigation}) => {
                     icon={<FontAwesome name="child" size={"30%"} color="#fff"/>}
                     title={"Alunos"}
                     onClick={handleToStudentPage}
+                />
+                 <ButtonDefault
+                    icon={<Ionicons name="alert" size={"30%"} color="#fff" />}
+                    title={"Faltas"}
+                    onClick={handleToParentNotifications}
+                />
+                <ButtonDefault
+                    icon={<FontAwesome name="history" size={"30%"} color="#fff" />}
+                    title={"Histórico"}
+                    onClick={handleToHistoric}
                 />
             </View>
         </View>

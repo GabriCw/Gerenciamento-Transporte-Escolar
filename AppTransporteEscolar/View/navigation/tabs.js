@@ -26,6 +26,8 @@ import CreateVehicle from '../vehicle/components/CreateVehicle';
 import VehicleDetails from '../vehicle/components/VehicleDetails';
 import DriverScheduleHistoric from '../driverScheduleHistoric/DriverScheduleHistoric';
 import DriverScheduleHistoricDetails from '../driverScheduleHistoric/components/DriverScheduleHistoricDetails';
+import ResponsibleScheduleHistoric from '../responsibleScheduleHistoric/ResponsibleScheduleHistoric';
+import ResponsibleScheduleHistoricDetails from '../responsibleScheduleHistoric/components/ResponsibleScheduleHistoricDetails';
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -51,6 +53,8 @@ const PerfilRespStack = () => {
     <Stack.Screen name="ParentNotifications" component={ParentNotifications} options={{ headerShown: false }} />
     <Stack.Screen name="CreateNotification" component={CreateNotification} options={{ headerShown: false }} />
     <Stack.Screen name="PastNotificationsList" component={PastNotificationsList} options={{ headerShown: false }} />
+    <Stack.Screen name="ResponsibleScheduleHistoric" component={ResponsibleScheduleHistoric} options={{ headerShown: false }} />
+    <Stack.Screen name="ResponsibleScheduleHistoricDetails" component={ResponsibleScheduleHistoricDetails} options={{ headerShown: false }} />
   </Stack.Navigator>
 };
 
@@ -91,6 +95,8 @@ const PerfilAdminStack = () => (
     <Stack.Screen name="PastNotificationsList" component={PastNotificationsList} options={{ headerShown: false }} />
     <Stack.Screen name="DriverScheduleHistoric" component={DriverScheduleHistoric} options={{ headerShown: false }} />
     <Stack.Screen name="DriverScheduleHistoricDetails" component={DriverScheduleHistoricDetails} options={{ headerShown: false }} />
+    <Stack.Screen name="ResponsibleScheduleHistoric" component={ResponsibleScheduleHistoric} options={{ headerShown: false }} />
+    <Stack.Screen name="ResponsibleScheduleHistoricDetails" component={ResponsibleScheduleHistoricDetails} options={{ headerShown: false }} />
   </Stack.Navigator>
 );
 

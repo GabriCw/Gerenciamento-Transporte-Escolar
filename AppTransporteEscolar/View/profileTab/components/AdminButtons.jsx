@@ -28,6 +28,10 @@ const AdminButtons = ({navigation}) => {
         navigation.navigate('Schools');
     }
 
+    const handleToHistoric = () => {
+        navigation.navigate('ResponsibleScheduleHistoric');
+    }
+
     return <KeyboardAwareScrollView
         contentContainerStyle={styles.container}
         enableOnAndroid={true}
@@ -65,6 +69,11 @@ const AdminButtons = ({navigation}) => {
                     icon={<FontAwesome name="history" size={"30%"} color="#fff" />}
                     title={"Histórico"}
                     onClick={handleGoToDriverHistoric}
+                />
+                <ButtonDefault
+                    icon={<FontAwesome name="history" size={"30%"} color="#fff" />}
+                    title={"Histórico Pais"}
+                    onClick={handleToHistoric}
                 />
             </View>
         </View>

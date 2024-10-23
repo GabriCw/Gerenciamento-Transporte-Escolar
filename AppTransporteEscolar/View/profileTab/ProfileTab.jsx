@@ -48,6 +48,14 @@ const ProfileTab = () => {
         await signOut(auth);
     };
 
+    const handleProfileTabName = () => {
+        const userName = userData.name.split(" ");
+
+        if(userName.length === 1) return userName[0];
+
+        return `${userName[0]} ${userName[userName.length - 1]}`
+    };
+
     return (
         <View style={styles.view}>
             <View style={styles.container}>
@@ -55,7 +63,7 @@ const ProfileTab = () => {
                     <View style={styles.perfilBox}>
                         <FontAwesome name="user" size={40} color="#000" style={{marginLeft:10, marginRight:25}} />
                         <View>
-                            <Text style={[styles.text, {marginLeft:5}]}>{userData.name.split(" ")[0]} {userData.name.split(" ")[userData.name.split(" ").length - 1]}</Text>
+                            <Text style={[styles.text, {marginLeft:5}]}>{handleProfileTabName()}</Text>
                             <Text style={[styles.subtext, {marginLeft:5}]}>{currentUserConfig?.subtitle}</Text>
                         </View>
                         <Pressable style={styles.leaveIconContainer} onPress={handleLogout}>
