@@ -459,7 +459,6 @@ const MapaMotorista = ({ navigation }) => {
     const endRoute = async (schedule) => {
         setIsLoadingEndRoute(true);
         if (schedule === 1 || schedule === 2) {
-
             await handleEndSchedule();
             setRouteOngoing(false);
             setShowStudentList(false);
