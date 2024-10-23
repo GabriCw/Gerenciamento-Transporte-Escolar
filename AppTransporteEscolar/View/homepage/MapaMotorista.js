@@ -11,6 +11,7 @@ import { styles } from './Style/mapaMotoristaStyle';
 import { Button, Checkbox } from 'react-native-paper';
 import { formatDistance } from '../../utils/formatUtils';
 import { postDriverLocation, postRoutePoints, getDriverScheduleDetails, createSchedule, startSchedule, updateSchedulePoint, endSchedule } from '../../data/locationServices';
+import { getCurrentSchedules } from '../../data/scheduleServices';
 import { getUserDetails } from '../../data/userServices';
 import { getVehicleByUser } from '../../data/vehicleServices';
 import { getSchoolByDriver } from '../../data/pointServices';
@@ -589,9 +590,21 @@ const MapaMotorista = ({ navigation }) => {
         if (response.status === 200) {
             console.log('Detalhes do schedule obtidos com sucesso');
             const data = response.data;
-            setWaypoints(data.waypoints);
+            // setar aqui os estados referentes a viagem
         } else {
             console.error('Erro ao obter detalhes do schedule:', response.data);
+        }
+    };
+
+    const handleGetCurrentSchedules = async () => {
+        const response = await getCurrentSchedules(userData.id);
+
+        if (response.status === 200) {
+            console.log('Schedule do motorista obtidos com sucesso');
+            const data = response.data;
+            // setar aqui a viagem ativa, se houver
+        } else {
+            console.error('Erro ao obter Schedule do motorista:', response.data);
         }
     };
 
