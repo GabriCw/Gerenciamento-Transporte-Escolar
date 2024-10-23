@@ -93,6 +93,8 @@ const MapaMotorista = ({ navigation }) => {
     const [isLoadingStartRoute, setIsLoadingStartRoute] = useState(false);
     const [isLoadingEndRoute, setIsLoadingEndRoute] = useState(false);
 
+    
+
     useEffect(() => {
         const fetchUserDetails = async () => {
             const response = await getUserDetails(userData.id);
@@ -108,6 +110,31 @@ const MapaMotorista = ({ navigation }) => {
 
         fetchUserDetails();
     }, []);
+
+
+    useEffect(() => {
+        const checkForOngoingSchedule = async () => {
+            const response = await handleGetCurrentSchedules();
+    
+            if (response && response.id) {
+                console.log('Ongoing schedule found:', response);
+                setScheduleId(response.id);
+                setRouteType(response.schedule_type_id);
+                setStartButton(false);
+                setRouteOngoing(true);
+    
+                // Fetch detailed schedule information
+                await fetchScheduleDetails(response.id);
+            } else {
+                console.log('No ongoing schedule found.');
+                // Show start route buttons if there's no ongoing schedule
+                setStartButton(true);
+            }
+        };
+    
+        checkForOngoingSchedule();
+    }, []);
+
 
     useEffect(() => {
         const initializeLocation = async () => {
@@ -429,6 +456,10 @@ const MapaMotorista = ({ navigation }) => {
     };
 
     const startRoute = async () => {
+        if (routeOnGoing) {
+            Alert.alert('Aviso', 'Já existe uma rota em andamento.');
+            return;
+        }
         setIsLoadingStartRoute(true);
         try {
             if (routeType === 1 || (routeType === 2 && selectedStudents.length > 0 && selectedDestinationPoint)) {
@@ -584,27 +615,95 @@ const MapaMotorista = ({ navigation }) => {
         }
     };
 
-    const fetchScheduleDetails = async () => {
-        const response = await getDriverScheduleDetails(scheduleId);
-
+    const fetchScheduleDetails = async (scheduleIdParam) => {
+        const response = await getDriverScheduleDetails(scheduleIdParam || scheduleId);
+    
         if (response.status === 200) {
-            console.log('Detalhes do schedule obtidos com sucesso');
+            console.log('Schedule details obtained successfully');
             const data = response.data;
-            // setar aqui os estados referentes a viagem
+    
+            // Update necessary state variables
+            setSchoolInfo(data.schedule.school); // Assuming schedule has a school object
+            setWaypoints(data.points);
+            setVehicleId(data.vehicle.id);
+            setVehicleValue(data.vehicle.id);
+            setSelectedCar(data.vehicle.id);
+            setSchoolId(data.schedule.school_id); // Assuming schedule has a school_id
+            setSchoolValue(data.schedule.school_id);
+            setSelectedSchool(data.schedule.school_id);
+            setRouteType(data.schedule.schedule_type_id);
+    
+            // Reconstruct the route and waypoints
+            await reconstructRouteFromSchedule(data);
+    
         } else {
-            console.error('Erro ao obter detalhes do schedule:', response.data);
+            console.error('Error obtaining schedule details:', response.data);
         }
+    };
+
+    const reconstructRouteFromSchedule = async (data) => {
+        // Extract the necessary information
+        const orderedPointIdsList = data.points.map(point => point.point.id);
+        const legsInfo = JSON.parse(data.schedule.legs_info);
+        const overviewPolylinePoints = data.schedule.encoded_points;
+        const allEtas = data.schedule.eta.split(',');
+    
+        // Decode the polyline to get route points
+        const decodedPolyline = polyline.decode(overviewPolylinePoints).map(point => ({
+            latitude: point[0],
+            longitude: point[1],
+        }));
+        setEncodedRoutePoints(overviewPolylinePoints);
+        setRoutePoints(decodedPolyline);
+        setRouteLegs(legsInfo);
+    
+        // Set the optimized waypoints
+        const orderedWaypoints = data.points.map(point => {
+            const studentNames = point.student.map(student => student.name).join(', ');
+            return {
+                name: studentNames || point.point.name,
+                latitude: point.point.lat,
+                longitude: point.point.lng,
+                point_id: point.point.id,
+                isDestination: point.point.point_type_id === 2, // Assuming 2 indicates destination (school)
+            };
+        });
+        setOptimizedWaypoints(orderedWaypoints);
+    
+        // Determine current student index based on the status of points
+        let currentIndex = 0;
+        for (let i = 0; i < data.points.length; i++) {
+            if (data.points[i].status.has_embarked !== null) {
+                currentIndex = i + 1;
+            } else {
+                break;
+            }
+        }
+        setCurrentStudentIndex(currentIndex);
+    
+        // Update next waypoint details
+        updateNextWaypointDetails(currentIndex, legsInfo, orderedWaypoints);
+    
+        // Set total duration and distance (you may need to calculate these)
+        setTotalDuration(legsInfo.reduce((acc, leg) => acc + leg.duration.value, 0));
+        setTotalDistance(legsInfo.reduce((acc, leg) => acc + leg.distance.value, 0));
+    
+        // Set other relevant state variables
+        setEtas(allEtas);
+        setShowStudentList(false);
+        setShowEndRouteButton(currentIndex >= orderedWaypoints.length);
     };
 
     const handleGetCurrentSchedules = async () => {
         const response = await getCurrentSchedules(userData.id);
 
         if (response.status === 200) {
-            console.log('Schedule do motorista obtidos com sucesso');
+            console.log('Current schedules obtained successfully');
             const data = response.data;
-            // setar aqui a viagem ativa, se houver
+            return data; // Return the schedule data
         } else {
-            console.error('Erro ao obter Schedule do motorista:', response.data);
+            console.error('Error obtaining current schedules:', response.data);
+            return null;
         }
     };
 
@@ -945,7 +1044,7 @@ const MapaMotorista = ({ navigation }) => {
             )}
 
             {/* ---------- CARD IDA VOLTA ---------- */}
-            {startButton && region && (
+            {startButton && !routeOnGoing && region && (
                 <View>
                     {/* Show "IDA ESCOLA" and "VOLTA ESCOLA" buttons if no other selection is active */}
                     {!showDropdowns && !showStudentList && !showDestinationSelection && (
@@ -1196,7 +1295,7 @@ const MapaMotorista = ({ navigation }) => {
             }
 
             {/* ---------- CARD ALUNO ENTREGUE ---------- */}
-            {waypointProximity && currentStudentIndex < optimizedWaypoints.length && (
+            {currentStudentIndex < optimizedWaypoints.length && (
                 <View style={styles.deliveredCardPosition}>
                     <View style={styles.deliveredCardContent}>
                         <Text style={styles.deliveredCardText}>
