@@ -1,6 +1,6 @@
 import 'react-native-gesture-handler';
 import * as React from 'react';
-import { NavigationContainer } from '@react-navigation/native';
+import { DefaultTheme, NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import Toast from 'react-native-toast-message';
 import TelaLogin from "./View/login/TelaLogin"
@@ -22,9 +22,14 @@ const App = () => {
   ]);
   LogBox.ignoreAllLogs();
 
+  const lightTheme = {
+    background: '#ffffff',
+    text: '#000000',
+  };
+
   return (
     <AuthProvider>
-      <PaperProvider>
+      <PaperProvider theme={lightTheme}>
         <NavigationContainer>
           <Stack.Navigator initialRouteName="Login">
             <Stack.Screen name="Login" component={TelaLogin} options={{ headerShown: false }}/>

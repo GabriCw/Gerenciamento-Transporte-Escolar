@@ -1,10 +1,11 @@
-import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Pressable, ScrollView, StyleSheet, Text, View,Image } from "react-native";
 import PageDefault from "../../../components/pageDefault/PageDefault";
 import MapView, { Marker, Polyline } from "react-native-maps";
 import { useEffect, useRef, useState } from "react";
 import moment from "moment";
 import { FontAwesome, FontAwesome5, MaterialCommunityIcons } from "@expo/vector-icons";
 import { Button } from "react-native-paper";
+import { getPinImage } from "../../../utils/getPinImage";
 
 const ResponsibleScheduleHistoricDetails = ({route}) => {
     
@@ -70,8 +71,12 @@ const ResponsibleScheduleHistoricDetails = ({route}) => {
                             strokeWidth={5}
                         />
 
-                        <Marker coordinate={{latitude: details.point.point.lat, longitude: details.point.point.lng}} />  
-                        
+                        <Marker coordinate={{latitude: details.point.point.lat, longitude: details.point.point.lng}}>
+                            <Image
+                                source={getPinImage(0)}
+                                style={{ width: 30, height: 30 }}
+                            />
+                        </Marker>
                     </MapView>
                     :
                     null

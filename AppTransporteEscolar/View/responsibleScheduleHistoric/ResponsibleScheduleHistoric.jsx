@@ -31,8 +31,6 @@ const ResponsibleScheduleHistoric = () => {
 
         if(list.status === 200){
             setListByDate(list.data);
-
-            console.log(list.data.map(item => item.schedule.id));
         }
         else{
             setErrorMessage(list.data.detail);
