@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useState } from 'react';
-import { View, StyleSheet, Text, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { View, Image, StyleSheet, Text, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { TextInput, Button } from 'react-native-paper';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import Toast from 'react-native-toast-message';
@@ -7,6 +7,7 @@ import { signInWithEmailAndPassword, onAuthStateChanged } from '@firebase/auth';
 import {auth} from "../../firebase/firebase";
 import { getUserByEmail } from '../../data/userServices';
 import { AuthContext } from '../../providers/AuthProvider';
+import MonitoraLogo from '../../assets/Logo/laranja-branco-pinbranco.png';
 
 const TelaLogin = ({ navigation }) => {
     const {handleGenerateToken, handleVerifyStudent, handleGetUserDetails} = useContext(AuthContext);
@@ -76,7 +77,13 @@ const TelaLogin = ({ navigation }) => {
             enableOnAndroid={true}
             extraScrollHeight={20}
             keyboardShouldPersistTaps="handled"
-        >   
+        >
+        <View style={styles.logoWrapper}>
+            <Image
+                source={MonitoraLogo}
+                style={styles.logo}
+            />
+        </View>
         <View style= {styles.principalContainer}>
             <View style={styles.container}>
                 <Text style={styles.title}>Seja bem vindo!</Text>
@@ -124,14 +131,25 @@ const TelaLogin = ({ navigation }) => {
 };
 
 const styles = StyleSheet.create({
+    logoWrapper:{
+        marginTop: 85,
+        marginBottom: 35,
+    },
+    logo:{
+        width: 150,
+        height: 150,
+        alignSelf: 'center',
+        justifyContent:'center',
+        alignItems: 'center',
+    },
     principalContainer: {
         flex: 1,
         backgroundColor: '#090833',
     },
     container: {
         flex: 1,
-        justifyContent: 'center',
-        padding: 20,
+        justifyContent: 'flex-start',
+        paddingHorizontal: 20,
         backgroundColor: '#090833',
     },
     title: {

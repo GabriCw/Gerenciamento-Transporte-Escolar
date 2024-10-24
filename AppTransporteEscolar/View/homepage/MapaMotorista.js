@@ -229,7 +229,8 @@ const MapaMotorista = ({ navigation }) => {
     }, [routeType]);
 
     // Atualização da função calculateRoute
-    const calculateRoute = async (stateWaypoints, currentLocation, routeType, backend=false) => {
+    const calculateRoute = async (stateWaypoints, currentLocation, routeType, backend=false, schoolInfoParam=schoolInfo, selectedDestinationPointParam=selectedDestinationPoint) => {
+        console.log('Entrou no calculate Route...');
         // Mapear waypoints com seus dados
         const waypoints = stateWaypoints.map((wp) => {
             const studentNames = wp.student.map(student => student.name).join(', ');
@@ -242,13 +243,19 @@ const MapaMotorista = ({ navigation }) => {
         });
 
         console.log('Chegou aquii no caluclate Route. Route Type:', routeType);
+        console.log('Current Location Inside CalculateRoute:', currentLocation);
+        console.log('Current waypoints:', stateWaypoints);
+        console.log('Current School Info:', schoolInfoParam);
+        console.log('Current selectedDestinationPoint:', selectedDestinationPointParam);
+
+        
         let origin, destination;
         let waypointsString = waypoints.map(point => `${point.latitude},${point.longitude}`).join('|');
 
         if (routeType === 1) {
             // Origem é a localização atual do motorista, destino é a escola
             origin = `${currentLocation.latitude},${currentLocation.longitude}`;
-            destination = `${schoolInfo.lat},${schoolInfo.lng}`;
+            destination = `${schoolInfoParam.lat},${schoolInfoParam.lng}`;
 
             if (waypoints.length === 0) {
                 waypointsString = '';
@@ -258,14 +265,14 @@ const MapaMotorista = ({ navigation }) => {
 
         } else if (routeType === 2) {
             // Origem é a escola, destino é o último aluno
-            origin = `${schoolInfo.lat},${schoolInfo.lng}`;
+            origin = `${schoolInfoParam.lat},${schoolInfoParam.lng}`;
 
-            if (!selectedDestinationPoint) {
+            if (!selectedDestinationPointParam) {
                 Alert.alert('Erro', 'Destino não selecionado.');
                 setLoadingRoute(false);
                 return;
             }
-            destination = `${selectedDestinationPoint.latitude},${selectedDestinationPoint.longitude}`;
+            destination = `${selectedDestinationPointParam.latitude},${selectedDestinationPointParam.longitude}`;
             
             if (!backend){
                 console.log('Entrei no Backend!!');
@@ -295,7 +302,7 @@ const MapaMotorista = ({ navigation }) => {
         try {
             setLoadingRoute(true);
             const response = await axios.get(url);
-            console.log('Response:', response.data);
+            // console.log('Response:', response.data);
             console.log('Waypoints para a rota:', waypoints);
 
             if (response.data.routes && response.data.routes.length) {
@@ -326,13 +333,13 @@ const MapaMotorista = ({ navigation }) => {
                     if (waypoints.length > 1) {
                         orderedWaypoints = [
                             ...optimizedOrder.map(i => waypoints[i]),
-                            { name: schoolInfo.name, latitude: schoolInfo.lat, longitude: schoolInfo.lng, isDestination: true }
+                            { name: schoolInfoParam.name, latitude: schoolInfoParam.lat, longitude: schoolInfoParam.lng, isDestination: true }
                         ];
                         orderedPointIdsList = optimizedOrder.map(i => waypoints[i].point_id)
                     } else {
                         orderedWaypoints = [
                             ...waypoints,
-                            { name: schoolInfo.name, latitude: schoolInfo.lat, longitude: schoolInfo.lng, isDestination: true }
+                            { name: schoolInfoParam.name, latitude: schoolInfoParam.lat, longitude: schoolInfoParam.lng, isDestination: true }
                         ];
                         orderedPointIdsList = waypoints.map(wp => wp.point_id)
                     }
@@ -342,9 +349,9 @@ const MapaMotorista = ({ navigation }) => {
                         orderedWaypoints = [
                             ...optimizedOrder.map(i => waypoints[i]),
                             {
-                                name: selectedDestinationPoint.name,
-                                latitude: selectedDestinationPoint.latitude,
-                                longitude: selectedDestinationPoint.longitude,
+                                name: selectedDestinationPointParam.name,
+                                latitude: selectedDestinationPointParam.latitude,
+                                longitude: selectedDestinationPointParam.longitude,
                                 isDestination: true,
                                 point_id: selectedDestination
                             },
@@ -354,14 +361,14 @@ const MapaMotorista = ({ navigation }) => {
                         orderedWaypoints = [
                             ...waypoints,
                             {
-                                name: selectedDestinationPoint.name,
-                                latitude: selectedDestinationPoint.latitude,
-                                longitude: selectedDestinationPoint.longitude,
+                                name: selectedDestinationPointParam.name,
+                                latitude: selectedDestinationPointParam.latitude,
+                                longitude: selectedDestinationPointParam.longitude,
                                 isDestination: true,
                                 point_id: selectedDestination
                             },
                         ];
-                        orderedPointIdsList = waypoints.map(wp => wp.point_id);
+                        orderedPointIdsList = orderedWaypoints.map(wp => wp.point_id);
                     }
                 }
 
@@ -628,37 +635,47 @@ const MapaMotorista = ({ navigation }) => {
             const data = response.data;
     
             // Update necessary state variables
-            console.log('RESPONSE:')
-            console.log(data)
+            // console.log(data)
 
+            
+            setRouteType(data.schedule.schedule_type_id);
+            let points = data.points.slice(0, -1)
+            let selectedPoint = null
+            setWaypoints(data.points.slice(0, -1));
             setSchoolInfo(data.school.point);
-
-            setWaypoints(data.points);
             setVehicleId(data.vehicle.id);
             setVehicleValue(data.vehicle.id);
             setSelectedCar(data.vehicle.id);
             setSchoolId(data.school.point.id); // Assuming schedule has a school_id
             setSchoolValue(data.school.point.id);
             setSelectedSchool(data.school.point.id);
-            setRouteType(data.schedule.schedule_type_id);
             
             if (data.schedule.schedule_type_id === 2) {
+                points = data.points.slice(1, -1);
+                setWaypoints(points);
+            
                 const destination = data.destination.point;
-                const selectedPoint = {
-                    latitude: destination.lat,
-                    longitude: destination.lng
+                console.log('inner destination:', destination);
+            
+                selectedPoint = {
+                    address: destination.address,
+                    alt: destination.alt,
+                    city: destination.city,
+                    description: destination.description,
+                    id: destination.id,
+                    latitude: destination.lat,    // Substituindo lat
+                    longitude: destination.lng,   // Substituindo lng
+                    name: destination.name,
+                    neighborhood: destination.neighborhood,
+                    point_type_id: destination.point_type_id,
+                    state: destination.state
                 };
-                setSelectedDestinationPoint(selectedPoint);                
+            
+                setSelectedDestinationPoint(selectedPoint);
+                setSelectedDestination(selectedPoint.id);
             }
-    
-            // // Reconstruct the route and waypoints
-            console.log('Last Schedule Lat, Long: ', latitude, longitude);
-            console.log('Last Schedule points: ', data.points);
-            console.log('Last Schedule type: ', data.schedule.schedule_type_id);
-            console.log('Last Schedule school: ', data.school.point);
 
-            const { orderedPointIdsList, allEtas, overviewPolylinePoints, legs, orderedWaypoints } = await throttledCalculateRoute(data.points, { latitude, longitude }, data.schedule.schedule_type_id, backend=true);
-            console.log('Last Route:', orderedWaypoints);
+            const { orderedPointIdsList, allEtas, overviewPolylinePoints, legs, orderedWaypoints } = await throttledCalculateRoute(points, { latitude, longitude }, data.schedule.schedule_type_id, backend=true, schoolInfoParam=data.school.point, selectedDestinationPointParam=selectedPoint);
     
         } else {
             console.error('Error obtaining schedule details:', response.data);
