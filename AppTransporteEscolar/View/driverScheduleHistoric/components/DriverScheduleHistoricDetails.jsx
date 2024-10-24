@@ -3,7 +3,7 @@ import PageDefault from "../../../components/pageDefault/PageDefault";
 import MapView, { Marker, Polyline } from "react-native-maps";
 import { useEffect, useRef, useState } from "react";
 import moment from "moment";
-import { FontAwesome, FontAwesome5 } from "@expo/vector-icons";
+import { FontAwesome, FontAwesome5, MaterialCommunityIcons } from "@expo/vector-icons";
 import { Button } from "react-native-paper";
 
 const DriverScheduleHistoricDetails = ({route}) => {
@@ -14,6 +14,7 @@ const DriverScheduleHistoricDetails = ({route}) => {
     const [detailsId, setDetailsId] = useState(null);
     const [actualCoordinate, setActualCoordinate] = useState(coordinates);
     const [hasChangedCoord, setHasChangedCoord] = useState(false);
+    const [buttonLabel, setButtonLabel] = useState("Visualizar Rastreio LoRa");
     const [stops, setStops] = useState([]);
 
     const handleShowDetails = (value) => {
@@ -33,12 +34,15 @@ const DriverScheduleHistoricDetails = ({route}) => {
         if(!hasChangedCoord){
             setActualCoordinate(loraCoordinates);
             setHasChangedCoord(true);
+            setButtonLabel("Visualizar Rastreio LoRa");
         }
         else{
             setActualCoordinate(coordinates);
             setHasChangedCoord(false);
+            setButtonLabel("Visualizar Rastreio Celular");
         }
     };
+
 
     return <PageDefault headerTitle="Detalhe da Viagem" withoutCentering={true}>
         <View style={styles.content}>
@@ -87,47 +91,60 @@ const DriverScheduleHistoricDetails = ({route}) => {
             </View>
             <View style={styles.infosContainer}>
                 <View style={styles.resumeInfosContainer}>
-                    <View style={styles.resumeInfosContent}>
-                        <Text style={styles.resumeTitle}>Início</Text>
-                        <Text style={styles.resumeText}>{moment(details.initial_date).format("DD/MM/YY")}</Text>
-                        <Text style={styles.resumeText}>{moment(details.initial_date).format("HH:mm")}</Text>
+                    <View style={styles.initialAndStopContent}>
+                        <View style={styles.resumeInfosContent}>
+                            <FontAwesome name="play-circle" size={16} color="#fff" />
+                            <Text style={styles.resumeTitle}>Início: </Text>
+                            <Text style={styles.resumeText}>{moment(details.initial_date).format("HH:mm")}</Text>
+                        </View>
+                        <View style={styles.resumeInfosContent}>
+                            <FontAwesome name="stop-circle" size={16} color="#fff" />
+                            <Text style={styles.resumeTitle}>Término: </Text>
+                            <Text style={styles.resumeText}>{moment(details.real_end_date).format("HH:mm")}</Text>
+                        </View>
                     </View>
                     <View style={styles.line}/>
-                    <View style={styles.resumeInfosContent}>
-                        <Text style={styles.resumeTitle}>Fim</Text>
-                        <Text style={styles.resumeText}>{moment(details.real_end_date).format("DD/MM/YY")}</Text>
-                        <Text style={styles.resumeText}>{moment(details.real_end_date).format("HH:mm")}</Text>
-                    </View>
-                    <View style={styles.line}/>
-                    <View style={styles.resumeInfosContent}>
-                        <Text style={styles.resumeTitle}>Duração</Text>
-                        <Text style={styles.resumeText}>{moment(details.real_duration).format("HH:mm")}</Text>
-                    </View>
-                    <View style={styles.line}/>
-                    <View style={styles.resumeInfosContent}>
-                        <Text style={styles.resumeTitle}>Duração Planejada</Text>
-                        <Text style={styles.resumeText}>{moment(details.planned_duration).format("HH:mm")}</Text>
+                    <View style={styles.initialAndStopContent}>
+                        <View style={styles.resumeInfosContent}>
+                            <MaterialCommunityIcons name="timer-sand-complete" size={16} color="#fff" />
+                            <Text style={styles.resumeTitle}>Duração: </Text>
+                            <Text style={styles.resumeText}>{moment(details.real_duration).format("HH:mm")}</Text>
+                        </View>
+                        <View style={styles.resumeInfosContent}>
+                            <MaterialCommunityIcons name="timer-sand" size={16} color="#fff" />
+                            <Text style={styles.resumeTitle}>Duração Planejada: </Text>
+                            <Text style={styles.resumeText}>{moment(details.planned_duration).format("HH:mm")}</Text>
+                        </View> 
                     </View>
                 </View>
-                <Pressable onPress={handleChangeCoordinate}><Text style={{color: "#fff"}}>trocar coordenadas</Text></Pressable>
+
+                {
+                    loraCoordinates?.length > 0 ? 
+                        <Pressable style={styles.buttonLora} onPress={handleChangeCoordinate}>
+                            <MaterialCommunityIcons name="crosshairs-gps" size={16} color="#fff" />
+                            <Text style={{color: "#fff"}}>{buttonLabel}</Text>
+                        </Pressable>
+                    : 
+                    null
+                }
 
                 <ScrollView style={styles.pointContainer}>
                     {
                         details?.points.map((item, index) => (
                             <View key={item.id}>
-                                <Pressable style={[styles.pointContent, detailsId === item.id ? {borderBottomLeftRadius: 0, borderBottomRightRadius: 0, backgroundColor: "#C36005"} : {borderRadius: 10}]} onPress={() => handleShowDetails(item)}>
+                                <Pressable style={[styles.pointContent, detailsId === item.id ? {borderBottomLeftRadius: 0, borderBottomRightRadius: 0, backgroundColor: "#eee"} : {borderRadius: 10}]} onPress={() => handleShowDetails(item)}>
                                     <View>
                                         <View style={styles.pointItem}>
-                                            <Text style={[styles.pointTitle, detailsId === item.id ? {color: "#fff"} : null]}>{index + 1}. </Text>
-                                            <Text style={[styles.pointTitle, detailsId === item.id ? {color: "#fff"} : null]}>{item.point.name}</Text>
+                                            <Text style={[styles.pointTitle, detailsId === item.id ? {color: "#000"} : null]}>{index + 1}. </Text>
+                                            <Text style={[styles.pointTitle, detailsId === item.id ? {color: "#000"} : null]}>{item.point.name}</Text>
                                         </View>
                                         <View style={styles.pointItem}>
-                                            <Text style={[styles.pointText, detailsId === item.id ? {color: "#fff"} : null]}>{item.point.address}</Text>
+                                            <Text style={[styles.pointText, detailsId === item.id ? {color: "#000"} : null]}>{item.point.address}</Text>
                                         </View>
                                     </View>
                                     {
                                         detailsId === item.id ? 
-                                        <FontAwesome name="angle-up" size={20} color="#fff" />
+                                        <FontAwesome name="angle-up" size={20} color="#000" />
                                         :
                                         <FontAwesome name="angle-down" size={20} color="#000" />
                                     }
@@ -194,6 +211,9 @@ const styles = StyleSheet.create({
         borderBottomLeftRadius: 10,
         borderBottomRightRadius: 10
     },
+    initialAndStopContent: {
+        flex: 1,
+    },
     line: {
         width: .5,
         alignItems: "center",
@@ -205,9 +225,10 @@ const styles = StyleSheet.create({
     resumeInfosContent: {
         flex: 1,
         justifyContent: "center",
+        flexDirection: "row",
         alignItems: "center",
-        rowGap: 2
-    },  
+        columnGap: 2
+    },   
     resumeTitle: {
         fontSize: 12,
         fontWeight: "bold",
@@ -220,7 +241,7 @@ const styles = StyleSheet.create({
         fontSize: 11
     },
     pointContainer: {
-        width: "95%",
+        width: "98%",
         flex: 1,
         height: "auto",
         display: "flex",
@@ -282,6 +303,20 @@ const styles = StyleSheet.create({
         color: "#000",
         fontSize: 11
     },
+    buttonLora: {
+        borderColor: "#fff",
+        borderWidth: 1,
+        width: "90%",
+        margin: "auto",
+        borderRadius: 10,
+        display: "flex",
+        justifyContent:"center",
+        alignItems: "center",
+        flexDirection: "row",
+        columnGap: 5,
+        marginTop: 5,
+        paddingVertical: 5
+    }
 });
 
 export default DriverScheduleHistoricDetails;

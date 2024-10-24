@@ -15,6 +15,7 @@ const ResponsibleScheduleHistoricDetails = ({route}) => {
     const [detailsId, setDetailsId] = useState(null);
     const [actualCoordinate, setActualCoordinate] = useState(coordinates);
     const [hasChangedCoord, setHasChangedCoord] = useState(false);
+    const [buttonLabel, setButtonLabel] = useState("Visualizar Rastreio LoRa");
     const [stops, setStops] = useState([]);
 
     const handleShowDetails = (value) => {
@@ -30,10 +31,12 @@ const ResponsibleScheduleHistoricDetails = ({route}) => {
         if(!hasChangedCoord){
             setActualCoordinate(loraCoordinates);
             setHasChangedCoord(true);
+            setButtonLabel("Visualizar Rastreio LoRa");
         }
         else{
             setActualCoordinate(coordinates);
             setHasChangedCoord(false);
+            setButtonLabel("Visualizar Rastreio Celular");
         }
     };
 
@@ -115,7 +118,7 @@ const ResponsibleScheduleHistoricDetails = ({route}) => {
                     loraCoordinates?.length > 0 ? 
                         <Pressable style={styles.buttonLora} onPress={handleChangeCoordinate}>
                             <MaterialCommunityIcons name="crosshairs-gps" size={16} color="#fff" />
-                            <Text style={{color: "#fff"}}>Visualizar Rastreio LoRa</Text>
+                            <Text style={{color: "#fff"}}>{buttonLabel}</Text>
                         </Pressable>
                     : 
                     null
