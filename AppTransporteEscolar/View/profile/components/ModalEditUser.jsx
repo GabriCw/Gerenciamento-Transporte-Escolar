@@ -85,6 +85,9 @@ const styles = StyleSheet.create({
         backgroundColor: '#C36005',
         marginTop: 20,
     },
+    textInputModal: {
+        paddingTop: 10
+    }
 });
 
 export default ModalEditUser;

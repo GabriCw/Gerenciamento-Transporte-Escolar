@@ -33,6 +33,7 @@ const styles = StyleSheet.create({
         marginBottom: 10,
         fontSize: 20,
         color: '#FFF',
+        paddingTop: 10
     },
     saveButton: {
         backgroundColor: '#C36005',
