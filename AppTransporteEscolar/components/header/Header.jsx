@@ -2,7 +2,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
-const Header = ({title, specificNavigation}) => {
+const Header = ({title, specificNavigation, titleSize}) => {
 
     const navigation = useNavigation();
 
@@ -28,7 +28,7 @@ const Header = ({title, specificNavigation}) => {
             >
                 <Ionicons style={styles.iconContent} name="arrow-back" size={24} color="white" />
             </Pressable>
-            <Text style={styles.title}>{title}</Text>
+            <Text style={[styles.title, titleSize ? {fontSize: titleSize} : null]}>{title}</Text>
         </View>
     </View>
 };
@@ -37,6 +37,8 @@ const styles = StyleSheet.create({
     container: {
         width: "100%",
         height: "12%",
+        justifyContent: "center",
+        alignItems: "center",
         backgroundColor: "#090833",
     },
     content: {

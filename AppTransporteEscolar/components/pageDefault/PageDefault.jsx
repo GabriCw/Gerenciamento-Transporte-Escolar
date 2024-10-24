@@ -2,9 +2,9 @@ import { StyleSheet, View } from "react-native";
 import Header from "../header/Header";
 import { ActivityIndicator } from "react-native-paper";
 
-const PageDefault = ({children, headerTitle, loading, withoutCentering, backNavigation}) => {
+const PageDefault = ({children, headerTitle, loading, withoutCentering, backNavigation, titleSize}) => {
     return <View style={styles.view}>
-        {headerTitle && <Header title={headerTitle} specificNavigation={backNavigation}/>}
+        {headerTitle && <Header title={headerTitle} specificNavigation={backNavigation} titleSize={titleSize}/>}
         {
             !loading ? 
                 <View style={!withoutCentering ? styles.content : styles.contentWithoutCentering}>

@@ -3,7 +3,7 @@ import PageDefault from "../../../components/pageDefault/PageDefault";
 import MapView, { Marker, Polyline } from "react-native-maps";
 import { useEffect, useRef, useState } from "react";
 import moment from "moment";
-import { FontAwesome, FontAwesome5 } from "@expo/vector-icons";
+import { FontAwesome, FontAwesome5, MaterialCommunityIcons } from "@expo/vector-icons";
 import { Button } from "react-native-paper";
 
 const ResponsibleScheduleHistoricDetails = ({route}) => {
@@ -25,10 +25,6 @@ const ResponsibleScheduleHistoricDetails = ({route}) => {
         setDetailsId(value.id);
     };
 
-    useEffect(() => {
-
-    }, [details]);
-
     const handleChangeCoordinate = () => {
         if(!hasChangedCoord){
             setActualCoordinate(loraCoordinates);
@@ -40,7 +36,7 @@ const ResponsibleScheduleHistoricDetails = ({route}) => {
         }
     };
 
-    return <PageDefault headerTitle="Detalhe da Viagem" withoutCentering={true}>
+    return <PageDefault headerTitle={`Detalhe da Viagem - ${details?.name.split(" ")[0]} (${moment(details?.initial_date).format("DD/MM")})`} withoutCentering={true} titleSize={16}>
         <View style={styles.content}>
             <View style={styles.mapContainer}> 
                 {
@@ -83,45 +79,58 @@ const ResponsibleScheduleHistoricDetails = ({route}) => {
             </View>
             <View style={styles.infosContainer}>
                 <View style={styles.resumeInfosContainer}>
-                    <View style={styles.resumeInfosContent}>
-                        <Text style={styles.resumeTitle}>Início</Text>
-                        <Text style={styles.resumeText}>{moment(details.initial_date).format("DD/MM/YY")}</Text>
-                        <Text style={styles.resumeText}>{moment(details.initial_date).format("HH:mm")}</Text>
+                    <View style={styles.initialAndStopContent}>
+                        <View style={styles.resumeInfosContent}>
+                            <FontAwesome name="play-circle" size={16} color="#fff" />
+                            <Text style={styles.resumeTitle}>Início: </Text>
+                            <Text style={styles.resumeText}>{moment(details.initial_date).format("HH:mm")}</Text>
+                        </View>
+                        <View style={styles.resumeInfosContent}>
+                            <FontAwesome name="stop-circle" size={16} color="#fff" />
+                            <Text style={styles.resumeTitle}>Término: </Text>
+                            <Text style={styles.resumeText}>{moment(details.real_end_date).format("HH:mm")}</Text>
+                        </View>
                     </View>
                     <View style={styles.line}/>
-                    <View style={styles.resumeInfosContent}>
-                        <Text style={styles.resumeTitle}>Fim</Text>
-                        <Text style={styles.resumeText}>{moment(details.real_end_date).format("DD/MM/YY")}</Text>
-                        <Text style={styles.resumeText}>{moment(details.real_end_date).format("HH:mm")}</Text>
-                    </View>
-                    <View style={styles.line}/>
-                    <View style={styles.resumeInfosContent}>
-                        <Text style={styles.resumeTitle}>Duração</Text>
-                        <Text style={styles.resumeText}>{moment(details.real_duration).format("HH:mm")}</Text>
-                    </View>
-                    <View style={styles.line}/>
-                    <View style={styles.resumeInfosContent}>
-                        <Text style={styles.resumeTitle}>Duração Planejada</Text>
-                        <Text style={styles.resumeText}>{moment(details.planned_duration).format("HH:mm")}</Text>
+                    <View style={styles.initialAndStopContent}>
+                        <View style={styles.resumeInfosContent}>
+                            <MaterialCommunityIcons name="timer-sand-complete" size={16} color="#fff" />
+                            <Text style={styles.resumeTitle}>Duração: </Text>
+                            <Text style={styles.resumeText}>{moment(details.real_duration).format("HH:mm")}</Text>
+                        </View>
+                        <View style={styles.resumeInfosContent}>
+                            <MaterialCommunityIcons name="timer-sand" size={16} color="#fff" />
+                            <Text style={styles.resumeTitle}>Duração Planejada: </Text>
+                            <Text style={styles.resumeText}>{moment(details.planned_duration).format("HH:mm")}</Text>
+                        </View> 
                     </View>
                 </View>
-                <Pressable onPress={handleChangeCoordinate}><Text style={{color: "#fff"}}>trocar coordenadas</Text></Pressable>
+
+                {
+                    loraCoordinates?.length > 0 ? 
+                        <Pressable style={styles.buttonLora} onPress={handleChangeCoordinate}>
+                            <MaterialCommunityIcons name="crosshairs-gps" size={16} color="#fff" />
+                            <Text style={{color: "#fff"}}>Visualizar Rastreio LoRa</Text>
+                        </Pressable>
+                    : 
+                    null
+                }
                 
                 <ScrollView style={styles.pointContainer}>
                     <View key={details?.point.id}>
-                        <Pressable style={[styles.pointContent, detailsId === details?.point.id ? {borderBottomLeftRadius: 0, borderBottomRightRadius: 0, backgroundColor: "#C36005"} : {borderRadius: 10}]} onPress={() => handleShowDetails(details?.point)}>
+                        <Pressable style={[styles.pointContent, detailsId === details?.point.id ? {borderBottomLeftRadius: 0, borderBottomRightRadius: 0, backgroundColor: "#eee"} : {borderRadius: 10}]} onPress={() => handleShowDetails(details?.point)}>
                             <View>
                                 <View style={styles.pointItem}>
-                                    <Text style={[styles.pointTitle, detailsId === details?.point.id ? {color: "#fff"} : null]}>1. </Text>
-                                    <Text style={[styles.pointTitle, detailsId === details?.point.id ? {color: "#fff"} : null]}>{details?.point.point.name}</Text>
+                                    <Text style={[styles.pointTitle, detailsId === details?.point.id ? {color: "#000"} : null]}>1. </Text>
+                                    <Text style={[styles.pointTitle, detailsId === details?.point.id ? {color: "#000"} : null]}>{details?.point.point.name}</Text>
                                 </View>
                                 <View style={styles.pointItem}>
-                                    <Text style={[styles.pointText, detailsId === details?.point.id ? {color: "#fff"} : null]}>{details?.point.point.address}</Text>
+                                    <Text style={[styles.pointText, detailsId === details?.point.id ? {color: "#000"} : null]}>{details?.point.point.address}</Text>
                                 </View>
                             </View>
                             {
                                 detailsId === details?.point.id ? 
-                                <FontAwesome name="angle-up" size={20} color="#fff" />
+                                <FontAwesome name="angle-up" size={20} color="#000" />
                                 :
                                 <FontAwesome name="angle-down" size={20} color="#000" />
                             }
@@ -129,21 +138,16 @@ const ResponsibleScheduleHistoricDetails = ({route}) => {
                         {
                             detailsId === details?.point.id ? <View style={styles.details}>
                                 <View style={styles.detailsContent}>
-                                    <Text style={styles.detailsTitle}>Data de Embarque</Text>
-                                    <Text style={styles.detailsText}>{moment(details?.point.real_date).format("DD/MM/YY")}</Text>
+                                    <Text style={styles.detailsTitle}>Horário de Chegada</Text>
                                     <Text style={styles.detailsText}>{moment(details?.point.real_date).format("HH:mm")}</Text>
-                                </View>
-                                <View style={styles.detailsContent}>
-                                    <Text style={styles.detailsTitle}>Data Planejada</Text>
-                                    <Text style={styles.detailsText}>Em breve</Text>
                                 </View>
                                 <View style={styles.detailsContent}>
                                     <Text style={styles.detailsTitle}>Embarque</Text>
                                     {
                                         details?.point.hasEmbarked ? 
-                                        <FontAwesome name="check-circle" size={20} color="#090833" />
+                                        <FontAwesome name="check-circle" size={20} color="green" />
                                         :
-                                        <FontAwesome name="times-circle" size={20} color="#090833" />
+                                        <FontAwesome name="times-circle" size={20} color="red" />
                                     }
                                 </View>
                             </View>
@@ -196,9 +200,13 @@ const styles = StyleSheet.create({
     resumeInfosContent: {
         flex: 1,
         justifyContent: "center",
+        flexDirection: "row",
         alignItems: "center",
-        rowGap: 2
+        columnGap: 2
     },  
+    initialAndStopContent: {
+        flex: 1,
+    },
     resumeTitle: {
         fontSize: 12,
         fontWeight: "bold",
@@ -211,7 +219,7 @@ const styles = StyleSheet.create({
         fontSize: 11
     },
     pointContainer: {
-        width: "95%",
+        width: "98%",
         flex: 1,
         height: "auto",
         display: "flex",
@@ -273,6 +281,20 @@ const styles = StyleSheet.create({
         color: "#000",
         fontSize: 11
     },
+    buttonLora: {
+        borderColor: "#fff",
+        borderWidth: 1,
+        width: "90%",
+        margin: "auto",
+        borderRadius: 10,
+        display: "flex",
+        justifyContent:"center",
+        alignItems: "center",
+        flexDirection: "row",
+        columnGap: 5,
+        marginTop: 5,
+        paddingVertical: 5
+    }
 });
 
 export default ResponsibleScheduleHistoricDetails;
