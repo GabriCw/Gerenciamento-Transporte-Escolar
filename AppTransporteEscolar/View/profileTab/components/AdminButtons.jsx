@@ -72,7 +72,7 @@ const AdminButtons = ({navigation}) => {
                 />
                 <ButtonDefault
                     icon={<FontAwesome name="history" size={"30%"} color="#fff" />}
-                    title={"Histórico Pais"}
+                    title={"Histórico"}
                     onClick={handleToHistoric}
                 />
             </View>
