@@ -132,7 +132,7 @@ const MapaResponsavel = ({ navigation }) => {
         const getLocation = await getDriversLastPosition(parseInt(schedule_id), parseInt(user_id))
 
         if(getLocation.status === 200){
-            console.log('Sucesso ao receber localização do motorista')
+            // console.log('Sucesso ao receber localização do motorista')
             return getLocation.data
         }
         else{   
@@ -287,26 +287,32 @@ const MapaResponsavel = ({ navigation }) => {
 
     useEffect(() => {
         const requestLocation = async () => {
-            const lastCoordinate = await handleGetDriverLocation(scheduleId, userData.id);
-            console.log('last coord: ', lastCoordinate.lat, lastCoordinate.lng);
-            return lastCoordinate;
+            try {
+                const lastCoordinate = await handleGetDriverLocation(scheduleId, userData.id);
+                if (lastCoordinate) {
+                    console.log('Sucesso ao obter localização do motorista:', lastCoordinate);
+                    return lastCoordinate;
+                } else {
+                    return null;
+                }
+            } catch (error) {
+                return null;
+            }
         };
     
         const updateLocation = async () => {
             const lastCoord = await requestLocation();
-
-            if (lastCoord) {
-                console.log('last coord: ', lastCoordinate.lat, lastCoordinate.lng);
-                setMotoristaLoc({ latitude: lastCoordinate.lat, longitude: lastCoordinate.lng });
-                updateRegion({ latitude: lastCoordinate.lat, longitude: lastCoordinate.lng }, residenciaAtiva, 1000);
+    
+            if (lastCoord !== null) {
+                setMotoristaLoc({ latitude: lastCoord.lat, longitude: lastCoord.lng });
+                updateRegion({ latitude: lastCoord.lat, longitude: lastCoord.lng }, residenciaAtiva, 1000);
             } else {
-                // Clear the driver's location if there's no active schedule
                 setMotoristaLoc(null);
             }
         };
     
         updateLocation();
-    }, [clock]);
+    }, [clock, scheduleId, userData.id, residenciaAtiva]);
 
 
     // ------------------------------------------
@@ -344,6 +350,7 @@ const MapaResponsavel = ({ navigation }) => {
         if (scheduleId && userData.id) {
             requestStudentPosition();
         }
+
     }, [clock, scheduleId, userData.id]);
 
 

@@ -72,3 +72,17 @@ export const getHistoricDriverDetail = async(scheduleId, userId) => {
         return error.response;
     }
 };
+
+export const getCurrentSchedules = async(user_id) => {
+    const endpoint = `/get-current-schedules-by-driver?user_id=${user_id}`;
+
+    try{
+        const response = await axios.get(_controller + endpoint);
+        return response;
+    }
+    catch(error){
+        return error.response;
+    }
+};
+
+    

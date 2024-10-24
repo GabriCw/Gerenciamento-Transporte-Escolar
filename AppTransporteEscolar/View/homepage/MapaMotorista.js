@@ -11,6 +11,7 @@ import { styles } from './Style/mapaMotoristaStyle';
 import { Button, Checkbox } from 'react-native-paper';
 import { formatDistance } from '../../utils/formatUtils';
 import { postDriverLocation, postRoutePoints, getDriverScheduleDetails, createSchedule, startSchedule, updateSchedulePoint, endSchedule } from '../../data/locationServices';
+import { getCurrentSchedules } from '../../data/scheduleServices';
 import { getUserDetails } from '../../data/userServices';
 import { getVehicleByUser } from '../../data/vehicleServices';
 import { getSchoolByDriver } from '../../data/pointServices';
@@ -92,6 +93,8 @@ const MapaMotorista = ({ navigation }) => {
     const [isLoadingStartRoute, setIsLoadingStartRoute] = useState(false);
     const [isLoadingEndRoute, setIsLoadingEndRoute] = useState(false);
 
+    
+
     useEffect(() => {
         const fetchUserDetails = async () => {
             const response = await getUserDetails(userData.id);
@@ -109,6 +112,25 @@ const MapaMotorista = ({ navigation }) => {
     }, []);
 
     useEffect(() => {
+        const checkForOngoingSchedule = async (latitude, longitude) => {
+            const response = await handleGetCurrentSchedules();
+
+            if (response && response.id) {
+                console.log('Ongoing schedule found:', response);
+                setScheduleId(response.id);
+                setRouteType(response.schedule_type_id);
+                setStartButton(false);
+                setRouteOngoing(true);
+    
+                // Fetch detailed schedule information
+                await fetchScheduleDetails(response.id, latitude, longitude);
+            } else {
+                console.log('No ongoing schedule found.');
+                // Show start route buttons if there's no ongoing schedule
+                setStartButton(true);
+            }
+        };
+        
         const initializeLocation = async () => {
             try {
                 let { status } = await Location.requestForegroundPermissionsAsync();
@@ -141,6 +163,8 @@ const MapaMotorista = ({ navigation }) => {
                         longitudeDelta: 0.005,
                     });
                     setHeading(heading || 0);
+                    checkForOngoingSchedule(latitude, longitude);
+                    
 
                 } else {
                     console.log('Could not get current location');
@@ -151,6 +175,7 @@ const MapaMotorista = ({ navigation }) => {
         };
 
         initializeLocation();
+        
     }, []);
 
     const routePointsRef = useRef(routePoints);
@@ -204,7 +229,8 @@ const MapaMotorista = ({ navigation }) => {
     }, [routeType]);
 
     // Atualização da função calculateRoute
-    const calculateRoute = async (stateWaypoints, currentLocation, routeType) => {
+    const calculateRoute = async (stateWaypoints, currentLocation, routeType, backend=false, schoolInfoParam=schoolInfo, selectedDestinationPointParam=selectedDestinationPoint) => {
+        console.log('Entrou no calculate Route...');
         // Mapear waypoints com seus dados
         const waypoints = stateWaypoints.map((wp) => {
             const studentNames = wp.student.map(student => student.name).join(', ');
@@ -216,45 +242,59 @@ const MapaMotorista = ({ navigation }) => {
             };
         });
 
+        console.log('Chegou aquii no caluclate Route. Route Type:', routeType);
+        console.log('Current Location Inside CalculateRoute:', currentLocation);
+        console.log('Current waypoints:', stateWaypoints);
+        console.log('Current School Info:', schoolInfoParam);
+        console.log('Current selectedDestinationPoint:', selectedDestinationPointParam);
+
+        
         let origin, destination;
         let waypointsString = waypoints.map(point => `${point.latitude},${point.longitude}`).join('|');
 
         if (routeType === 1) {
             // Origem é a localização atual do motorista, destino é a escola
             origin = `${currentLocation.latitude},${currentLocation.longitude}`;
-            destination = `${schoolInfo.lat},${schoolInfo.lng}`;
+            destination = `${schoolInfoParam.lat},${schoolInfoParam.lng}`;
 
             if (waypoints.length === 0) {
                 waypointsString = '';
             } else if (waypoints.length === 1) {
                 waypointsString = `${waypoints[0].latitude},${waypoints[0].longitude}`;
             }
+
         } else if (routeType === 2) {
             // Origem é a escola, destino é o último aluno
-            origin = `${schoolInfo.lat},${schoolInfo.lng}`;
+            origin = `${schoolInfoParam.lat},${schoolInfoParam.lng}`;
 
-            if (!selectedDestinationPoint) {
+            if (!selectedDestinationPointParam) {
                 Alert.alert('Erro', 'Destino não selecionado.');
                 setLoadingRoute(false);
                 return;
             }
-            destination = `${selectedDestinationPoint.latitude},${selectedDestinationPoint.longitude}`;
+            destination = `${selectedDestinationPointParam.latitude},${selectedDestinationPointParam.longitude}`;
+            
+            if (!backend){
+                console.log('Entrei no Backend!!');
+                const selectedWaypoints = waypoints.filter(wp => selectedStudents.includes(wp.point_id));
 
-            const selectedWaypoints = waypoints.filter(wp => selectedStudents.includes(wp.point_id));
+                if (selectedWaypoints.length === 0) {
+                    Alert.alert('Aviso', 'Nenhum aluno selecionado para a rota de volta.');
+                    setLoadingRoute(false);
+                    return;
+                } else if (selectedWaypoints.length === 1) {
+                    waypointsString = '';
+                    destination = `${selectedWaypoints[0].latitude},${selectedWaypoints[0].longitude}`;
+                } else {
+                    waypointsString = selectedWaypoints.map(point => `${point.latitude},${point.longitude}`).join('|');
+                    destination = '';
+                }  
 
-            if (selectedWaypoints.length === 0) {
-                Alert.alert('Aviso', 'Nenhum aluno selecionado para a rota de volta.');
-                setLoadingRoute(false);
-                return;
-            } else if (selectedWaypoints.length === 1) {
-                waypointsString = '';
-                destination = `${selectedWaypoints[0].latitude},${selectedWaypoints[0].longitude}`;
-            } else {
-                waypointsString = selectedWaypoints.map(point => `${point.latitude},${point.longitude}`).join('|');
-                destination = '';
+                waypoints.splice(0, waypoints.length, ...selectedWaypoints);
             }
-
-            waypoints.splice(0, waypoints.length, ...selectedWaypoints);
+            
+            console.log('Destination:', destination);
+            
         }
 
         const url = `https://maps.googleapis.com/maps/api/directions/json?origin=${origin}&destination=${destination || origin}&waypoints=optimize:true|${waypointsString}&key=${apiKey}&overview=full`;
@@ -262,7 +302,7 @@ const MapaMotorista = ({ navigation }) => {
         try {
             setLoadingRoute(true);
             const response = await axios.get(url);
-            console.log('Response:', response.data);
+            // console.log('Response:', response.data);
             console.log('Waypoints para a rota:', waypoints);
 
             if (response.data.routes && response.data.routes.length) {
@@ -293,13 +333,13 @@ const MapaMotorista = ({ navigation }) => {
                     if (waypoints.length > 1) {
                         orderedWaypoints = [
                             ...optimizedOrder.map(i => waypoints[i]),
-                            { name: schoolInfo.name, latitude: schoolInfo.lat, longitude: schoolInfo.lng, isDestination: true }
+                            { name: schoolInfoParam.name, latitude: schoolInfoParam.lat, longitude: schoolInfoParam.lng, isDestination: true }
                         ];
                         orderedPointIdsList = optimizedOrder.map(i => waypoints[i].point_id)
                     } else {
                         orderedWaypoints = [
                             ...waypoints,
-                            { name: schoolInfo.name, latitude: schoolInfo.lat, longitude: schoolInfo.lng, isDestination: true }
+                            { name: schoolInfoParam.name, latitude: schoolInfoParam.lat, longitude: schoolInfoParam.lng, isDestination: true }
                         ];
                         orderedPointIdsList = waypoints.map(wp => wp.point_id)
                     }
@@ -309,9 +349,9 @@ const MapaMotorista = ({ navigation }) => {
                         orderedWaypoints = [
                             ...optimizedOrder.map(i => waypoints[i]),
                             {
-                                name: selectedDestinationPoint.name,
-                                latitude: selectedDestinationPoint.latitude,
-                                longitude: selectedDestinationPoint.longitude,
+                                name: selectedDestinationPointParam.name,
+                                latitude: selectedDestinationPointParam.latitude,
+                                longitude: selectedDestinationPointParam.longitude,
                                 isDestination: true,
                                 point_id: selectedDestination
                             },
@@ -321,14 +361,14 @@ const MapaMotorista = ({ navigation }) => {
                         orderedWaypoints = [
                             ...waypoints,
                             {
-                                name: selectedDestinationPoint.name,
-                                latitude: selectedDestinationPoint.latitude,
-                                longitude: selectedDestinationPoint.longitude,
+                                name: selectedDestinationPointParam.name,
+                                latitude: selectedDestinationPointParam.latitude,
+                                longitude: selectedDestinationPointParam.longitude,
                                 isDestination: true,
                                 point_id: selectedDestination
                             },
                         ];
-                        orderedPointIdsList = waypoints.map(wp => wp.point_id);
+                        orderedPointIdsList = orderedWaypoints.map(wp => wp.point_id);
                     }
                 }
 
@@ -428,6 +468,10 @@ const MapaMotorista = ({ navigation }) => {
     };
 
     const startRoute = async () => {
+        if (routeOnGoing) {
+            Alert.alert('Aviso', 'Já existe uma rota em andamento.');
+            return;
+        }
         setIsLoadingStartRoute(true);
         try {
             if (routeType === 1 || (routeType === 2 && selectedStudents.length > 0 && selectedDestinationPoint)) {
@@ -459,7 +503,6 @@ const MapaMotorista = ({ navigation }) => {
     const endRoute = async (schedule) => {
         setIsLoadingEndRoute(true);
         if (schedule === 1 || schedule === 2) {
-
             await handleEndSchedule();
             setRouteOngoing(false);
             setShowStudentList(false);
@@ -584,15 +627,71 @@ const MapaMotorista = ({ navigation }) => {
         }
     };
 
-    const fetchScheduleDetails = async () => {
-        const response = await getDriverScheduleDetails(scheduleId);
+    const fetchScheduleDetails = async (scheduleIdParam, latitude, longitude) => {
+        const response = await getDriverScheduleDetails(scheduleIdParam || scheduleId);
+    
+        if (response.status === 200) {
+            console.log('Schedule details obtained successfully');
+            const data = response.data;
+    
+            // Update necessary state variables
+            // console.log(data)
+
+            
+            setRouteType(data.schedule.schedule_type_id);
+            let points = data.points.slice(0, -1)
+            let selectedPoint = null
+            setWaypoints(data.points.slice(0, -1));
+            setSchoolInfo(data.school.point);
+            setVehicleId(data.vehicle.id);
+            setVehicleValue(data.vehicle.id);
+            setSelectedCar(data.vehicle.id);
+            setSchoolId(data.school.point.id); // Assuming schedule has a school_id
+            setSchoolValue(data.school.point.id);
+            setSelectedSchool(data.school.point.id);
+            
+            if (data.schedule.schedule_type_id === 2) {
+                points = data.points.slice(1, -1);
+                setWaypoints(points);
+            
+                const destination = data.destination.point;
+                console.log('inner destination:', destination);
+            
+                selectedPoint = {
+                    address: destination.address,
+                    alt: destination.alt,
+                    city: destination.city,
+                    description: destination.description,
+                    id: destination.id,
+                    latitude: destination.lat,    // Substituindo lat
+                    longitude: destination.lng,   // Substituindo lng
+                    name: destination.name,
+                    neighborhood: destination.neighborhood,
+                    point_type_id: destination.point_type_id,
+                    state: destination.state
+                };
+            
+                setSelectedDestinationPoint(selectedPoint);
+                setSelectedDestination(selectedPoint.id);
+            }
+
+            const { orderedPointIdsList, allEtas, overviewPolylinePoints, legs, orderedWaypoints } = await throttledCalculateRoute(points, { latitude, longitude }, data.schedule.schedule_type_id, backend=true, schoolInfoParam=data.school.point, selectedDestinationPointParam=selectedPoint);
+    
+        } else {
+            console.error('Error obtaining schedule details:', response.data);
+        }
+    };
+
+    const handleGetCurrentSchedules = async () => {
+        const response = await getCurrentSchedules(userData.id);
 
         if (response.status === 200) {
-            console.log('Detalhes do schedule obtidos com sucesso');
+            console.log('Current schedules obtained successfully');
             const data = response.data;
-            setWaypoints(data.waypoints);
+            return data; // Return the schedule data
         } else {
-            console.error('Erro ao obter detalhes do schedule:', response.data);
+            console.error('Error obtaining current schedules:', response.data);
+            return null;
         }
     };
 
@@ -933,7 +1032,7 @@ const MapaMotorista = ({ navigation }) => {
             )}
 
             {/* ---------- CARD IDA VOLTA ---------- */}
-            {startButton && region && (
+            {startButton && !routeOnGoing && region && (
                 <View>
                     {/* Show "IDA ESCOLA" and "VOLTA ESCOLA" buttons if no other selection is active */}
                     {!showDropdowns && !showStudentList && !showDestinationSelection && (
@@ -1184,7 +1283,7 @@ const MapaMotorista = ({ navigation }) => {
             }
 
             {/* ---------- CARD ALUNO ENTREGUE ---------- */}
-            {waypointProximity && currentStudentIndex < optimizedWaypoints.length && (
+            {currentStudentIndex < optimizedWaypoints.length && (
                 <View style={styles.deliveredCardPosition}>
                     <View style={styles.deliveredCardContent}>
                         <Text style={styles.deliveredCardText}>
