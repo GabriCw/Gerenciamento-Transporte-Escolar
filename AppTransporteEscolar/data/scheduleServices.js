@@ -17,13 +17,49 @@ export const getHistoricDriverByDate = async(body) => {
     }
 };
 
+export const getHistoricResponsibleByDate = async(body) => {
+    const _endpoint = "/get-responsible-historic-by-date";
+    
+    try{
+        const response  = await axios.post(_controller + _endpoint, body);
+
+        return response;
+    }
+    catch(error){
+        return error.response;
+    }
+};
+
+export const getHistoricResponsibleDetail = async(scheduleId, userId, pointId) => {
+    const _endpoint = "/get-responsible-historic-details";
+    
+    try{
+        const headerBody = {
+            'schedule-id': scheduleId,
+            'user-id': userId,
+            'point-id': pointId,
+        };
+
+        console.log(headerBody)
+        
+        const response = await axios.get(_controller + _endpoint, {
+            headers: headerBody
+        });
+
+        return response;
+    }
+    catch(error){
+        return error.response;
+    }
+};
+
 export const getHistoricDriverDetail = async(scheduleId, userId) => {
     const _endpoint = "/get-driver-historic-details";
     
     try{
         const headerBody = {
             'schedule-id': scheduleId,
-            'user-id': userId
+            'user-id': userId,
         };
         
         const response = await axios.get(_controller + _endpoint, {

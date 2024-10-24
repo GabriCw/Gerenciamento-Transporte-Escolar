@@ -6,7 +6,7 @@ import 'moment/locale/pt-br';
 import { FontAwesome, Ionicons } from "@expo/vector-icons";
 import PageDefault from "../../components/pageDefault/PageDefault";
 import { AuthContext } from "../../providers/AuthProvider";
-import { getHistoricDriverByDate } from "../../data/scheduleServices";
+import { getHistoricDriverByDate, getHistoricResponsibleByDate } from "../../data/scheduleServices";
 import CardResponsible from "./components/CardResponsible";
 
 const ResponsibleScheduleHistoric = () => {
@@ -27,10 +27,12 @@ const ResponsibleScheduleHistoric = () => {
 
         setLoading(true);
 
-        const list = await getHistoricDriverByDate({ date: date, user_id: userData.id });
+        const list = await getHistoricResponsibleByDate({ date: date, user_id: userData.id });
 
         if(list.status === 200){
             setListByDate(list.data);
+
+            console.log(list.data.map(item => item.schedule.id));
         }
         else{
             setErrorMessage(list.data.detail);

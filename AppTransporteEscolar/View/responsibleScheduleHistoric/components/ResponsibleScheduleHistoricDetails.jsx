@@ -44,7 +44,7 @@ const ResponsibleScheduleHistoricDetails = ({route}) => {
         <View style={styles.content}>
             <View style={styles.mapContainer}> 
                 {
-                    actualCoordinate.length > 0 ? 
+                    actualCoordinate?.length > 0 ? 
                     <MapView
                         style={styles.map}
                         ref={mapRef}
@@ -74,11 +74,7 @@ const ResponsibleScheduleHistoricDetails = ({route}) => {
                             strokeWidth={5}
                         />
 
-                        {
-                            details?.points?.map(item => (<Marker
-                                coordinate={{latitude: item.point.lat, longitude: item.point.lng}}
-                            />))
-                        }
+                        <Marker coordinate={{latitude: details.point.point.lat, longitude: details.point.point.lng}} />  
                         
                     </MapView>
                     :
@@ -110,57 +106,52 @@ const ResponsibleScheduleHistoricDetails = ({route}) => {
                     </View>
                 </View>
                 <Pressable onPress={handleChangeCoordinate}><Text style={{color: "#fff"}}>trocar coordenadas</Text></Pressable>
-
-                <ScrollView style={styles.pointContainer}>
-                    {
-                        details?.points.map((item, index) => (
-                            <View key={item.id}>
-                                <Pressable style={[styles.pointContent, detailsId === item.id ? {borderBottomLeftRadius: 0, borderBottomRightRadius: 0, backgroundColor: "#C36005"} : {borderRadius: 10}]} onPress={() => handleShowDetails(item)}>
-                                    <View>
-                                        <View style={styles.pointItem}>
-                                            <Text style={[styles.pointTitle, detailsId === item.id ? {color: "#fff"} : null]}>{index + 1}. </Text>
-                                            <Text style={[styles.pointTitle, detailsId === item.id ? {color: "#fff"} : null]}>{item.point.name}</Text>
-                                        </View>
-                                        <View style={styles.pointItem}>
-                                            <Text style={[styles.pointText, detailsId === item.id ? {color: "#fff"} : null]}>{item.point.address}</Text>
-                                        </View>
-                                    </View>
-                                    {
-                                        detailsId === item.id ? 
-                                        <FontAwesome name="angle-up" size={20} color="#fff" />
-                                        :
-                                        <FontAwesome name="angle-down" size={20} color="#000" />
-                                    }
-                                </Pressable>
-                                {
-                                    detailsId === item.id ? <View style={styles.details}>
-                                        <View style={styles.detailsContent}>
-                                            <Text style={styles.detailsTitle}>Data de Embarque</Text>
-                                            <Text style={styles.detailsText}>{moment(item.real_date).format("DD/MM/YY")}</Text>
-                                            <Text style={styles.detailsText}>{moment(item.real_date).format("HH:mm")}</Text>
-                                        </View>
-                                        <View style={styles.detailsContent}>
-                                            <Text style={styles.detailsTitle}>Data Planejada</Text>
-                                            <Text style={styles.detailsText}>Em breve</Text>
-                                        </View>
-                                        <View style={styles.detailsContent}>
-                                            <Text style={styles.detailsTitle}>Embarque</Text>
-                                            {
-                                                item.hasEmbarked ? 
-                                                <FontAwesome name="check-circle" size={20} color="#090833" />
-                                                :
-                                                <FontAwesome name="times-circle" size={20} color="#090833" />
-                                            }
-                                        </View>
-                                    </View>
-                                    : 
-                                    null
-                                }
-                            </View>
-                        ))
-                    }
-                </ScrollView>
                 
+                <ScrollView style={styles.pointContainer}>
+                    <View key={details?.point.id}>
+                        <Pressable style={[styles.pointContent, detailsId === details?.point.id ? {borderBottomLeftRadius: 0, borderBottomRightRadius: 0, backgroundColor: "#C36005"} : {borderRadius: 10}]} onPress={() => handleShowDetails(details?.point)}>
+                            <View>
+                                <View style={styles.pointItem}>
+                                    <Text style={[styles.pointTitle, detailsId === details?.point.id ? {color: "#fff"} : null]}>1. </Text>
+                                    <Text style={[styles.pointTitle, detailsId === details?.point.id ? {color: "#fff"} : null]}>{details?.point.point.name}</Text>
+                                </View>
+                                <View style={styles.pointItem}>
+                                    <Text style={[styles.pointText, detailsId === details?.point.id ? {color: "#fff"} : null]}>{details?.point.point.address}</Text>
+                                </View>
+                            </View>
+                            {
+                                detailsId === details?.point.id ? 
+                                <FontAwesome name="angle-up" size={20} color="#fff" />
+                                :
+                                <FontAwesome name="angle-down" size={20} color="#000" />
+                            }
+                        </Pressable>
+                        {
+                            detailsId === details?.point.id ? <View style={styles.details}>
+                                <View style={styles.detailsContent}>
+                                    <Text style={styles.detailsTitle}>Data de Embarque</Text>
+                                    <Text style={styles.detailsText}>{moment(details?.point.real_date).format("DD/MM/YY")}</Text>
+                                    <Text style={styles.detailsText}>{moment(details?.point.real_date).format("HH:mm")}</Text>
+                                </View>
+                                <View style={styles.detailsContent}>
+                                    <Text style={styles.detailsTitle}>Data Planejada</Text>
+                                    <Text style={styles.detailsText}>Em breve</Text>
+                                </View>
+                                <View style={styles.detailsContent}>
+                                    <Text style={styles.detailsTitle}>Embarque</Text>
+                                    {
+                                        details?.point.hasEmbarked ? 
+                                        <FontAwesome name="check-circle" size={20} color="#090833" />
+                                        :
+                                        <FontAwesome name="times-circle" size={20} color="#090833" />
+                                    }
+                                </View>
+                            </View>
+                            : 
+                            null
+                        }
+                    </View>
+                </ScrollView>
             </View>
         </View>
     </PageDefault>

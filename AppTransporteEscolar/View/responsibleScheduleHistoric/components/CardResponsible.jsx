@@ -4,7 +4,7 @@ import moment from "moment";
 import { useContext, useEffect, useRef, useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import MapView, { Polyline } from "react-native-maps";
-import { getHistoricDriverDetail } from "../../../data/scheduleServices";
+import { getHistoricDriverDetail, getHistoricResponsibleDetail } from "../../../data/scheduleServices";
 import { AuthContext } from "../../../providers/AuthProvider";
 import Toast from "react-native-toast-message";
 
@@ -18,10 +18,10 @@ const CardResponsible = ({data, index, setLoading}) => {
     const handleScheduleDetails = async() => {
         setLoading(true);
 
-        const response = await getHistoricDriverDetail(data.schedule.id, userData.id);
+        const response = await getHistoricResponsibleDetail(data.schedule.id, userData.id, data.points[0].id);
 
         if(response.status === 200){
-            navigation.navigate("DriverScheduleHistoricDetails", {coordinates: coordinates, details: response.data, loraCoordinates: loraCoordinates});
+            navigation.navigate("ResponsibleScheduleHistoricDetails", {coordinates: coordinates, details: response.data, loraCoordinates: loraCoordinates});
         }
         else{
             Toast.show({
