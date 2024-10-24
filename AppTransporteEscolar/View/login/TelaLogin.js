@@ -1,12 +1,13 @@
 import React, { useContext, useEffect, useState } from 'react';
-import { View, StyleSheet, Text, TouchableOpacity, ActivityIndicator } from 'react-native';
-import { TextInput, Button } from 'react-native-paper';
+import { View, StyleSheet, Text, TouchableOpacity, ActivityIndicator, TextInput } from 'react-native';
+import { Button } from 'react-native-paper';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import Toast from 'react-native-toast-message';
 import { signInWithEmailAndPassword, onAuthStateChanged } from '@firebase/auth';
 import {auth} from "../../firebase/firebase";
 import { getUserByEmail } from '../../data/userServices';
 import { AuthContext } from '../../providers/AuthProvider';
+import Input from '../../components/input/Input';
 
 const TelaLogin = ({ navigation }) => {
     const {handleGenerateToken, handleVerifyStudent, handleGetUserDetails} = useContext(AuthContext);
@@ -81,25 +82,20 @@ const TelaLogin = ({ navigation }) => {
             <View style={styles.container}>
                 <Text style={styles.title}>Seja bem vindo!</Text>
                 <Text style={styles.subtitle}>Faça seu login para continuar</Text>
-                <TextInput
-                    label="Digite seu e-mail"
-                    mode="outlined" 
-                    activeOutlineColor='#C36005'
-                    inputMode="email"
-                    keyboardAppearance='dark'
+                <Input
+                    keyboardType="email"
+                    placeholder='Digite seu email'
+                    onChange={(text) => setEmail(text.toLowerCase())}
                     value={email}
-                    onChangeText={text => setEmail(text.toLowerCase())}
                     style={styles.input}
                 />
-                <TextInput
-                    label="Digite sua senha"
-                    mode="outlined"
-                    inputMode='text'
-                    keyboardAppearance='dark'
-                    activeOutlineColor='#C36005'
-                    secureTextEntry={true}
+                <Input
+                    placeholder='Digite sua senha'
+                    keyboardType="password"
+                    onChange={(text) => setSenha(text)}
                     value={senha}
-                    onChangeText={text => setSenha(text)}
+                    isPassword={true}
+                    style={styles.input}
                 />
                 <TouchableOpacity onPress={handleForgotPasswordPress}>
                         <Text style={styles.forgotPass}>Esqueci minha senha</Text>
@@ -155,6 +151,9 @@ const styles = StyleSheet.create({
     },
     input: {
         marginBottom: 20,
+        backgroundColor: "#fff",
+        height: 45,
+        paddingHorizontal: "5%"
     },
     button: {
         marginTop: 20,
