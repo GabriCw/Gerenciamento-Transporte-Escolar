@@ -230,7 +230,6 @@ const MapaMotorista = ({ navigation }) => {
 
     // Atualização da função calculateRoute
     const calculateRoute = async (stateWaypoints, currentLocation, routeType, backend=false, schoolInfoParam=schoolInfo, selectedDestinationPointParam=selectedDestinationPoint) => {
-        console.log('Entrou no calculate Route...');
         // Mapear waypoints com seus dados
         const waypoints = stateWaypoints.map((wp) => {
             const studentNames = wp.student.map(student => student.name).join(', ');
@@ -242,13 +241,11 @@ const MapaMotorista = ({ navigation }) => {
             };
         });
 
-        console.log('Chegou aquii no caluclate Route. Route Type:', routeType);
-        console.log('Current Location Inside CalculateRoute:', currentLocation);
-        console.log('Current waypoints:', stateWaypoints);
-        console.log('Current School Info:', schoolInfoParam);
-        console.log('Current selectedDestinationPoint:', selectedDestinationPointParam);
+        // console.log('Current Location Inside CalculateRoute:', currentLocation);
+        // console.log('Current waypoints:', stateWaypoints);
+        // console.log('Current School Info:', schoolInfoParam);
+        // console.log('Current selectedDestinationPoint:', selectedDestinationPointParam);
 
-        
         let origin, destination;
         let waypointsString = waypoints.map(point => `${point.latitude},${point.longitude}`).join('|');
 
@@ -303,7 +300,7 @@ const MapaMotorista = ({ navigation }) => {
             setLoadingRoute(true);
             const response = await axios.get(url);
             // console.log('Response:', response.data);
-            console.log('Waypoints para a rota:', waypoints);
+            // console.log('Waypoints para a rota:', waypoints);
 
             if (response.data.routes && response.data.routes.length) {
                 const route = response.data.routes[0];
@@ -382,7 +379,9 @@ const MapaMotorista = ({ navigation }) => {
                 for (let leg of route.legs) {
                     cumulativeDuration += leg.duration.value;
                     const eta = new Date(Date.now() + cumulativeDuration * 1000);
-                    allEtas.push(eta.toISOString());
+                    allEtas.push({
+                        eta: eta.toISOString()
+                    });
                 }
                 setEtas(allEtas);
 
@@ -700,10 +699,11 @@ const MapaMotorista = ({ navigation }) => {
         const formattedEndDate = endDate.toISOString();
         const formattedEndDateWithoutMilliseconds = formattedEndDate.split('.')[0];
 
-        console.log('List:');
+        // console.log('List:');
         console.log(orderedPointIdsList);
 
         const legsInfo = legs.map((leg, index) => {
+            // console.log('Leg Pré Backend:', leg)
             let point_id = null;
         
             // Verificar se existe um waypoint correspondente
@@ -714,13 +714,30 @@ const MapaMotorista = ({ navigation }) => {
             return {
                 start_location: leg.start_location,
                 end_location: leg.end_location,
-                duration: leg.duration, // Adicionado
+                duration: leg.duration,
                 point_id: point_id
             };
         });
 
-        console.log('Legs Info:', JSON.stringify(legsInfo));
-        console.log('Encoded',overviewPolylinePoints.toString())
+        console.log('O que vem no allEtas:', allEtas);
+
+        const etasInfo = allEtas.map((eta, index) => {
+            // console.log('Eta Pré Backend:', eta)
+            let point_id = null;
+        
+            // Verificar se existe um waypoint correspondente
+            if (index < orderedWaypoints.length) {
+                point_id = orderedWaypoints[index].point_id || null;
+            }
+            
+            return {
+                eta: eta.eta,
+                point_id: point_id
+            };
+        });
+
+        console.log('Etas Info:', JSON.stringify(etasInfo));
+        // console.log('Encoded',overviewPolylinePoints.toString())
 
         const body = {
             user_id: userData.id,
@@ -730,7 +747,7 @@ const MapaMotorista = ({ navigation }) => {
             points: orderedPointIdsList,
             encoded_points: overviewPolylinePoints.toString(),
             legs_info: JSON.stringify(legsInfo),
-            eta: allEtas.toString(),
+            eta: JSON.stringify(etasInfo),
             destiny_id: selectedDestination
         };
         console.log('Body:', body);

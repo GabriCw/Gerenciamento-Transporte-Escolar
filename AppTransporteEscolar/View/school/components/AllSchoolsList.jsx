@@ -5,7 +5,8 @@ import { useNavigation } from "@react-navigation/native";
 import Toast from "react-native-toast-message";
 import { ScrollView, StyleSheet, View } from "react-native";
 import { Button, Card, ActivityIndicator, Text } from 'react-native-paper';
-import { AntDesign, FontAwesome, Ionicons } from "@expo/vector-icons";
+import { AntDesign, FontAwesome } from "@expo/vector-icons";
+import Ionicons from '@expo/vector-icons/Ionicons';
 
 const AllSchoolsList = ({route}) => {
 

@@ -42,6 +42,7 @@ const MapaResponsavel = ({ navigation }) => {
     const [routeCoordinates, setRouteCoordinates] = useState([]);
 
     const [legsInfo, setLegsInfo] = useState([]);
+    const [etaInfo, setEtaInfo] = useState([]);
     const [relevantRouteCoordinates, setRelevantRouteCoordinates] = useState([]);
     
     const [studentDelivered, setStudentDelivered] = useState(false);
@@ -66,30 +67,73 @@ const MapaResponsavel = ({ navigation }) => {
     }, [studentPosition]);
 
     // Calcular totalDurationToStudent e etaToStudent
-    useEffect(() => {
-        if (legsInfo.length > 0 && studentPosition !== null && studentPosition !== undefined && studentPosition >= 0) {
-        let durationSum = 0;
-        for (let i = 0; i <= studentPosition && i < legsInfo.length; i++) {
-            durationSum += legsInfo[i].duration.value;
-        }
-        setTotalDurationToStudent(durationSum);
+    // useEffect(() => {
+    //     if (legsInfo.length > 0 && studentPosition !== null && studentPosition !== undefined && studentPosition >= 0) {
+    //     let durationSum = 0;
+    //     for (let i = 0; i <= studentPosition && i < legsInfo.length; i++) {
+    //         durationSum += legsInfo[i].duration.value;
+    //     }
+    //     setTotalDurationToStudent(durationSum);
     
-        const now = new Date();
-        const etaDate = new Date(now.getTime() + durationSum * 1000);
-        setEtaToStudent(etaDate);
-        }
-    }, [legsInfo, studentPosition]);
+    //     const now = new Date();
+    //     const etaDate = new Date(now.getTime() + durationSum * 1000);
+    //     setEtaToStudent(etaDate);
+    //     }
+    // }, [legsInfo, studentPosition]);
+
+    // useEffect(() => {
+    // if (legsInfo.length > 0 && selectedStudent && (studentPosition === null || studentPosition === undefined)) {
+    //     let studentLegIndex = legsInfo.findIndex(leg => leg.point_id === selectedStudent.point_id);
+    //     let durationSum = 0;
+    //     for (let i = studentLegIndex + 1; i < legsInfo.length; i++) {
+    //     durationSum += legsInfo[i].duration.value; // em segundos
+    //     }
+    //     setTotalDurationToSchool(durationSum);
+    // }
+    // }, [legsInfo, studentPosition, selectedStudent]);
 
     useEffect(() => {
-    if (legsInfo.length > 0 && selectedStudent && (studentPosition === null || studentPosition === undefined)) {
-        let studentLegIndex = legsInfo.findIndex(leg => leg.point_id === selectedStudent.point_id);
-        let durationSum = 0;
-        for (let i = studentLegIndex + 1; i < legsInfo.length; i++) {
-        durationSum += legsInfo[i].duration.value; // em segundos
+        console.log('ETA Info:', etaInfo)
+        if (etaInfo.length > 0 && selectedStudent) {
+          // Encontrar o ETA correspondente ao aluno
+          const etaObject = etaInfo.find(
+            (etaObj) => etaObj.point_id === selectedStudent.point_id
+          );
+          if (etaObject) {
+            setEtaToStudent(new Date(etaObject.eta));
+          } else {
+            // Se não encontrar, pode definir como null ou exibir uma mensagem apropriada
+            setEtaToStudent(null);
+          }
         }
-        setTotalDurationToSchool(durationSum);
-    }
-    }, [legsInfo, studentPosition, selectedStudent]);
+    }, [etaInfo, selectedStudent]);
+
+
+    // --------------------------
+    // --------- LOGGGG ---------
+    // --------------------------
+    useEffect(() => {
+        console.log('Eta to School:',etaToSchool);
+        console.log('Eta to Student:',etaToStudent);
+
+    },[etaToSchool, etaToStudent])
+
+    // --------------------------
+    // --------------------------
+
+
+    useEffect(() => {
+        if (etaInfo.length > 0 && selectedStudent) {
+            // Encontrar o ETA para a escola (point_id null)
+            const etaObject = etaInfo.find((etaObj) => etaObj.point_id === null);
+            if (etaObject) {
+            setEtaToSchool(new Date(etaObject.eta));
+            } else {
+            // Se não encontrar, pode definir como null ou exibir uma mensagem apropriada
+            setEtaToSchool(null);
+            }
+        }
+    }, [etaInfo, selectedStudent]);
 
     
     useEffect(() => {
@@ -114,13 +158,31 @@ const MapaResponsavel = ({ navigation }) => {
         return closestIndex;
     };
 
+    // ---------------------------------------------------------
+    // ----------------------- LOG STEPS -----------------------
+    // ---------------------------------------------------------
+
+    useEffect(() => {
+        if (mapsInfos && mapsInfos.eta) {
+            try {
+                // Faz o parse da string JSON para um objeto
+                const etaData = JSON.parse(mapsInfos.eta);
+                console.log('ETA Data: ', etaData);
+                setEtaInfo(etaData);
+            } catch (error) {
+                console.error('Erro ao fazer parse de mapsInfos.eta:', error);
+            }
+        }
+    }, [mapsInfos]);
+    // ---------------------------------------------------------
+    // ---------------------------------------------------------
+    
 
     const handleGetStudentByResponsible = async(user_id) => {
         const getByResponsible = await getStudentByResponsible(user_id)
 
         if(getByResponsible.status === 200){
             console.log('Sucesso ao receber informações dos alunos pro Responsável')
-            console.log('Students by responsible: ', getByResponsible.data)
             return getByResponsible.data
         }
         else{   
@@ -290,7 +352,7 @@ const MapaResponsavel = ({ navigation }) => {
             try {
                 const lastCoordinate = await handleGetDriverLocation(scheduleId, userData.id);
                 if (lastCoordinate) {
-                    console.log('Sucesso ao obter localização do motorista:', lastCoordinate);
+                    console.log('Sucesso ao obter localização do motorista:');
                     return lastCoordinate;
                 } else {
                     return null;
@@ -323,7 +385,6 @@ const MapaResponsavel = ({ navigation }) => {
             const requestMapsInfos = async () => {
                 await handleGetMapsInfos(scheduleId, userData.id);
             };
-    
             requestMapsInfos();
         }
     }, [clock, scheduleId, userData.id, studentPosition]);
@@ -464,8 +525,6 @@ const MapaResponsavel = ({ navigation }) => {
             }
     
             setRelevantRouteCoordinates(relevantCoords);
-
-            console.log('Posicao do aluno:', studentPosition)
         }
     }, [legsInfo, selectedStudent, routeCoordinates]);
 

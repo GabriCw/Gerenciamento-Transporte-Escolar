@@ -2,7 +2,7 @@ import { StyleSheet, View } from "react-native";
 import PageDefault from "../../../components/pageDefault/PageDefault";
 import { Button, Text } from "react-native-paper";
 import { useContext, useState } from "react";
-import { Ionicons } from "@expo/vector-icons";
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { associateDriverToSchool, disassociateDriverToSchool } from "../../../data/pointServices";
 import { AuthContext } from "../../../providers/AuthProvider";
 import { useNavigation } from "@react-navigation/native";

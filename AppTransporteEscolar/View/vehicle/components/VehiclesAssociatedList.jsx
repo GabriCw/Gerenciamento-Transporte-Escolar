@@ -1,6 +1,7 @@
 import { Pressable, ScrollView, StyleSheet, View } from "react-native";
 import { IconButton, Text } from "react-native-paper";
-import { AntDesign, FontAwesome, FontAwesome5, Ionicons } from "@expo/vector-icons";
+import { AntDesign, FontAwesome, FontAwesome5 } from "@expo/vector-icons";
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { useNavigation } from "@react-navigation/native";
 import ModalEdit from "./ModalEdit";
 import { useContext, useState } from "react";

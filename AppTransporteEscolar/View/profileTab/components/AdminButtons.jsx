@@ -1,7 +1,8 @@
 import { StyleSheet, View } from "react-native";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 import ButtonDefault from "./ButtonDefault";
-import { FontAwesome, FontAwesome5, Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
+import { FontAwesome, FontAwesome5, MaterialCommunityIcons } from "@expo/vector-icons";
+import Ionicons from '@expo/vector-icons/Ionicons';
 
 const AdminButtons = ({navigation}) => {
     const handleGoToDriverHistoric = () => {
