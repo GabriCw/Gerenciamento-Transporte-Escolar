@@ -2,6 +2,7 @@ import { FontAwesome } from "@expo/vector-icons";
 import { StyleSheet, View } from "react-native";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 import ButtonDefault from "./ButtonDefault";
+import Ionicons from '@expo/vector-icons/Ionicons';
 
 const ResponsibleButtons = ({navigation}) => {
     const handleToStudentPage = () => {

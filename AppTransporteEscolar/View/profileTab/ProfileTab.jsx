@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { View, StyleSheet, Text, Image, Pressable } from 'react-native';
 import { AuthContext } from '../../providers/AuthProvider';
-import { FontAwesome, Ionicons } from '@expo/vector-icons';
+import { FontAwesome } from '@expo/vector-icons';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { userTypeEnum } from '../../utils/userTypeEnum';
 import DriverButtons from './components/DriverButtons';
 import ResponsibleButtons from './components/ResponsibleButtons';
