@@ -169,10 +169,10 @@ const DriverScheduleHistoricDetails = ({route}) => {
                                         <View style={styles.detailsContent}>
                                             <Text style={styles.detailsTitle}>Embarque</Text>
                                             {
-                                                item.hasEmbarked ? 
-                                                <FontAwesome name="check-circle" size={20} color="#090833" />
+                                                item.has_embarked ? 
+                                                <FontAwesome name="check-circle" size={20} color="green" />
                                                 :
-                                                <FontAwesome name="times-circle" size={20} color="#090833" />
+                                                <FontAwesome name="times-circle" size={20} color="red" />
                                             }
                                         </View>
                                     </View>
