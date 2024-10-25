@@ -696,6 +696,7 @@ const MapaMotorista = ({ navigation }) => {
 
     const handleStartSchedule = async (orderedPointIdsList, allEtas, overviewPolylinePoints, legs, orderedWaypoints) => {
         const endDate = new Date(Date.now() + totalDuration * 1000);
+        endDate.setHours(endDate.getHours() - 3);
         const formattedEndDate = endDate.toISOString();
         const formattedEndDateWithoutMilliseconds = formattedEndDate.split('.')[0];
 
@@ -1015,7 +1016,7 @@ const MapaMotorista = ({ navigation }) => {
                             <Polyline
                                 coordinates={routePoints}
                                 strokeWidth={10}
-                                strokeColor="orange"
+                                strokeColor="black"
                             />
                         )}
                         {optimizedWaypoints.length > 0 && optimizedWaypoints.map((coordinate, index) => (
