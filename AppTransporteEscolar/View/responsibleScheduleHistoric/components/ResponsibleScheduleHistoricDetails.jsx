@@ -152,7 +152,7 @@ const ResponsibleScheduleHistoricDetails = ({route}) => {
                                 <View style={styles.detailsContent}>
                                     <Text style={styles.detailsTitle}>Embarque</Text>
                                     {
-                                        details?.point.hasEmbarked ? 
+                                        details?.point.has_embarked ? 
                                         <FontAwesome name="check-circle" size={20} color="green" />
                                         :
                                         <FontAwesome name="times-circle" size={20} color="red" />
