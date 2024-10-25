@@ -31,14 +31,22 @@ const ResponsibleScheduleHistoricDetails = ({route}) => {
         if(!hasChangedCoord){
             setActualCoordinate(loraCoordinates);
             setHasChangedCoord(true);
-            setButtonLabel("Visualizar Rastreio LoRa");
         }
         else{
             setActualCoordinate(coordinates);
             setHasChangedCoord(false);
-            setButtonLabel("Visualizar Rastreio Celular");
         }
     };
+
+    useEffect(() => {
+        if(!hasChangedCoord){
+            setButtonLabel("Visualizar Rastreio LoRa");
+        }
+        else{
+            setButtonLabel("Visualizar Rastreio Celular");
+        }
+    }, [hasChangedCoord]);
+
 
     return <PageDefault headerTitle={`Detalhe da Viagem - ${details?.name.split(" ")[0]} (${moment(details?.initial_date).format("DD/MM")})`} withoutCentering={true} titleSize={16}>
         <View style={styles.content}>
