@@ -17,12 +17,12 @@ const TelaLogin = ({ navigation }) => {
     // const [senha, setSenha] = useState('teste123');
 
     // responsável
-    // const [email, setEmail] = useState('felipesilvieri@yahoo.com');
-    // const [senha, setSenha] = useState('felipe123');
+    const [email, setEmail] = useState('felipesilvieri@yahoo.com');
+    const [senha, setSenha] = useState('felipe123');
 
     // motorista
-    const [email, setEmail] = useState('gilberto.motorista@gmail.com');
-    const [senha, setSenha] = useState('motorista123');
+    // const [email, setEmail] = useState('gilberto.motorista@gmail.com');
+    // const [senha, setSenha] = useState('motorista123');
 
     const [isLoading, setIsLoading] = useState(false);
 

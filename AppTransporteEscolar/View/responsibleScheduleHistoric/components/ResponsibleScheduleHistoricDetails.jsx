@@ -16,7 +16,7 @@ const ResponsibleScheduleHistoricDetails = ({route}) => {
     const [actualCoordinate, setActualCoordinate] = useState(coordinates);
     const [hasChangedCoord, setHasChangedCoord] = useState(false);
     const [buttonLabel, setButtonLabel] = useState("Visualizar Rastreio LoRa");
-    const [stops, setStops] = useState([]);
+    const [embarkLabel, setEmbarkLabel] = useState("Embarque");
 
     const handleShowDetails = (value) => {
         if(detailsId){
@@ -26,6 +26,11 @@ const ResponsibleScheduleHistoricDetails = ({route}) => {
 
         setDetailsId(value.id);
     };
+
+    useEffect(() => {
+        handleEmbarkedLabel();
+    }, [details]);
+
 
     const handleChangeCoordinate = () => {
         if(!hasChangedCoord){
@@ -47,6 +52,14 @@ const ResponsibleScheduleHistoricDetails = ({route}) => {
         }
     }, [hasChangedCoord]);
 
+    const handleEmbarkedLabel = () => {
+        if(details?.schedule_type === "Volta"){
+            setEmbarkLabel("Desembarque");
+        }
+        else{
+            setEmbarkLabel("Embarque");
+        }
+    };
 
     return <PageDefault headerTitle={`Detalhe da Viagem - ${details?.name.split(" ")[0]} (${moment(details?.initial_date).format("DD/MM")})`} withoutCentering={true} titleSize={16}>
         <View style={styles.content}>
@@ -158,7 +171,7 @@ const ResponsibleScheduleHistoricDetails = ({route}) => {
                                     <Text style={styles.detailsText}>{moment(details?.point.real_date).format("HH:mm")}</Text>
                                 </View>
                                 <View style={styles.detailsContent}>
-                                    <Text style={styles.detailsTitle}>Embarque</Text>
+                                    <Text style={styles.detailsTitle}>{embarkLabel}</Text>
                                     {
                                         details?.point.has_embarked ? 
                                         <FontAwesome name="check-circle" size={20} color="green" />
