@@ -1,8 +1,10 @@
-import { StyleSheet, View } from "react-native";
+import { Dimensions, StyleSheet, View } from "react-native";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 import ButtonDefault from "./ButtonDefault";
 import { FontAwesome, FontAwesome5, MaterialCommunityIcons } from "@expo/vector-icons";
 import Ionicons from '@expo/vector-icons/Ionicons';
+
+const { width } = Dimensions.get("window");
 
 const DriverButtons = ({navigation}) => {
     const handleGoToDriverHistoric = () => {
@@ -21,6 +23,8 @@ const DriverButtons = ({navigation}) => {
         navigation.navigate('VerPerfilMoto');
     }
 
+    const buttonSize = width * 0.1;
+
     return <KeyboardAwareScrollView
         contentContainerStyle={styles.container}
         enableOnAndroid={true}
@@ -30,22 +34,22 @@ const DriverButtons = ({navigation}) => {
         <View style={styles.content}>
             <View style={styles.buttonsContent}>
                 <ButtonDefault
-                    icon={<FontAwesome name="user" size={"30%"} color="#fff"  />}
+                    icon={<FontAwesome name="user" size={buttonSize} color="#fff"  />}
                     title={"Perfil"}
                     onClick={handleToProfilePage}
                 />
                 <ButtonDefault
-                    icon={<FontAwesome name="bus" size={"30%"} color="#fff"/>}
+                    icon={<FontAwesome name="bus" size={buttonSize} color="#fff"/>}
                     title={"Veículos"}
                     onClick={handleToVehiclePage}
                 />
                 <ButtonDefault
-                    icon={<Ionicons name="school" size={"30%"} color="#fff" />}
+                    icon={<Ionicons name="school" size={buttonSize} color="#fff" />}
                     title={"Escolas"}
                     onClick={handleToSchoolsPage}
                 />
                 <ButtonDefault
-                    icon={<FontAwesome name="history" size={"30%"} color="#fff" />}
+                    icon={<FontAwesome name="history" size={buttonSize} color="#fff" />}
                     title={"Histórico"}
                     onClick={handleGoToDriverHistoric}
                 />
@@ -76,8 +80,8 @@ const styles = StyleSheet.create({
         width: "80%",
         display: "flex",
         height: "90%",
-        rowGap: "10%",
-        columnGap: "10%",
+        rowGap: "5%",
+        columnGap: "5%",
         flexDirection: "row",
         flexWrap: "wrap",
     },  
