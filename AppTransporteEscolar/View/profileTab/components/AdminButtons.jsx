@@ -42,37 +42,37 @@ const AdminButtons = ({navigation}) => {
         <View style={styles.content}>
             <View style={styles.buttonsContent}>
                 <ButtonDefault
-                    icon={<FontAwesome name="user" size={"30%"} color="#fff"  />}
+                    icon={<FontAwesome name="user" size={30} color="#fff"  />}
                     title={"Perfil"}
                     onClick={handleToProfilePage}
                 />
                 <ButtonDefault
-                    icon={<FontAwesome name="bus" size={"30%"} color="#fff"/>}
+                    icon={<FontAwesome name="bus" size={30} color="#fff"/>}
                     title={"Veículos"}
                     onClick={handleToVehiclePage}
                 />
                 <ButtonDefault
-                    icon={<FontAwesome name="child" size={"30%"} color="#fff"/>}
+                    icon={<FontAwesome name="child" size={30} color="#fff"/>}
                     title={"Alunos"}
                     onClick={handleToStudentPage}
                 />
                 <ButtonDefault
-                    icon={<Ionicons name="school" size={"30%"} color="#fff" />}
+                    icon={<Ionicons name="school" size={30} color="#fff" />}
                     title={"Escolas"}
                     onClick={handleToSchoolsPage}
                 />
                 <ButtonDefault
-                    icon={<Ionicons name="alert" size={"30%"} color="#fff" />}
+                    icon={<Ionicons name="alert" size={30} color="#fff" />}
                     title={"Faltas"}
                     onClick={handleToParentNotifications}
                 />
                 <ButtonDefault
-                    icon={<FontAwesome name="history" size={"30%"} color="#fff" />}
+                    icon={<FontAwesome name="history" size={30} color="#fff" />}
                     title={"Histórico"}
                     onClick={handleGoToDriverHistoric}
                 />
                 <ButtonDefault
-                    icon={<FontAwesome name="history" size={"30%"} color="#fff" />}
+                    icon={<FontAwesome name="history" size={30} color="#fff" />}
                     title={"Histórico"}
                     onClick={handleToHistoric}
                 />
@@ -96,15 +96,15 @@ const styles = StyleSheet.create({
     },
     content: {
         flex: 1,
-        marginTop: '5%',
+        // marginTop: '5%',
         alignItems: 'center',
     },
     buttonsContent: {
-        width: "80%",
+        // width: "80%",
         display: "flex",
-        height: "90%",
-        rowGap: "10%",
-        columnGap: "10%",
+        // height: "90%",
+        // rowGap: "10%",
+        // columnGap: "10%",
         flexDirection: "row",
         flexWrap: "wrap",
     },  
@@ -115,10 +115,10 @@ const styles = StyleSheet.create({
         backgroundColor: '#f0f0f0',
         marginBottom: 10,
         borderRadius: 5,
-        width: '80%',
+        // width: '80%',
     },
     button: {
-        width: '80%',
+        // width: '80%',
         backgroundColor: '#C36005',
         marginTop: 20,
     },
