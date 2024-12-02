@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useState } from "react";
-import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Dimensions, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import DateTimePickerModal from "react-native-modal-datetime-picker";
 import moment from "moment";
 import 'moment/locale/pt-br'; 
@@ -9,6 +9,8 @@ import PageDefault from "../../components/pageDefault/PageDefault";
 import { AuthContext } from "../../providers/AuthProvider";
 import { getHistoricDriverByDate, getHistoricResponsibleByDate } from "../../data/scheduleServices";
 import CardResponsible from "./components/CardResponsible";
+
+const { width } = Dimensions.get("window");
 
 const ResponsibleScheduleHistoric = () => {
     moment.locale('pt-br');
@@ -55,6 +57,8 @@ const ResponsibleScheduleHistoric = () => {
         setDateButton(false);
     };
 
+    const iconWidth = width * 0.3;
+
     return (
         <PageDefault headerTitle="Histórico de Viagens" withoutCentering={true} loading={loading}>
             <View style={styles.content}>
@@ -74,7 +78,7 @@ const ResponsibleScheduleHistoric = () => {
                             </View>
                         :
                         <View style={styles.errorMessageContainer}>
-                            <FontAwesome name="exclamation-circle" size={"80%"} color="#C36005" />
+                            <FontAwesome name="exclamation-circle" size={iconWidth} color="#C36005" />
                             <Text style={styles.errorMessage}>{errorMessage}</Text>
                         </View>
                     }
