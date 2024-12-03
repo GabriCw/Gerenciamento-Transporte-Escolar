@@ -15,7 +15,7 @@ import ModalSelectPeriod from "./ModalSelectPeriod";
 const CreateNotification = () => {
 
     const navigation = useNavigation();
-    const {userData} = useContext(AuthContext);
+    const {userData, token} = useContext(AuthContext);
 
     const [loading, setLoading] = useState(false);
     const [studentSelected, setStudentSelected] = useState(null);
@@ -53,7 +53,7 @@ const CreateNotification = () => {
             period_id: periodSelected?.id
         };
 
-        const response = await createParentNotification(body);
+        const response = await createParentNotification(body, token);
 
         if(response.status === 201){
             Toast.show({

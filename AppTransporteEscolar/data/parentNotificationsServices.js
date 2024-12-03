@@ -4,11 +4,15 @@ import { APP_URL } from "@env";
 const apiUrl = APP_URL;
 const _controller = apiUrl + '/parent_notification';
 
-export const getActiveNotifications = async(user_id) => {
+export const getActiveNotifications = async(user_id, token) => {
     const _endpoint = `/get-active-list-by-user?user_id=${user_id}`;
 
     try{
-        const response  = await axios.get(_controller + _endpoint);
+        const response  = await axios.get(_controller + _endpoint, {
+            headers: {
+                Authorization: "Bearer " + token
+            }
+        });
 
         return response;
     }
@@ -17,11 +21,15 @@ export const getActiveNotifications = async(user_id) => {
     }
 };
 
-export const getPastNotifications = async(user_id) => {
+export const getPastNotifications = async(user_id, token) => {
     const _endpoint = `/get-past-list-by-user?user_id=${user_id}`;
 
     try{
-        const response  = await axios.get(_controller + _endpoint);
+        const response  = await axios.get(_controller + _endpoint, {
+            headers: {
+                Authorization: "Bearer " + token
+            }
+        });
 
         return response;
     }
@@ -30,11 +38,15 @@ export const getPastNotifications = async(user_id) => {
     }
 };
 
-export const getAllPeriodOptions = async() => {
+export const getAllPeriodOptions = async(token) => {
     const _endpoint = "/get-period-options";
 
     try{
-        const response  = await axios.get(_controller + _endpoint);
+        const response  = await axios.get(_controller + _endpoint, {
+            headers: {
+                Authorization: "Bearer " + token
+            }
+        });
 
         return response;
     }
@@ -43,11 +55,15 @@ export const getAllPeriodOptions = async() => {
     }
 };
 
-export const createParentNotification = async(body) => {
+export const createParentNotification = async(body, token) => {
     const _endpoint = "/create";
 
     try{
-        const response  = await axios.post(_controller + _endpoint, body);
+        const response  = await axios.post(_controller + _endpoint, body, {
+            headers: {
+                Authorization: "Bearer " + token
+            }
+        });
 
         return response;
     }
@@ -56,14 +72,15 @@ export const createParentNotification = async(body) => {
     }
 };
 
-export const cancelParentNotification = async(id, user_id) => {
+export const cancelParentNotification = async(id, user_id, token) => {
     const _endpoint = "/cancel-by-id";
 
     try{
         const response  = await axios.put(_controller + _endpoint, {}, {
             headers: {
                 id, 
-                "user-id":user_id
+                "user-id":user_id,
+                "Authorization": "Bearer " + token
             }
         });
 

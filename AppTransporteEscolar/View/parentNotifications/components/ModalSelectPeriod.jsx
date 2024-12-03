@@ -1,10 +1,11 @@
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import ModalDefault from "../../../components/modalDefault/ModalDefault";
 import { StyleSheet, View } from "react-native";
 import BouncyCheckbox from "react-native-bouncy-checkbox"
 import { Button } from "react-native-paper";
 import { getAllPeriodOptions } from "../../../data/parentNotificationsServices";
 import Toast from "react-native-toast-message";
+import { AuthContext } from "../../../providers/AuthProvider";
 
 const ModalSelectPeriod = ({selected, open, setOpen, setPeriod}) => {
 
@@ -12,11 +13,13 @@ const ModalSelectPeriod = ({selected, open, setOpen, setPeriod}) => {
     const [loading, setLoading] = useState(false);
     const [periodList, setPeriodList] = useState([]);
 
+    const { token } = useContext(AuthContext);
+
     useEffect(() => {
         const requestData = async() => {
             setLoading(true);
 
-            const response = await getAllPeriodOptions();
+            const response = await getAllPeriodOptions(token);
 
             if(response.status === 200){
                 const periodFormatted = response.data.map(item => {

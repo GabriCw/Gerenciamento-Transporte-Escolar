@@ -9,7 +9,7 @@ import WithoutNotification from "./components/WithoutNotification";
 
 const ParentNotifications = () => {
 
-    const {userData} = useContext(AuthContext);
+    const {userData, token} = useContext(AuthContext);
 
     const [pageLoading, setPageLoading] = useState(false);
     const [activeNotifications, setActiveNotifications] = useState([]);
@@ -19,7 +19,7 @@ const ParentNotifications = () => {
         const requestData = async() => {
             setPageLoading(true);
 
-            const [activeList, pastList] = await Promise.all([getActiveNotifications(userData.id), getPastNotifications(userData.id)]);
+            const [activeList, pastList] = await Promise.all([getActiveNotifications(userData.id, token), getPastNotifications(userData.id, token)]);
 
             if(activeList.status === 200 && pastList.status === 200){
                 setActiveNotifications(activeList.data);
