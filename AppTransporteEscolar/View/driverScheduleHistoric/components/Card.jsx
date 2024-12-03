@@ -10,7 +10,7 @@ import Toast from "react-native-toast-message";
 
 const Card = ({data, index, setLoading}) => {
     const mapRef = useRef(null);
-    const { userData } = useContext(AuthContext);
+    const { userData, token } = useContext(AuthContext);
     const navigation = useNavigation(); 
     const [coordinates, setCoordinates] = useState([]);
     const [loraCoordinates, setLoraCoordinates] = useState([]);
@@ -18,7 +18,7 @@ const Card = ({data, index, setLoading}) => {
     const handleScheduleDetails = async() => {
         setLoading(true);
 
-        const response = await getHistoricDriverDetail(data.schedule.id, userData.id);
+        const response = await getHistoricDriverDetail(data.schedule.id, userData.id, token);
 
         if(response.status === 200){
             navigation.navigate("DriverScheduleHistoricDetails", {coordinates: coordinates, details: response.data, loraCoordinates: loraCoordinates});

@@ -4,7 +4,6 @@ import { AuthContext } from "../../providers/AuthProvider";
 import Toast from "react-native-toast-message";
 import PageDefault from "../../components/pageDefault/PageDefault";
 import SchoolVehicleList from "./components/SchoolsAssociatedList";
-import { getAssociationsByUser } from "../../data/vehiclePointServices";
 import { Button } from "react-native-paper";
 import { useNavigation } from "@react-navigation/native";
 import SchoolsList from "./components/SchoolsAssociatedList";

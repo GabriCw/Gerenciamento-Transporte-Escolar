@@ -682,7 +682,7 @@ const MapaMotorista = ({ navigation }) => {
     };
 
     const handleGetCurrentSchedules = async () => {
-        const response = await getCurrentSchedules(userData.id);
+        const response = await getCurrentSchedules(userData.id, token);
 
         if (response.status === 200) {
             console.log('Current schedules obtained successfully');
