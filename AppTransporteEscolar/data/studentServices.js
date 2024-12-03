@@ -1,7 +1,7 @@
 import axios from "axios";
 import { APP_URL } from "@env";
 
-const apiUrl = "http://127.0.0.1:8000";
+const apiUrl = APP_URL;
 const _controller = apiUrl + '/student';
 
 export const getStudentByResponsible = async(userId, token) => {
