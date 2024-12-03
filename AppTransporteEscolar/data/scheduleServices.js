@@ -1,5 +1,7 @@
 import axios from "axios";
 import { APP_URL } from "@env";
+import { signOut } from "firebase/auth";
+import { auth } from "../firebase/firebase";
 
 const apiUrl = APP_URL;
 const _controller = apiUrl + '/schedule';
@@ -17,6 +19,9 @@ export const getHistoricDriverByDate = async(body, token) => {
         return response;
     }
     catch(error){
+        if(error.response.status === 500){
+            await signOut(auth);
+        }
         return error.response;
     }
 };
@@ -34,6 +39,9 @@ export const getHistoricResponsibleByDate = async(body, token) => {
         return response;
     }
     catch(error){
+        if(error.response.status === 500){
+            await signOut(auth);
+        }
         return error.response;
     }
 };
@@ -58,6 +66,9 @@ export const getHistoricResponsibleDetail = async(scheduleId, userId, pointId, t
         return response;
     }
     catch(error){
+        if(error.response.status === 500){
+            await signOut(auth);
+        }
         return error.response;
     }
 };
@@ -79,6 +90,9 @@ export const getHistoricDriverDetail = async(scheduleId, userId, token) => {
         return response;
     }
     catch(error){
+        if(error.response.status === 500){
+            await signOut(auth);
+        }
         return error.response;
     }
 };
@@ -95,6 +109,9 @@ export const getCurrentSchedules = async(user_id, token) => {
         return response;
     }
     catch(error){
+        if(error.response.status === 500){
+            await signOut(auth);
+        }
         return error.response;
     }
 };

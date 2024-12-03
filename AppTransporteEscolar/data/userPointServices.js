@@ -1,5 +1,7 @@
 import axios from "axios";
 import { APP_URL } from "@env";
+import { signOut } from "firebase/auth";
+import { auth } from "../firebase/firebase";
 
 const apiUrl = APP_URL;
 const _controller = apiUrl + '/user-point';
@@ -17,6 +19,9 @@ export const getDriverByCode = async(code, token) => {
         return response;
     }
     catch(error){
+        if(error.response.status === 500){
+            await signOut(auth);
+        }
         return error.response;
     }
 };

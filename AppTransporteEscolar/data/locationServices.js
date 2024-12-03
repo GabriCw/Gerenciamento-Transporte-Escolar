@@ -1,5 +1,7 @@
 import axios from "axios";
 import { APP_URL } from "@env";
+import { signOut } from "firebase/auth";
+import { auth } from "../firebase/firebase";
 
 const apiUrl = APP_URL;
 
@@ -21,6 +23,9 @@ export const postDriverLocation = async(body, token) => {
         return response;
     }
     catch(error){
+        if(error.response.status === 500){
+            await signOut(auth);
+        }
         return error.response;
     }
 };
@@ -38,6 +43,9 @@ export const getDriverLocation = async(schedule_id, token) => {
         return response;
     }
     catch(error){
+        if(error.response.status === 500){
+            await signOut(auth);
+        }
         return error.response;
     }
 };
@@ -57,6 +65,9 @@ export const getDriversLastPosition = async(schedule_id, user_id, token) => {
         return response;
     }
     catch(error){
+        if(error.response.status === 500){
+            await signOut(auth);
+        }
         return error.response;
     }
 };
@@ -74,6 +85,9 @@ export const getCurrentSchedules = async(user_id, token) => {
         return response;
     }
     catch(error){
+        if(error.response.status === 500){
+            await signOut(auth);
+        }
         return error.response;
     }
 };
@@ -92,6 +106,9 @@ export const createSchedule = async(body, token) => {
         return response;
     }
     catch(error){
+        if(error.response.status === 500){
+            await signOut(auth);
+        }
         return error.response;
     }
 };
@@ -109,6 +126,9 @@ export const startSchedule = async(body, token) => {
         return response;
     }
     catch(error){
+        if(error.response.status === 500){
+            await signOut(auth);
+        }
         return error.response;
     }
 };
@@ -126,6 +146,9 @@ export const getDriverScheduleDetails = async(schedule_id, token) => {
         return response;
     }
     catch(error){
+        if(error.response.status === 500){
+            await signOut(auth);
+        }
         return error.response;
     }
 };
@@ -143,6 +166,9 @@ export const updateSchedulePoint = async(body, token) => {
         return response;
     }
     catch(error){
+        if(error.response.status === 500){
+            await signOut(auth);
+        }
         return error.response;
     }
 };
@@ -160,6 +186,9 @@ export const endSchedule = async(body, token) => {
         return response;
     }
     catch(error){
+        if(error.response.status === 500){
+            await signOut(auth);
+        }
         return error.response;
     }
 };
@@ -179,6 +208,9 @@ export const getScheduleMapsInfos = async(schedule_id, user_id, token) => {
         return response;
     }
     catch(error){
+        if(error.response.status === 500){
+            await signOut(auth);
+        }
         return error.response;
     }
 };
@@ -198,6 +230,9 @@ export const getStudentPosition = async(schedule_id, user_id, token) => {
         return response;
     }
     catch(error){
+        if(error.response.status === 500){
+            await signOut(auth);
+        }
         return error.response;
     }
 };
@@ -218,6 +253,9 @@ export const getByStudent = async(student_id, user_id, token) => {
         return response;
     }
     catch(error){
+        if(error.response.status === 500){
+            await signOut(auth);
+        }
         return error.response;
     }
 };

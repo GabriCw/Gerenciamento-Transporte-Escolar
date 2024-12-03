@@ -1,5 +1,7 @@
 import axios from "axios";
 import { APP_URL } from "@env";
+import { signOut } from "firebase/auth";
+import { auth } from "../firebase/firebase";
 
 const apiUrl = APP_URL;
 const _controller = apiUrl + '/point';
@@ -17,6 +19,9 @@ export const getPointByUser = async(user_id, token) => {
         return response;
     }
     catch(error){
+        if(error.response.status === 500){
+            await signOut(auth);
+        }
         return error.response;
     }
 };
@@ -34,6 +39,9 @@ export const getPointByID = async(point_id, token) => {
         return response;
     }
     catch(error){
+        if(error.response.status === 500){
+            await signOut(auth);
+        }
         return error.response;
     }
 };
@@ -51,6 +59,9 @@ export const updatePoint = async(body, token) => {
         return response;
     }
     catch(error){
+        if(error.response.status === 500){
+            await signOut(auth);
+        }
         return error.response;
     }
 };
@@ -68,6 +79,9 @@ export const getAllSchoolList = async(token) => {
         return response;
     }
     catch(error){
+        if(error.response.status === 500){
+            await signOut(auth);
+        }
         return error.response;
     }
 };
@@ -85,6 +99,9 @@ export const associateDriverToSchool = async(body, token) => {
         return response;
     }
     catch(error){
+        if(error.response.status === 500){
+            await signOut(auth);
+        }
         return error.response;
     }
 };
@@ -101,6 +118,9 @@ export const disassociateDriverToSchool = async(body, token) => {
         return response;
     }
     catch(error){
+        if(error.response.status === 500){
+            await signOut(auth);
+        }
         return error.response;
     }
 };
@@ -118,6 +138,9 @@ export const getSchoolByUser = async(userId, token) => {
         return response;
     }
     catch(error){
+        if(error.response.status === 500){
+            await signOut(auth);
+        }
         return error.response;
     }
 };
@@ -135,6 +158,9 @@ export const getSchoolByDriver = async(userId, token) => {
         return response;
     }
     catch(error){
+        if(error.response.status === 500){
+            await signOut(auth);
+        }
         return error.response;
     }
 };
@@ -152,6 +178,9 @@ export const getSchoolAssociatedByDriver = async(userId, token) => {
         return response;
     }
     catch(error){
+        if(error.response.status === 500){
+            await signOut(auth);
+        }
         return error.response;
     }
 };

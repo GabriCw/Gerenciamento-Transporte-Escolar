@@ -1,5 +1,7 @@
 import axios from "axios";
 import { APP_URL } from "@env";
+import { signOut } from "firebase/auth";
+import { auth } from "../firebase/firebase";
 
 const apiUrl = APP_URL;
 const _controller = apiUrl + '/student';
@@ -17,6 +19,9 @@ export const getStudentByResponsible = async(userId, token) => {
         return response;
     }
     catch(error){
+        if(error.response.status === 500){
+            await signOut(auth);
+        }
         return error.response;
     }
 };
@@ -34,6 +39,9 @@ export const createStudent = async(body, token) => {
         return response;
     }
     catch(error){
+        if(error.response.status === 500){
+            await signOut(auth);
+        }
         return error.response;
     }
 };
@@ -51,6 +59,9 @@ export const createStudentList = async(body, token) => {
         return response;
     }
     catch(error){
+        if(error.response.status === 500){
+            await signOut(auth);
+        }
         return error.response;
     }
 };
@@ -68,6 +79,9 @@ export const deleteStudent = async(id, token) => {
         return response;
     }
     catch(error){
+        if(error.response.status === 500){
+            await signOut(auth);
+        }
         return error.response;
     }
 };
@@ -85,6 +99,9 @@ export const updateStudent = async(body, token) => {
         return response;
     }
     catch(error){
+        if(error.response.status === 500){
+            await signOut(auth);
+        }
         return error.response;
     }
 };
@@ -102,6 +119,9 @@ export const getStudentByCode = async(studentCode, token) => {
         return response;
     }
     catch(error){
+        if(error.response.status === 500){
+            await signOut(auth);
+        }
         return error.response;
     }
 };
@@ -119,6 +139,9 @@ export const associationStudent = async(body, token) => {
         return response;
     }
     catch(error){
+        if(error.response.status === 500){
+            await signOut(auth);
+        }
         return error.response;
     }
 };
@@ -136,6 +159,9 @@ export const disassociationStudent = async(body, token) => {
         return response;
     }
     catch(error){
+        if(error.response.status === 500){
+            await signOut(auth);
+        }
         return error.response;
     }
 };
@@ -153,6 +179,9 @@ export const getStudentDetails = async(student_id, token) => {
         return response;
     }
     catch(error){
+        if(error.response.status === 500){
+            await signOut(auth);
+        }
         return error.response;
     }
 };
@@ -174,6 +203,9 @@ export const getListAllHomes = async(student_id, user_id, token) => {
         return response;
     }
     catch(error){
+        if(error.response.status === 500){
+            await signOut(auth);
+        }
         return error.response;
     }
 };
@@ -191,6 +223,9 @@ export const updateAddress = async(body, token) => {
         return response;
     }
     catch(error){
+        if(error.response.status === 500){
+            await signOut(auth);
+        }
         return error.response;
     }
 };
@@ -208,6 +243,9 @@ export const updateAddressByPoint = async(body, token) => {
         return response;
     }
     catch(error){
+        if(error.response.status === 500){
+            await signOut(auth);
+        }
         return error.response;
     }
 };
@@ -225,6 +263,9 @@ export const getStudentsByResponsiblePoint = async(responsible_id, token) => {
         return response;
     }
     catch(error){
+        if(error.response.status === 500){
+            await signOut(auth);
+        }
         return error.response;
     }
 };

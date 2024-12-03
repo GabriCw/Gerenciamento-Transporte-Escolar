@@ -1,7 +1,9 @@
 import axios from "axios";
 import { APP_URL } from "@env";
+import { signOut } from "firebase/auth";
+import { auth } from "../firebase/firebase";
 
-const apiUrl = APP_URL;
+const apiUrl = "http://127.0.0.1:8000";
 const _controller = apiUrl + '/parent_notification';
 
 export const getActiveNotifications = async(user_id, token) => {
@@ -17,6 +19,9 @@ export const getActiveNotifications = async(user_id, token) => {
         return response;
     }
     catch(error){
+        if(error.response.status === 500){
+            await signOut(auth);
+        }
         return error.response;
     }
 };
@@ -34,6 +39,9 @@ export const getPastNotifications = async(user_id, token) => {
         return response;
     }
     catch(error){
+        if(error.response.status === 500){
+            await signOut(auth);
+        }
         return error.response;
     }
 };
@@ -51,6 +59,9 @@ export const getAllPeriodOptions = async(token) => {
         return response;
     }
     catch(error){
+        if(error.response.status === 500){
+            await signOut(auth);
+        }
         return error.response;
     }
 };
@@ -68,6 +79,9 @@ export const createParentNotification = async(body, token) => {
         return response;
     }
     catch(error){
+        if(error.response.status === 500){
+            await signOut(auth);
+        }
         return error.response;
     }
 };
@@ -87,6 +101,9 @@ export const cancelParentNotification = async(id, user_id, token) => {
         return response;
     }
     catch(error){
+        if(error.response.status === 500){
+            await signOut(auth);
+        }
         return error.response;
     }
 };
