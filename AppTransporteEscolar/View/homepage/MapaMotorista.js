@@ -596,7 +596,7 @@ const MapaMotorista = ({ navigation }) => {
                 schedule_type: routeType
             };
 
-            const response = await createSchedule(body);
+            const response = await createSchedule(body, token);
 
             console.log('Response Create Schedule:', response.data);
 
@@ -627,7 +627,7 @@ const MapaMotorista = ({ navigation }) => {
     };
 
     const fetchScheduleDetails = async (scheduleIdParam, latitude, longitude) => {
-        const response = await getDriverScheduleDetails(scheduleIdParam || scheduleId);
+        const response = await getDriverScheduleDetails(scheduleIdParam || scheduleId, token);
     
         if (response.status === 200) {
             console.log('Schedule details obtained successfully');
@@ -753,7 +753,7 @@ const MapaMotorista = ({ navigation }) => {
         };
         console.log('Body:', body);
 
-        const response = await startSchedule(body);
+        const response = await startSchedule(body, token);
 
         if (response.status === 200) {
             console.log('Schedule iniciado com sucesso');
@@ -772,7 +772,7 @@ const MapaMotorista = ({ navigation }) => {
 
         console.log('Body:', body);
 
-        const response = await updateSchedulePoint(body);
+        const response = await updateSchedulePoint(body, token);
 
         if (response.status === 200) {
             console.log('Status do aluno atualizado com sucesso');
@@ -787,7 +787,7 @@ const MapaMotorista = ({ navigation }) => {
             user_id: userData.id
         };
 
-        const response = await endSchedule(body);
+        const response = await endSchedule(body, token);
 
         if (response.status === 200) {
             console.log('Schedule encerrado com sucesso');
@@ -866,7 +866,7 @@ const MapaMotorista = ({ navigation }) => {
     };
 
     const handlePostDriverLocation = async (body) => {
-        const postLocation = await postDriverLocation(body)
+        const postLocation = await postDriverLocation(body, token)
 
         if (postLocation.status === 201) {
             console.log('Sucesso ao enviar localização do motorista')
