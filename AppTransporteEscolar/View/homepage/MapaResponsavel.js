@@ -459,7 +459,7 @@ const MapaResponsavel = ({ navigation }) => {
         if (selectedStudent && selectedStudent.point_id) {
           const fetchPointInfo = async () => {
             try {
-              const pointResponse = await getPointByID(selectedStudent.point_id);
+              const pointResponse = await getPointByID(selectedStudent.point_id, token);
               if (pointResponse.status === 200) {
                 const pointData = pointResponse.data;
                 // Atualize residenciaAtiva com os dados obtidos

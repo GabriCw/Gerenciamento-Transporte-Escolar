@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import PageDefault from "../../../components/pageDefault/PageDefault";
 import { getAllSchoolList } from "../../../data/pointServices";
 import { useNavigation } from "@react-navigation/native";
@@ -7,10 +7,12 @@ import { ScrollView, StyleSheet, View } from "react-native";
 import { Button, Card, ActivityIndicator, Text } from 'react-native-paper';
 import { AntDesign, FontAwesome } from "@expo/vector-icons";
 import Ionicons from '@expo/vector-icons/Ionicons';
+import { AuthContext } from "../../../providers/AuthProvider";
 
 const AllSchoolsList = ({route}) => {
 
     const navigation = useNavigation();
+    const { token } = useContext(AuthContext);
 
     const [isLoading, setIsLoading] = useState(false);
     const [schools, setSchools] = useState([]);
@@ -21,7 +23,7 @@ const AllSchoolsList = ({route}) => {
         const requestData = async() => {
             setIsLoading(true);
 
-            const list = await getAllSchoolList();
+            const list = await getAllSchoolList(token);
             
             if(list.status === 200){
                 const schoolsResponse = list.data.map(item => {

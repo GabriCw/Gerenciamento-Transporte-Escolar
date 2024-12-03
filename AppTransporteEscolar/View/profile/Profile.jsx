@@ -17,7 +17,7 @@ import { useNavigation } from '@react-navigation/native';
 
 const Profile = () => {
     const navigation = useNavigation();
-    const { userData } = useContext(AuthContext);
+    const { userData, token } = useContext(AuthContext);
 
     const [user, setUser] = useState(null);
     const [point, setPoint] = useState(null);
@@ -28,7 +28,7 @@ const Profile = () => {
     const [reload, setReload] = useState(false);
 
     const requestData = async() => {
-        const [user, points] = await Promise.all([getUserById(userData.id), getPointByUser(userData.id)])
+        const [user, points] = await Promise.all([getUserById(userData.id), getPointByUser(userData.id, token)])
 
         if(user.status === 200 && points.status === 200){
             setUser(user.data);
@@ -93,7 +93,7 @@ const Profile = () => {
         
         setIsLoading(true);
 
-        const response = await updatePoint(body);
+        const response = await updatePoint(body, token);
 
         if(response.status === 200){
             Toast.show({

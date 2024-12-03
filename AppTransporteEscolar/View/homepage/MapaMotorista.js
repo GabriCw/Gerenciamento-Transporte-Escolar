@@ -813,7 +813,7 @@ const MapaMotorista = ({ navigation }) => {
             console.error('Erro ao obter veículos:', response.data);
         }
 
-        const response2 = await getSchoolByDriver(userData.id);
+        const response2 = await getSchoolByDriver(userData.id, token);
 
         if (response2.status === 200) {
             console.log('Escolas obtidas com sucesso');
