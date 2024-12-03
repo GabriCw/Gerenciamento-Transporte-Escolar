@@ -10,7 +10,7 @@ import Toast from "react-native-toast-message";
 
 const CardResponsible = ({data, index, setLoading}) => {
     const mapRef = useRef(null);
-    const { userData } = useContext(AuthContext);
+    const { userData, token } = useContext(AuthContext);
     const navigation = useNavigation(); 
     const [coordinates, setCoordinates] = useState([]);
     const [loraCoordinates, setLoraCoordinates] = useState([]);
@@ -18,7 +18,7 @@ const CardResponsible = ({data, index, setLoading}) => {
     const handleScheduleDetails = async() => {
         setLoading(true);
 
-        const response = await getHistoricResponsibleDetail(data.schedule.id, userData.id, data.points[0].id);
+        const response = await getHistoricResponsibleDetail(data.schedule.id, userData.id, data.points[0].id, token);
 
         if(response.status === 200){
             navigation.navigate("ResponsibleScheduleHistoricDetails", {coordinates: coordinates, details: response.data, loraCoordinates: loraCoordinates});

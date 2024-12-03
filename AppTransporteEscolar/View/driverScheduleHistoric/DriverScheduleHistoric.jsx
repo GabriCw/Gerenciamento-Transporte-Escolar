@@ -15,7 +15,7 @@ const { width } = Dimensions.get("window");
 const DriverScheduleHistoric = () => {
     moment.locale('pt-br');
 
-    const { userData } = useContext(AuthContext);
+    const { userData, token } = useContext(AuthContext);
 
     const today = moment().format("DD/MM/YYYY, dddd");
     const [dateSelected, setDateSelected] = useState(today);
@@ -30,7 +30,7 @@ const DriverScheduleHistoric = () => {
 
         setLoading(true);
 
-        const list = await getHistoricDriverByDate({ date: date, user_id: userData.id });
+        const list = await getHistoricDriverByDate({ date: date, user_id: userData.id }, token);
 
         if(list.status === 200){
             setListByDate(list.data);

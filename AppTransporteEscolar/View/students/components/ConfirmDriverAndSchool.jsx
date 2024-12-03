@@ -10,7 +10,7 @@ import PageDefault from "../../../components/pageDefault/PageDefault";
 
 const ConfirmDriverAndSchool = ({navigation, route}) => {
     const {studentData, driverData} = route.params;
-    const {userData, handleVerifyStudent} = useContext(AuthContext);
+    const {userData, handleVerifyStudent, token} = useContext(AuthContext);
     
     const [loading, setLoading] = useState(false);
 
@@ -24,7 +24,7 @@ const ConfirmDriverAndSchool = ({navigation, route}) => {
             driver_id: driverData.user.id
         };
 
-        const response = await createStudent(body);
+        const response = await createStudent(body, token);
 
         if(response.status === 201){
             await handleVerifyStudent();

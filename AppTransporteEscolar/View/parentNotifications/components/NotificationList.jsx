@@ -10,7 +10,7 @@ import Toast from "react-native-toast-message";
 
 const NotificationsList = ({activeList, pastList, setLoading}) => {
 
-    const { userData } = useContext(AuthContext);
+    const { userData, token } = useContext(AuthContext);
     const navigation = useNavigation();
 
     const handleCancelNotification = (item) => {
@@ -26,7 +26,7 @@ const NotificationsList = ({activeList, pastList, setLoading}) => {
     const handleCancelNotificationConfirm = async(item) => {
         setLoading(true);
 
-        const cancel = await cancelParentNotification(item.id, userData.id);
+        const cancel = await cancelParentNotification(item.id, userData.id, token);
 
         if (cancel.status === 200){
             Toast.show({

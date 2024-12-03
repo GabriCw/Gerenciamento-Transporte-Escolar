@@ -4,7 +4,6 @@ import { AuthContext } from "../../providers/AuthProvider";
 import Toast from "react-native-toast-message";
 import PageDefault from "../../components/pageDefault/PageDefault";
 import SchoolVehicleList from "./components/SchoolsAssociatedList";
-import { getAssociationsByUser } from "../../data/vehiclePointServices";
 import { Button } from "react-native-paper";
 import { useNavigation } from "@react-navigation/native";
 import SchoolsList from "./components/SchoolsAssociatedList";
@@ -17,7 +16,7 @@ const Schools = () => {
 
     const [isLoading, setIsLoading] = useState(false);
     const [associationList, setAssociationList] = useState(null);
-    const {userData} = useContext(AuthContext);
+    const {userData, token} = useContext(AuthContext);
 
     const handleGoToAllSchoolsList = () => {
         navigation.navigate("AllSchoolsList", {schoolsIds: []});
@@ -27,7 +26,7 @@ const Schools = () => {
         const requestData = async() => {
             setIsLoading(true);
 
-            const associations = await getSchoolByDriver(userData.id);
+            const associations = await getSchoolByDriver(userData.id, token);
 
             if(associations.status === 200){
                 setAssociationList(associations.data);

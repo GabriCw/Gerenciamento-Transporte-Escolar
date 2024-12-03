@@ -15,7 +15,7 @@ const VehicleDetails = ({route}) => {
     const [modalVisible, setModalVisible] = useState(false);
 
     const navigation = useNavigation();
-    const {userData} = useContext(AuthContext);
+    const {userData, token} = useContext(AuthContext);
     const {vehicleData} = route.params;
 
     const handleOpenRemoveAlert = () => {
@@ -31,7 +31,7 @@ const VehicleDetails = ({route}) => {
     const handleRemove = async() => {
         setLoading(true);
 
-        const remove = await removeVehicle(vehicleData.id);
+        const remove = await removeVehicle(vehicleData.id, token);
 
         if(remove.status === 200){
             Toast.show({
@@ -71,7 +71,7 @@ const VehicleDetails = ({route}) => {
 
             setLoading(true);
             
-            const response = await updateVehicle(body);
+            const response = await updateVehicle(body, token);
             
             if(response.status === 200){
                 Toast.show({

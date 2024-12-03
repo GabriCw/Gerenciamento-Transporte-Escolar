@@ -13,7 +13,7 @@ import ModalEditPoint from "./ModalEditPoint";
 const StudentDetail = ({navigation, route}) => {
 
     const {studentData} = route.params;
-    const {userData, handleVerifyStudent} = useContext(AuthContext);
+    const {userData, handleVerifyStudent, token} = useContext(AuthContext);
 
     const [openEditModal, setOpenEditModal] = useState(false);
     const [openEditPointModal, setOpenEditPointModal] = useState(false);
@@ -40,7 +40,7 @@ const StudentDetail = ({navigation, route}) => {
         setLoading(true);
         setOpenEditModal(false);
 
-        const response = await updateStudent(student);
+        const response = await updateStudent(student, token);
 
         if(response.status === 200){
             Toast.show({
@@ -85,7 +85,7 @@ const StudentDetail = ({navigation, route}) => {
             student_id: studentData?.student?.id
         };
 
-        const disassociation = await disassociationStudent(body);
+        const disassociation = await disassociationStudent(body, token);
 
         if(disassociation.status === 200){
             Toast.show({
@@ -123,7 +123,7 @@ const StudentDetail = ({navigation, route}) => {
     const handleRemove = async() => {
         setLoading(true);
 
-        const remove = await deleteStudent(studentData?.student?.id);
+        const remove = await deleteStudent(studentData?.student?.id, token);
 
         if(remove.status === 200){
             Toast.show({
@@ -150,7 +150,7 @@ const StudentDetail = ({navigation, route}) => {
     const handleReloadInfos = async() => {
         setLoading(true);
 
-        const studentDetails = await getStudentDetails(data.student.id);
+        const studentDetails = await getStudentDetails(data.student.id, token);
 
         if(studentDetails.status === 200){
             setData(studentDetails.data);

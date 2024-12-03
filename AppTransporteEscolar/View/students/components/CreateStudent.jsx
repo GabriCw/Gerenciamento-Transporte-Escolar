@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useContext, useState } from "react";
 import { StyleSheet, View } from "react-native";
 import { ActivityIndicator, Button, TextInput } from "react-native-paper";
 import Header from "../../../components/header/Header";
@@ -6,10 +6,13 @@ import Toast from "react-native-toast-message";
 import { getDriverDetailsByCode } from "../../../data/userServices";
 import PageDefault from "../../../components/pageDefault/PageDefault";
 import { getDriverByCode, getStudentByCode } from "../../../data/userPointServices";
+import { AuthContext } from "../../../providers/AuthProvider";
 
 const CreateStudent = ({navigation}) => {
     const [student, setStudent] = useState(null);
     const [loading, setLoading] = useState(false);
+
+    const { token } = useContext(AuthContext);
 
     const handleVerifyDriverCode = async() => {
         if(!(student?.name !== null && student?.year !== null && student?.driverCode !== null)){
@@ -25,7 +28,7 @@ const CreateStudent = ({navigation}) => {
 
         setLoading(true);
 
-        const verifyCode = await getDriverByCode(student?.driverCode);
+        const verifyCode = await getDriverByCode(student?.driverCode, token);
 
         if(verifyCode.status === 200){
             navigation.navigate("ConfirmDriverAndSchool", {studentData: student, driverData: verifyCode.data});

@@ -15,7 +15,7 @@ import { getDistance } from 'geolib';
 
 const MapaResponsavel = ({ navigation }) => {
 
-    const {userData} = useContext(AuthContext);
+    const {userData, token} = useContext(AuthContext);
     const scheduleInfoRef = useRef(null);
     const studentsData = useRef(null);
     const [scheduleId, setScheduleId] = useState(null);
@@ -179,7 +179,7 @@ const MapaResponsavel = ({ navigation }) => {
     
 
     const handleGetStudentByResponsible = async(user_id) => {
-        const getByResponsible = await getStudentByResponsible(user_id)
+        const getByResponsible = await getStudentByResponsible(user_id, token)
 
         if(getByResponsible.status === 200){
             console.log('Sucesso ao receber informações dos alunos pro Responsável')
@@ -191,7 +191,7 @@ const MapaResponsavel = ({ navigation }) => {
     }
     
     const handleGetDriverLocation = async(schedule_id, user_id) => {
-        const getLocation = await getDriversLastPosition(parseInt(schedule_id), parseInt(user_id))
+        const getLocation = await getDriversLastPosition(parseInt(schedule_id), parseInt(user_id), token)
 
         if(getLocation.status === 200){
             // console.log('Sucesso ao receber localização do motorista')
@@ -205,7 +205,7 @@ const MapaResponsavel = ({ navigation }) => {
     }
 
     const handleGetMapsInfos = async (schedule_id, user_id) => {
-        const getMapInfos = await getScheduleMapsInfos(schedule_id.toString(), user_id.toString());
+        const getMapInfos = await getScheduleMapsInfos(schedule_id.toString(), user_id.toString(), token);
     
         if (getMapInfos.status === 200) {
             console.log('Sucesso ao receber informações da rota');
@@ -265,7 +265,7 @@ const MapaResponsavel = ({ navigation }) => {
     };
 
     const handleGetStudentPosition = async (schedule_id, user_id) => {
-        const studentPositionResponse = await getStudentPosition(schedule_id, user_id);
+        const studentPositionResponse = await getStudentPosition(schedule_id, user_id, token);
       
         if (studentPositionResponse && studentPositionResponse.status === 200) {
           console.log('Sucesso ao receber a posição na fila do aluno');
@@ -278,7 +278,7 @@ const MapaResponsavel = ({ navigation }) => {
     };
 
     const handleGetByStudent = async(student_id, user_id) => {
-        const studentSchedules = await getByStudent(student_id, user_id)
+        const studentSchedules = await getByStudent(student_id, user_id, token)
 
         if(studentSchedules.status === 200){
             console.log('Sucesso ao receber as viagens do aluno')
@@ -459,7 +459,7 @@ const MapaResponsavel = ({ navigation }) => {
         if (selectedStudent && selectedStudent.point_id) {
           const fetchPointInfo = async () => {
             try {
-              const pointResponse = await getPointByID(selectedStudent.point_id);
+              const pointResponse = await getPointByID(selectedStudent.point_id, token);
               if (pointResponse.status === 200) {
                 const pointData = pointResponse.data;
                 // Atualize residenciaAtiva com os dados obtidos

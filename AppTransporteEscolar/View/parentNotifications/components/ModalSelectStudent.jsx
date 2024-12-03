@@ -9,7 +9,7 @@ import Toast from "react-native-toast-message";
 
 const ModalSelectStudent = ({ open, setOpen, setStudent, selected}) => {
 
-    const { userData } = useContext(AuthContext);
+    const { userData, token } = useContext(AuthContext);
     const [studentSelected, setStudentSelected] = useState(null);
     const [studentList, setStudentList] = useState([]);
     const [loading, setLoading] = useState(false);
@@ -18,7 +18,7 @@ const ModalSelectStudent = ({ open, setOpen, setStudent, selected}) => {
         const requestData = async() => {
             setLoading(true);
 
-            const response = await getStudentsByResponsiblePoint(userData.id);
+            const response = await getStudentsByResponsiblePoint(userData.id, token);
 
             if(response.status === 200){
                 const studentFormatted = response.data.map(item => {

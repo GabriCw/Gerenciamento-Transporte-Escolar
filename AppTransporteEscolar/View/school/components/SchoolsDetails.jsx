@@ -13,7 +13,7 @@ const SchoolsDetails = ({route}) => {
     const [loading, setLoading] = useState(false);
 
     const navigation = useNavigation();
-    const {userData} = useContext(AuthContext);
+    const {userData, token} = useContext(AuthContext);
     const {schoolData, isAssociation} = route.params;
 
     const handleAssociation = async() => {
@@ -24,7 +24,7 @@ const SchoolsDetails = ({route}) => {
 
         setLoading(true);
 
-        const associate = await associateDriverToSchool(body);
+        const associate = await associateDriverToSchool(body, token);
 
         if(associate.status === 201){
             Toast.show({
@@ -56,7 +56,7 @@ const SchoolsDetails = ({route}) => {
 
         setLoading(true);
 
-        const disassociate = await disassociateDriverToSchool(body);
+        const disassociate = await disassociateDriverToSchool(body, token);
 
         if(disassociate.status === 200){
             Toast.show({

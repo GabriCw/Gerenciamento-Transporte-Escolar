@@ -12,7 +12,7 @@ import Toast from "react-native-toast-message";
 const VehiclesAssociatedList = ({ list, setIsLoading }) => {
 
     const navigation = useNavigation();
-    const { userData } = useContext(AuthContext);
+    const { userData, token } = useContext(AuthContext);
     const [modalVisible, setModalVisible] = useState(false);
     const [vehicleSelect, setVehicleSelect] = useState(null);
 
@@ -34,7 +34,7 @@ const VehiclesAssociatedList = ({ list, setIsLoading }) => {
 
             setIsLoading(true);
 
-            const response = await updateVehicle(body);
+            const response = await updateVehicle(body, token);
 
             if(response.status === 200){
                 Toast.show({
