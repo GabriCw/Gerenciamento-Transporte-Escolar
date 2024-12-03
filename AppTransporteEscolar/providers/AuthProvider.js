@@ -44,7 +44,7 @@ export function AuthProvider({children}) {
     const handleVerifyStudent = async(data) => {
         const user = data !== undefined ? data : userData;
         if(user?.user_type_id !== userTypeEnum.MOTORISTA){
-            const response = await getStudentByResponsible(user.id);
+            const response = await getStudentByResponsible(user.id, token);
 
             if(response.status === 200){
                 setHasStudent(true);

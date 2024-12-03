@@ -12,7 +12,7 @@ const ConfirmStudentAssociation = ({route, navigation}) => {
     const [isLoading, setIsLoading] = useState(false);
 
     const {studentData} = route.params;
-    const {userData, handleVerifyStudent} = useContext(AuthContext);
+    const {userData, handleVerifyStudent, token} = useContext(AuthContext);
     
     const handleCancel = () => {
         navigation.goBack();
@@ -26,7 +26,7 @@ const ConfirmStudentAssociation = ({route, navigation}) => {
             student_id: studentData?.student?.id
         };
 
-        const association = await associationStudent(associationBody);
+        const association = await associationStudent(associationBody, token);
 
         if(association.status === 200){
             Toast.show({

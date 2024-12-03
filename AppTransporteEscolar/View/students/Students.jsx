@@ -11,7 +11,7 @@ import PageDefault from '../../components/pageDefault/PageDefault';
 import { useNavigation } from '@react-navigation/native';
 
 const Students = () => {
-    const { userData, hasStudent } = useContext(AuthContext);
+    const { userData, hasStudent, token } = useContext(AuthContext);
 
     const navigation = useNavigation();
 
@@ -19,9 +19,10 @@ const Students = () => {
     const [students, setStudents] = useState([]);
     const [loading, setLoading] = useState(false);
     const [headerTitle, setHeaderTitle] = useState("Meus Alunos");
+    const [block, setBlock] = useState(false);
 
     const requestData = async() => {
-        const response = await getStudentByResponsible(userData.id);
+        const response = await getStudentByResponsible(userData.id, token);
 
         if(response.status === 200){
             const studentFormat = response.data.map(item => ({
@@ -39,6 +40,10 @@ const Students = () => {
             }
 
             setStudents(studentFormat);
+        }
+        else if(response.status === 500){
+            setHeaderTitle("Não autorizado!");
+            setBlock(true);
         }
         else{
             setStudents([]);
@@ -58,7 +63,7 @@ const Students = () => {
         setLoading(true);
         setAssociationModalVisible(false);
 
-        const student = await getStudentByCode(studentCode);
+        const student = await getStudentByCode(studentCode, token);
 
         if(student.status === 200){
             navigation.navigate("StudentAssociation", {studentData: student.data});
@@ -88,7 +93,7 @@ const Students = () => {
     const handleSelectStudent = async(studentInfos) => {
         setLoading(true);
 
-        const studentDetails = await getStudentDetails(studentInfos.id);
+        const studentDetails = await getStudentDetails(studentInfos.id, token);
 
         if(studentDetails.status === 200){
             navigation.navigate("StudentDetail", {studentData: studentDetails.data});
@@ -104,6 +109,14 @@ const Students = () => {
 
         setLoading(false);
     };
+
+    if(block){
+        return <PageDefault headerTitle={headerTitle} loading={loading} navigation={navigation} backNavigation={"Perfil"}>
+            <View style={styles.withoutStudent}>
+                <Text style={styles.withoutStudentTitle}>Não foi possível acessar essa página</Text>
+            </View>
+        </PageDefault>
+    }
 
     return (
         <PageDefault headerTitle={headerTitle} loading={loading} navigation={navigation} backNavigation={"Perfil"}>

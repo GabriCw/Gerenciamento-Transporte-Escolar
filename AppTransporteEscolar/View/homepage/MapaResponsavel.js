@@ -15,7 +15,7 @@ import { getDistance } from 'geolib';
 
 const MapaResponsavel = ({ navigation }) => {
 
-    const {userData} = useContext(AuthContext);
+    const {userData, token} = useContext(AuthContext);
     const scheduleInfoRef = useRef(null);
     const studentsData = useRef(null);
     const [scheduleId, setScheduleId] = useState(null);
@@ -179,7 +179,7 @@ const MapaResponsavel = ({ navigation }) => {
     
 
     const handleGetStudentByResponsible = async(user_id) => {
-        const getByResponsible = await getStudentByResponsible(user_id)
+        const getByResponsible = await getStudentByResponsible(user_id, token)
 
         if(getByResponsible.status === 200){
             console.log('Sucesso ao receber informações dos alunos pro Responsável')

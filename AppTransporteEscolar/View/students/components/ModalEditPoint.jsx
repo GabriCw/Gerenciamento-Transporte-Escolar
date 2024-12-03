@@ -10,7 +10,7 @@ import { getListAllHomes, updateAddress, updateAddressByPoint } from "../../../d
 
 const ModalEditPoint = ({pointSelected, open, setOpen, navigation, handleReload, student}) => {
 
-    const {userData} = useContext(AuthContext);
+    const {userData, token} = useContext(AuthContext);
 
     const [points, setPoints] = useState([]);
     const [loading, setLoading] = useState(false);
@@ -19,7 +19,7 @@ const ModalEditPoint = ({pointSelected, open, setOpen, navigation, handleReload,
         const requestData = async() => {
             setLoading(true);
 
-            const response = await getListAllHomes(student.id, userData.id);
+            const response = await getListAllHomes(student.id, userData.id, token);
 
             if(response.status === 200){
                 const pointFormatted = response.data.map(item => {
@@ -58,7 +58,7 @@ const ModalEditPoint = ({pointSelected, open, setOpen, navigation, handleReload,
             user_id: userData.id,
         };
 
-        const update = await updateAddress(body);
+        const update = await updateAddress(body, token);
 
         if(update.status === 200){
             Toast.show({
@@ -105,7 +105,7 @@ const ModalEditPoint = ({pointSelected, open, setOpen, navigation, handleReload,
             point_id: pointSelected.id
         };
 
-        const update = await updateAddressByPoint(body);
+        const update = await updateAddressByPoint(body, token);
 
         if(update.status === 200){
             Toast.show({
