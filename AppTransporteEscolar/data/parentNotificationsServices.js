@@ -3,7 +3,7 @@ import { APP_URL } from "@env";
 import { signOut } from "firebase/auth";
 import { auth } from "../firebase/firebase";
 
-const apiUrl = "http://127.0.0.1:8000";
+const apiUrl = APP_URL;
 const _controller = apiUrl + '/parent_notification';
 
 export const getActiveNotifications = async(user_id, token) => {
