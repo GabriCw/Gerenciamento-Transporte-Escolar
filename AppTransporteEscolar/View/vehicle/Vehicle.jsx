@@ -15,7 +15,7 @@ import VehiclesAssociatedList from './components/VehiclesAssociatedList';
 const Vehicle = () => {
 
     const navigation = useNavigation();
-    const { userData } = useContext(AuthContext);
+    const { userData, token } = useContext(AuthContext);
     const [modalVisible, setModalVisible] = useState(false);
     const [vehicles, setVehicles] = useState(null);
     const [vehicleSelect, setVehicleSelect] = useState(null);
@@ -25,7 +25,7 @@ const Vehicle = () => {
     const requestData = async() => {
         setIsLoading(true);
         
-        const response = await getVehicleListByUser(userData.id) ;
+        const response = await getVehicleListByUser(userData.id, token) ;
 
         if(response.status === 200){
             setVehicles(response.data);

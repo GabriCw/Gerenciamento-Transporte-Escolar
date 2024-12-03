@@ -8,7 +8,7 @@ import { useNavigation } from "@react-navigation/native";
 import Toast from "react-native-toast-message";
 
 const CreateVehicle = () => {
-    const { userData } = useContext(AuthContext);
+    const { userData, token } = useContext(AuthContext);
     const navigation = useNavigation();
     const [board, setBoard] = useState("");
     const [model, setModel] = useState("");
@@ -35,7 +35,7 @@ const CreateVehicle = () => {
             user_id: userData.id
         };
 
-        const create = await createVehicle(body);
+        const create = await createVehicle(body, token);
 
         if(create.status === 201){
             Toast.show({

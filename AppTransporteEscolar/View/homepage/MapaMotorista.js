@@ -42,7 +42,7 @@ const MapaMotorista = ({ navigation }) => {
     const [startButton, setStartButton] = useState(true);
     const [routeOnGoing, setRouteOngoing] = useState(false);
     const [waypointOrder, setWaypointOrder] = useState([]);
-    const { userData } = useContext(AuthContext);
+    const { userData, token } = useContext(AuthContext);
     const [clock, setClock] = useState(true);
     const [mapsUrl, setMapsUrl] = useState('');
     const [currentStudentIndex, setCurrentStudentIndex] = useState(0);
@@ -799,7 +799,7 @@ const MapaMotorista = ({ navigation }) => {
     const handleUserVehiclesAndSchool = async () => {
         setIsLoadingVehiclesAndSchools(true);
         try {
-            const response = await getVehicleByUser(userData.id);
+            const response = await getVehicleByUser(userData.id, token);
 
         if (response.status === 200) {
             console.log('Veículos obtidos com sucesso');
