@@ -67,7 +67,6 @@ const styles = StyleSheet.create({
         left: "30%",
         width: "100%",
         color: "#C36005",
-        fontSize: "70%"
     },
     viewContainter: {
         flex: 1,

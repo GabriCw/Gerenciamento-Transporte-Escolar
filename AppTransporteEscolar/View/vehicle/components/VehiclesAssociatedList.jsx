@@ -1,4 +1,4 @@
-import { Pressable, ScrollView, StyleSheet, View } from "react-native";
+import { Pressable, ScrollView, StyleSheet, View, Dimensions } from "react-native";
 import { IconButton, Text } from "react-native-paper";
 import { AntDesign, FontAwesome, FontAwesome5 } from "@expo/vector-icons";
 import Ionicons from '@expo/vector-icons/Ionicons';
@@ -8,6 +8,8 @@ import { useContext, useState } from "react";
 import { updateVehicle } from "../../../data/vehicleServices";
 import { AuthContext } from "../../../providers/AuthProvider";
 import Toast from "react-native-toast-message";
+
+const { width } = Dimensions.get("window");
 
 const VehiclesAssociatedList = ({ list, setIsLoading }) => {
 
@@ -69,6 +71,8 @@ const VehiclesAssociatedList = ({ list, setIsLoading }) => {
         navigation.navigate("VehicleDetails", {vehicleData: item});
     };
 
+    const iconSize = width * 0.1;
+
     return <>
         <ScrollView style={styles.scrollContainer}>
             {
@@ -79,7 +83,7 @@ const VehiclesAssociatedList = ({ list, setIsLoading }) => {
                                 <View style={styles.content}>
                                     <View style={styles.nameYearContent}>
                                         <View style={{display: "flex", flexDirection: "row", flex: 1, gap: 15, alignItems: "center"}}>
-                                        <FontAwesome name="bus" size={"30%"} color="black"/>
+                                        <FontAwesome name="bus" size={20} color="black"/>
                                             <Text style={styles.title}>{item?.plate.toUpperCase()}</Text>
                                         </View>
                                         <AntDesign name="rightcircle" size={24} color="black"/>
@@ -122,7 +126,6 @@ const styles = StyleSheet.create({
         left: "30%",
         width: "100%",
         color: "#C36005",
-        fontSize: "70%"
     },
     viewContainter: {
         flex: 1,

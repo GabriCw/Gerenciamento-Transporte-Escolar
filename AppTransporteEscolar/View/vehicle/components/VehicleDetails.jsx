@@ -1,4 +1,4 @@
-import { Alert, StyleSheet, View } from "react-native";
+import { Alert, StyleSheet, View, Dimensions } from "react-native";
 import PageDefault from "../../../components/pageDefault/PageDefault";
 import { Button, Text } from "react-native-paper";
 import { useContext, useState } from "react";
@@ -8,6 +8,8 @@ import { useNavigation } from "@react-navigation/native";
 import Toast from "react-native-toast-message";
 import { removeVehicle, updateVehicle } from "../../../data/vehicleServices";
 import ModalEdit from "./ModalEdit";
+
+const { width } = Dimensions.get("window");
 
 const VehicleDetails = ({route}) => {
 
@@ -99,6 +101,8 @@ const VehicleDetails = ({route}) => {
         }
     };
 
+    const iconSize = width * 0.1;
+
     return <PageDefault headerTitle="Detalhes do Veículo" loading={loading}>
         <View style={styles.viewContainter} onPress={() => handleGoToVehicleDetails(vehicleData)}>
             <View style={styles.cardContainer}>
@@ -106,7 +110,7 @@ const VehicleDetails = ({route}) => {
                     <View style={styles.content}>
                         <View style={styles.nameYearContent}>
                             <View style={{display: "flex", flexDirection: "row", flex: 1, gap: 15, alignItems: "center"}}>
-                            <FontAwesome name="bus" size={"30%"} color="black"/>
+                            <FontAwesome name="bus" size={iconSize} color="black"/>
                                 <Text style={styles.title}>{vehicleData?.plate.toUpperCase()}</Text>
                             </View>
                         </View>
